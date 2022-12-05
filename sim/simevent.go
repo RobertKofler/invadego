@@ -1,0 +1,38 @@
+package sim
+
+import (
+	"fmt"
+	"invade/env"
+)
+
+/*
+Reset all events at the beginning of a new replicate
+*/
+func ResetEvents() {
+	env.SetCluster(defaultCluster)
+
+}
+
+func SetEvents(generation int64) {
+	if generation == genClusterSwitch {
+		env.SetCluster(eventCluster)
+	}
+}
+
+func SetupClusterRemoval(when int64, howmany int64) {
+	genClusterSwitch = when
+	defaultCluster = env.GetCluster()
+	newclustercount := len(defaultCluster) - int(howmany)
+	if newclustercount < 0 {
+		panic(fmt.Sprintf("Can not remov %d cluster, whent total number of clusters is %d", howmany, len(defaultCluster)))
+	}
+	newcluster := make([]env.GenomicInterval, newclustercount)
+	for i := 0; i < newclustercount; i++ {
+		newcluster[i] = defaultCluster[i]
+	}
+	eventCluster = env.RegionCollection(newcluster)
+}
+
+var defaultCluster env.RegionCollection
+var eventCluster env.RegionCollection
+var genClusterSwitch int64

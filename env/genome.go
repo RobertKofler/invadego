@@ -19,6 +19,16 @@ type Environment struct {
 
 var env Environment
 
+// Set the new piRNA clusters
+func SetCluster(cluster RegionCollection) {
+	env.clusters = cluster
+}
+
+// Return the default piRNA cluster
+func GetCluster() RegionCollection {
+	return env.clusters
+}
+
 /*
 An interval in a genome;
 Start and End are both within the interval;
