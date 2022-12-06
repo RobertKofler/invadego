@@ -12,6 +12,7 @@ type CommandLineParameters struct {
 	Popsize          int64
 	Genome           string
 	Cluster          string
+	RemoveCluster    string
 	RefRegion        string
 	RecRate          string
 	U                float64 // transposition rate
@@ -49,6 +50,7 @@ func ParseCommandLine() *CommandLineParameters {
 	// Optional parameters
 	transrate := flag.Float64("u", 0.0, "the transposition rate")
 	cluster := flag.String("cluster", "", "piRNA clusters; e.g. 'kb:1,1,1,1' specifies a cluster of 1kb at the beginning of each chromosome")
+	removecluster := flag.String("remove-cluster", "", "remove 'n' piRNA clusters at the given generations; e.g. '1000:2' removes two clusters at generation 1000")
 	sampleid := flag.String("sampleid", "", "the ID of the sample; will be a help in R to group samples like with facete_grid()")
 	refregion := flag.String("ref-region", "", "reference region; e.g. 'kb:1,1,1,1' specifies a reference region of 1kb at the end of each chromosome")
 	rr := flag.String("rr", "", "the recombination rate per chromosome in cm/Mb; e.g. '3,4,4,5' ")
@@ -129,5 +131,6 @@ func ParseCommandLine() *CommandLineParameters {
 		FileTally:        *fileTally,
 		FileSFS:          *fileSFS,
 		Generations:      *generations,
+		RemoveCluster:    *removecluster,
 		SampleID:         *sampleid} //TODO implement as output
 }

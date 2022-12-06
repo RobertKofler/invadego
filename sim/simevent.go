@@ -9,12 +9,14 @@ import (
 Reset all events at the beginning of a new replicate
 */
 func ResetEvents() {
-	env.SetCluster(defaultCluster)
+	if genClusterSwitch > 0 {
+		env.SetCluster(defaultCluster)
+	}
 
 }
 
 func SetEvents(generation int64) {
-	if generation == genClusterSwitch {
+	if genClusterSwitch > 0 && generation == genClusterSwitch {
 		env.SetCluster(eventCluster)
 	}
 }

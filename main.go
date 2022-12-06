@@ -9,6 +9,8 @@ import (
 	"invade/sim"
 	"invade/util"
 	"io/ioutil"
+	"strconv"
+	"strings"
 	//_ "net/http/pprof"
 )
 
@@ -31,7 +33,7 @@ func main_profile() {
 func main() {
 
 	// VERSION NUMBER
-	version := "0.2.3"
+	version := "br.rc-0.2.3"
 
 	clp := cmdparser.ParseCommandLine()
 	if clp.Silent {
@@ -105,6 +107,14 @@ func main() {
 	fly.SetupFitness(clp.X, clp.T, clp.Noxcluins, clp.MinFitness)
 	util.InvadeLogger.Print("Setting up output manager")
 	outman.SetupOutputManager(clp.Steps, clp.ReplicateOffset, clp.FileMHP, clp.FileTally, clp.FileSFS, clp.FileDebug, clp.SampleID)
+
+	util.InvadeLogger.Printf("Setting up events")
+	if clp.RemoveCluster != "" {
+		sspl := strings.Split(clp.RemoveCluster, ",")
+		generation, _ := strconv.ParseInt(sspl[0], 10, 64)
+		toremove, _ := strconv.ParseInt(sspl[1], 10, 64)
+		sim.SetupClusterRemoval(generation, toremove)
+	}
 
 	// Simulate the thing
 	util.InvadeLogger.Print("Commencing simulations")
