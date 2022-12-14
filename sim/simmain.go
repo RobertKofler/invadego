@@ -21,7 +21,7 @@ func SimulateInvasions(basepop string, popsize int64, replicates int64, generati
 		}
 
 		for i := int64(1); i <= generation; i++ { // needs to start 1; 0 is the base population
-			SetEvents(i)                  // pirna cluster removal
+			SetEvents(pop, i)             // pirna cluster removal
 			pop = pop.GetNextGeneration() // Fuck multithreading! we loose reproducibitilty with the seeds!
 			status := pop.GetStatus()
 			outman.RecordPopulation(pop, k, i, status)

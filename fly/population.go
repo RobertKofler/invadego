@@ -70,6 +70,11 @@ func getFly(mp matePair, fc chan<- *Fly) {
 	fc <- newFly
 }
 
+func (p *Population) ResetStatus() {
+	p.phase = updatePhase(p, RAPIDINVASION)
+
+}
+
 /*
 func (p *Population) GetNextGenerationMultithreading() *Population {
 	// Generate flies
@@ -118,21 +123,45 @@ func updatePhase(newPop *Population, oldPhase Phase) Phase {
 	}
 	mat := newPop.GetWithPirnaCount()
 	freq := float64(mat) / float64(len(newPop.Flies))
+
+	// conditions for triggered, are they met?
+	matbool := false
+	if mat > 0 {
+		matbool = true
+	}
+	// conditions for shotgun, are they met?
+	freqbool := false
+	if freq > 0.99 {
+		freqbool = true
+
+	}
+	// condtions for inactive, are they met?
+	fixedbool := false
+	fixedIns := newPop.GetFixedInsertions()
+	fclu, _, fpara, _, _ := env.CountHaploidInsertions(fixedIns)
+	if fclu > 0 || fpara > 0 { // conditon for inactive -> at least one fixed cluster insertion; or fixed paramutable locus
+		fixedbool = true
+	}
+
 	if oldPhase == RAPIDINVASION {
-		if mat > 0 { // condition for trigger -> at least one with piRNAs
+		if fixedbool {
+			return INACTIVE
+		} else if freqbool {
+			return SHOTGUN
+		} else if matbool {
 			return TRIGGERED
 		}
 	} else if oldPhase == TRIGGERED {
-		if freq > 0.99 { // condition for shotgun -> 99% silenced in population
+		if fixedbool {
+			return INACTIVE
+		} else if freqbool {
 			return SHOTGUN
 		}
+
 	} else if oldPhase == SHOTGUN {
-		fixedIns := newPop.GetFixedInsertions()
-		fclu, _, fpara, _, _ := env.CountHaploidInsertions(fixedIns)
-		if fclu > 0 || fpara > 0 { // conditon for inactive -> at least one fixed cluster insertion; or fixed paramutable locus
+		if fixedbool {
 			return INACTIVE
 		}
-		// Check if the inactive phase was reached
 	}
 	return oldPhase //if nothing special happens -> oldphase
 }

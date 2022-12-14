@@ -31,17 +31,17 @@
             "mode": "debug",
             "program": "main.go",
             "args": ["--N", "1000",
-                "--u","0.01",
+                "--u","0.05",
                 "--genome","MB:2,2,3,1",
                 "--cluster","kb:1000,1000,1000,900",
                 "--ref-region","kb:100,100,100,100",
-                "--remove-cluster","200,2",
+                "--remove-cluster","4000,3",
                 "--basepop","1000",
                 "--rr","4,4,4,4",
                 "--rep","3",
                 "--steps","20",
                 "--sampleid","para,100,20",
-                "--gen","300"]
+                "--gen","5000"]
         },
         {
             "name": "Cluster+Para",

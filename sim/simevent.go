@@ -3,6 +3,7 @@ package sim
 import (
 	"fmt"
 	"invade/env"
+	"invade/fly"
 )
 
 /*
@@ -15,9 +16,10 @@ func ResetEvents() {
 
 }
 
-func SetEvents(generation int64) {
+func SetEvents(pop *fly.Population, generation int64) {
 	if genClusterSwitch > 0 && generation == genClusterSwitch {
 		env.SetCluster(eventCluster)
+		pop.ResetStatus()
 	}
 }
 
