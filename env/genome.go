@@ -11,8 +11,6 @@ type Environment struct {
 	genome               *GenomicLandscape
 	clusters             RegionCollection
 	refRegions           RegionCollection
-	paramutables         *RecurrentSites
-	triggers             *RecurrentSites
 	recombinationWindows []*RecombinationWindow
 	minimumFitness       float64
 }
@@ -90,19 +88,5 @@ func TranslateCoordinates(pos int64) (int64, int64) {
 		}
 	}
 	panic(fmt.Sprintf("invalid index; smaller than allowed %d", pos))
-	/*
-	   if(pos>this.genomeSize)throw new IllegalArgumentException("Invalid position outside genome");
-	   int chromosome=this.chrSizes.size();
-	   for(int i=this.offsets.size()-1; i>=0; i--)
-	   {
-	       int os=this.offsets.get(i);
-	       if(pos>=os){
-	           int chrbasedpos=pos-os;
-	           return new ChromosomeBasedInsertion(chromosome,chrbasedpos);
-	       }
-	           chromosome--;
-	   }
-	   throw new IllegalArgumentException("Invalid position"+pos);
-	*/
 
 }

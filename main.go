@@ -71,23 +71,6 @@ func main() {
 		util.InvadeLogger.Printf("parsed reference regions, will use: %v", refregion)
 	}
 
-	// Trigger sites
-	util.InvadeLogger.Printf("parsing piRNA-trigger sites %s", clp.TriggerSites)
-	trigger := cmdparser.ParseRecurrentRegions(clp.TriggerSites)
-	if trigger == nil {
-		util.InvadeLogger.Printf("no piRNA trigger sites were provided - will not simulate trigger sites")
-	} else {
-		util.InvadeLogger.Printf("parsed piRNA-trigger-sites, will use: %v", trigger)
-	}
-	// Paramutable sites
-	util.InvadeLogger.Printf("parsing paramutable sites %s", clp.ParamutableSites)
-	paramutable := cmdparser.ParseRecurrentRegions(clp.ParamutableSites)
-	if paramutable == nil {
-		util.InvadeLogger.Printf("no paramutable sites were provided - will not simulate paramutable sites")
-	} else {
-		util.InvadeLogger.Printf("parsed paramutable sites, will use: %v", paramutable)
-	}
-
 	// Recombination rates
 	util.InvadeLogger.Printf("parsing recombination rates %s", clp.RecRate)
 	recrate := cmdparser.ParseRecombination(clp.RecRate)
@@ -98,7 +81,7 @@ func main() {
 	}
 
 	util.InvadeLogger.Printf("Setting up environment; genome, piRNA cluster, reference regions, trigger sites, paramutable sites and the recombination rate")
-	env.SetupEnvironment(genome, cluster, refregion, trigger, paramutable, recrate, clp.MinFitness)
+	env.SetupEnvironment(genome, cluster, refregion, recrate, clp.MinFitness)
 	util.InvadeLogger.Print("Setting up jumper")
 	env.SetJumper(clp.U, clp.UC)
 	util.InvadeLogger.Print("Setting up fitness function")

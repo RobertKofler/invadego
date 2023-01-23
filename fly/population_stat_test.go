@@ -27,8 +27,6 @@ func testhelper_setdefaultenv() {
 	env.SetupEnvironment([]int64{100, 100}, // two chromosomes of size 100
 		[]int64{0, 0}, // two clusters of size 100
 		[]int64{0, 0}, // two reference regions of size 100
-		[]bool{false}, //  trigger -> 0
-		[]bool{false}, // para - > 1
 		[]float64{0, 0}, 0.1)
 
 }
@@ -38,7 +36,7 @@ func testhelper_hapmerger(haps [][]int64) *Population {
 	for i := 0; i < len(haps); i += 2 {
 		femgam := haps[i]
 		malegam := haps[i+1]
-		f := NewFly(femgam, malegam, MALE, 0)
+		f := NewFly(femgam, malegam)
 		flies = append(flies, *f)
 	}
 	return &Population{Flies: flies}
@@ -101,8 +99,6 @@ func TestGetFlyStat(test *testing.T) {
 	env.SetupEnvironment([]int64{1000, 1000}, // two chromosomes of size 1000
 		[]int64{100, 100}, // two clusters of size 100
 		[]int64{100, 100}, // two reference regions of size 100
-		[]bool{true, false, false, false, false, false, false, false, false, false}, //  trigger -> 0
-		[]bool{false, true, false, false, false, false, false, false, false, false}, // para - > 1
 		[]float64{0, 0}, 0.1)
 
 	var tests = []struct {
@@ -111,16 +107,12 @@ func TestGetFlyStat(test *testing.T) {
 		wantCluster   int64
 		wantReference int64
 		wantTotal     int64
-		wantTrigger   int64
-		wantPara      int64
 	}{{male: []int64{1, 2}, female: []int64{1001, 1002}, wantCluster: 4, wantTotal: 4},
 		{male: []int64{999, 990}, female: []int64{1999, 1990}, wantReference: 4, wantTotal: 4},
 		{male: []int64{999, 990, 1999, 1990}, female: []int64{}, wantReference: 4, wantTotal: 4},
-		{male: []int64{101, 111}, female: []int64{1111, 1121}, wantPara: 4, wantTotal: 4},
-		{male: []int64{100, 110}, female: []int64{1110, 1120}, wantTrigger: 4, wantTotal: 4},
 		{male: []int64{1, 2, 1999}, female: []int64{999, 990, 1001, 1002}, wantCluster: 4, wantReference: 3, wantTotal: 7},
-		{male: []int64{1, 2, 1999}, female: []int64{999, 990, 1001, 1002, 101, 1121}, wantCluster: 4, wantReference: 3, wantPara: 2, wantTotal: 9},
-		{male: []int64{1, 2, 1999, 110}, female: []int64{999, 990, 1001, 1002, 101, 1121}, wantCluster: 4, wantReference: 3, wantPara: 2, wantTrigger: 1, wantTotal: 10},
+		{male: []int64{1, 2, 1999}, female: []int64{999, 990, 1001, 1002, 101, 1121}, wantCluster: 4, wantReference: 3, wantTotal: 9},
+		{male: []int64{1, 2, 1999, 110}, female: []int64{999, 990, 1001, 1002, 101, 1121}, wantCluster: 4, wantReference: 3, wantTotal: 10},
 	}
 
 	for _, t := range tests {
@@ -131,13 +123,7 @@ func TestGetFlyStat(test *testing.T) {
 			test.Errorf("Incorrect number of cluster insertions; want %d, got %d, %d", t.wantCluster, fsm.CountCluster, fsf.CountCluster)
 		}
 		if t.wantReference != fsm.CountReference || fsm.CountReference != fsf.CountReference {
-			test.Errorf("Incorrect number of cluster insertions; want %d, got %d, %d", t.wantReference, fsm.CountReference, fsf.CountReference)
-		}
-		if t.wantPara != fsm.CountPara || fsm.CountPara != fsf.CountPara {
-			test.Errorf("Incorrect number of cluster insertions; want %d, got %d, %d", t.wantPara, fsm.CountPara, fsf.CountPara)
-		}
-		if t.wantTrigger != fsm.CountTrigger || fsm.CountTrigger != fsf.CountTrigger {
-			test.Errorf("Incorrect number of cluster insertions; want %d, got %d, %d", t.wantPara, fsm.CountPara, fsf.CountPara)
+			test.Errorf("Incorrect number of reference insertions; want %d, got %d, %d", t.wantReference, fsm.CountReference, fsf.CountReference)
 		}
 		if t.wantTotal != fsm.CountTotal || fsm.CountTotal != fsf.CountTotal {
 			test.Errorf("Incorrect number of total insertions; want %d, got %d, %d", t.wantTotal, fsm.CountTotal, fsf.CountTotal)

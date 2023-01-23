@@ -3,7 +3,6 @@ package fly
 import (
 	"invade/env"
 	"invade/util"
-	"math/rand"
 )
 
 type Sex int64
@@ -13,22 +12,10 @@ type Sex int64
 // maybe make somehow replicate specific
 var FLYCOUNTER int64 = 1
 
-// var flylock sync.Mutex
-
-// size 2^64 = 1.844674e+19
-// hence even if we do simulations for populations of size 100k for 100kgenerations we could run 1 844 674 407 replicates; should be sufficient ;)
-
-const (
-	FEMALE Sex = 0
-	MALE   Sex = 1
-)
-
 type Fly struct {
 	FlyNumber int64 // each fly has a number; starting at 1
 	Hap1      []int64
 	Hap2      []int64
-	Matpirna  int64 // number of the fly that triggered the maternal piRNAs; allows to identify soft sweeps from recurrent mutations!
-	Sex       Sex
 	Fitness   float64
 	FlyStat   *FlyStatistic
 }
@@ -36,8 +23,6 @@ type FlyStatistic struct {
 	CountTotal     int64
 	CountCluster   int64
 	CountReference int64
-	CountPara      int64
-	CountTrigger   int64
 	CountNOE       int64
 }
 
@@ -51,8 +36,7 @@ First recombination among the two haplotypes will take place;
 Second the number of new insertions will be computed based on
 i) the TE insertions in the diploid parent
 ii) piRNA cluster insertions
-iii) maternal piRNAs and paramutable sites
-iv) the transposition rate.
+iii) the transposition rate.
 The number and position of new insertions will be random.
 Multiple insertions at the same site will be ignored.
 */
@@ -67,8 +51,8 @@ func (f *Fly) GetGamete() []int64 {
 	counttotal := int64(len(f.Hap1) + len(f.Hap2))
 
 	// the function generates novel transposition events for a HAPLOID genome, i.e. a gamete
-	// if f.matpirna > 0 than we have piRNAs and thus no novel insertions (zero is default)
-	newsites := env.GetNewTranspositionSites(counttotal, f.Matpirna > 0)
+	// if the number of cluster insertions > 0 than we have piRNAs and thus no novel insertions (zero is default)
+	newsites := env.GetNewTranspositionSites(counttotal, f.FlyStat.CountCluster)
 
 	// merge old and new insertion sites, make them unique and sort
 	return util.MergeUniqueSort(gamete, newsites)
@@ -80,50 +64,21 @@ Compute basic statistics for a fly, ie number of cluster insertions, number of r
 */
 func getFlyStat(femgam []int64, malegam []int64) FlyStatistic {
 	totcount := int64(len(femgam) + len(malegam))
-	cluster, reference, para, trigger, noe := env.CountDiploidInsertions(femgam, malegam)
+	cluster, reference, noe := env.CountDiploidInsertions(femgam, malegam)
 	fs := FlyStatistic{
 		CountTotal:     totcount,
 		CountCluster:   cluster,
 		CountReference: reference,
-		CountPara:      para,
-		CountTrigger:   trigger,
 		CountNOE:       noe,
 	}
 	return fs
 }
 
-func getMaternalPirnaStatus(fstat FlyStatistic, matpirna int64, fc int64) int64 {
-	// Gain maternal piRNAs
-	if matpirna == 0 {
-		// check for new trigger events
-
-		if fstat.CountCluster > 0 {
-			return fc // if there are cluster insertions -> we gained maternal piRNAs
-		} else if fstat.CountTrigger > 0 && fstat.CountPara > 0 {
-			return fc // if there are paramutable sites and trigger sites -> we gained maternal piRNAs
-		} else {
-			return 0 // ok still no maternal piRNAs
-		}
-	} else {
-		// ok there were maternal piRNAs: wuhu
-		// if there is a cluster insertion or a paramutable site -> maternal piRNAs are preserved
-		// otherwise maternal piRNAs are LOST!
-
-		if fstat.CountCluster > 0 {
-			return matpirna // cluster insertion -> preserve maternal piRNAs
-		} else if fstat.CountPara > 0 {
-			return matpirna // paramutable site -> preserve maternal piRNAs
-		} else {
-			return 0 // LOSS of maternal PIRNAS
-		}
-	}
-}
-
 /*
-	Get a unique set of all insertion sites in a diploid fly.
-	Each heterozygous insertion in hap1 and hap2 is present.
-	Homozygous insertions are only present once.
-	Output is sorted.
+Get a unique set of all insertion sites in a diploid fly.
+Each heterozygous insertion in hap1 and hap2 is present.
+Homozygous insertions are only present once.
+Output is sorted.
 */
 func (f *Fly) GetInsertionSites() []int64 {
 	return util.MergeUniqueSort(f.Hap1, f.Hap2)
@@ -182,34 +137,10 @@ func (f *Fly) getRecombinedGamete() []int64 {
 }
 
 /*
-	Separate flies into males and females; return value provided in this order
-*/
-func SeparateSexes(flies []Fly) ([]Fly, []Fly) {
-	males := []Fly{}
-	females := []Fly{}
-	for _, fly := range flies {
-		if fly.Sex == MALE {
-			males = append(males, fly)
-		} else if fly.Sex == FEMALE {
-			females = append(females, fly)
-		}
-	}
-	return males, females
-}
-
-/*
-Get random sex
-*/
-func GetRandomSex() Sex {
-	s := Sex(int(2.0 * rand.Float64()))
-	return s
-}
-
-/*
 Setup a new Fly; given the gametes, the sex, and the maternal piRNAs;
 Will i) merge gametes ii) compute stats iii) determine piRNA status iv) compute fitness v) increase FLYCOUNTER
 */
-func NewFly(femgam []int64, malegam []int64, sex Sex, matpirna int64) *Fly {
+func NewFly(femgam []int64, malegam []int64) *Fly {
 	// should give random numbers 0 or 1, ie male female
 	fstat := getFlyStat(femgam, malegam)
 	// multithreading lock and unlock
@@ -218,8 +149,7 @@ func NewFly(femgam []int64, malegam []int64, sex Sex, matpirna int64) *Fly {
 	FLYCOUNTER++
 	//flylock.Unlock()
 
-	matpi := getMaternalPirnaStatus(fstat, matpirna, currentCounter)
-	newFly := Fly{Hap1: malegam, Hap2: femgam, FlyNumber: currentCounter, Matpirna: matpi, Sex: Sex(sex), FlyStat: &fstat}
+	newFly := Fly{Hap1: malegam, Hap2: femgam, FlyNumber: currentCounter, FlyStat: &fstat}
 	newFly.Fitness = GetFitness(&newFly)
 
 	return &newFly

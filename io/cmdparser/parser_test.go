@@ -3,7 +3,6 @@ package cmdparser
 // command line, run all tests "go test ./..." yes three points
 import (
 	"invade/env"
-	"invade/fly"
 	"invade/util"
 	"testing"
 )
@@ -72,8 +71,8 @@ func TestParseGenome(t *testing.T) {
 }
 
 func TestLoadGenome(t *testing.T) {
-	util.SetSeed(7)
-	env.SetupEnvironment([]int64{5000, 5000}, []int64{0, 0}, []int64{0, 0}, []bool{}, []bool{}, []float64{1, 1}, 0.1)
+	util.SetSeed(8)
+	env.SetupEnvironment([]int64{10000, 10000}, []int64{0, 0}, []int64{0, 0}, []float64{1, 1}, 0.1)
 	var tests = []struct {
 		popsize   int64
 		inscount  int64
@@ -94,23 +93,17 @@ func TestLoadGenome(t *testing.T) {
 			t.Errorf("Incorrect population size %d vs %d", len(got.Flies), test.wantpop)
 		}
 		if gotsites != int(test.wantsites) {
-			t.Errorf("Incorrect number of sites %d vs %d", gotsites, test.wantpop)
+			t.Errorf("Incorrect number of sites %d vs %d", gotsites, test.wantsites)
 		}
 
 		for _, s := range sites {
-			if s < 0 || s > 9999 {
+			if s < 0 || s > 19999 {
 				t.Errorf("Incorrect position of site; must be between 0-9999; got %d", s)
 			}
 		}
 		for _, f := range got.Flies {
 			if f.FlyNumber < 1 {
 				t.Errorf("Incorrect Fly number got %d", f.FlyNumber)
-			}
-			if f.Matpirna != 0 {
-				t.Errorf("Incorrect maternal piRNAs; got %d", f.Matpirna)
-			}
-			if f.Sex != fly.FEMALE && f.Sex != fly.MALE {
-				t.Errorf("Incorrect sex; got %d", f.Sex)
 			}
 		}
 

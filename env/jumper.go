@@ -17,14 +17,13 @@ func SetJumper(u float64, uc float64) {
 }
 
 /*
-	Get the average number of transposition events for a DIPLOID.
-	For HAPLOIDS divide by two.
-	Considers u and uc, where u is the regular transposition rate and uc the transposition rate with i) a cluster insertion or ii) maternal piRNAs and paramutable site
-
+Get the average number of transposition events for a DIPLOID.
+For HAPLOIDS divide by two.
+Considers u and uc, where u is the regular transposition rate and uc the transposition rate with a cluster insertion
 */
-func (j *Jumper) getNovelInsertionCount(totalCount int64, pirna bool) float64 {
+func (j *Jumper) getNovelInsertionCount(totalCount int64, clusterinsertions int64) float64 {
 	activeu := j.u
-	if pirna {
+	if clusterinsertions > 0 {
 		activeu = j.uc
 	}
 	lambda := activeu * float64(totalCount)
@@ -36,8 +35,8 @@ Get the positions of novel insertions for a haploid gamete; Input parameters are
 Number of required insertions is then divided by two to obtain estimates for haploid genomes.
 returns a list of novel insertion sites; not unique, may contain same site twice
 */
-func GetNewTranspositionSites(totalCount int64, pirna bool) []int64 {
-	newcountAverageDiploid := jump.getNovelInsertionCount(totalCount, pirna)
+func GetNewTranspositionSites(totalCount int64, clusterinsertions int64) []int64 {
+	newcountAverageDiploid := jump.getNovelInsertionCount(totalCount, clusterinsertions)
 	newcountAverageHaploid := float64(newcountAverageDiploid) / 2.0 // is this valid? see below
 	newcountHaploid := util.Poisson(newcountAverageHaploid)
 	toret := make([]int64, newcountHaploid)

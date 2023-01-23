@@ -7,8 +7,8 @@ import (
 )
 
 type matePair struct {
-	female *Fly
-	male   *Fly
+	mate1 *Fly
+	mate2 *Fly
 }
 
 /*
@@ -21,20 +21,20 @@ type cumFitFly struct {
 }
 
 /*
- Get mate pairs; has random component
+Get mate pairs; has random component
 */
 func getMatePairs(flies []Fly, n int64) []matePair {
-	males, females := SeparateSexes(flies)
+
 	// cumulative fitness
-	malecum := generateCumFitness(males)
-	femcum := generateCumFitness(females)
+	hermaphrodites := generateCumFitness(flies)
 	merryCouples := make([]matePair, n)
 	for i := int64(0); i < n; i++ {
-		rimale := rand.Float64()
-		rifem := rand.Float64()
-		male := getFlyForRandomNumber(malecum, rimale)
-		female := getFlyForRandomNumber(femcum, rifem)
-		merryCouples[i] = matePair{female: female.fly, male: male.fly}
+		riherma1 := rand.Float64()
+		riherma2 := rand.Float64()
+		herma1 := getFlyForRandomNumber(hermaphrodites, riherma1)
+		herma2 := getFlyForRandomNumber(hermaphrodites, riherma2)
+		// design decision: I'm not preventing self-mating, as this could lead to an endless loop, eg when all flies except one has fitness 0.0
+		merryCouples[i] = matePair{mate1: herma1.fly, mate2: herma2.fly}
 	}
 	return merryCouples
 }

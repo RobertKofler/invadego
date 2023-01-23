@@ -187,57 +187,13 @@ func TestOverlapClusterReference(t *testing.T) {
 	}
 }
 
-func TestRecurrentSiteNil(t *testing.T) {
-	var r = newRecurrentSite(nil)
-	env = Environment{paramutables: r}
-	for i := int64(0); i < 100; i++ {
-		if isParamutable(i) {
-			t.Error("Nil recurrent site failure")
-		}
-	}
-}
-
-func TestRecurrentSite(t *testing.T) {
-	var r = newRecurrentSite([]bool{false, true, true, false, false})
-	env = Environment{paramutables: r}
-	var tests = []struct {
-		position int64
-		want     bool
-	}{
-		{0, false},
-		{1, true},
-		{2, true},
-		{3, false},
-		{4, false},
-		{5, false},
-		{6, true},
-		{7, true},
-		{8, false},
-		{9, false},
-		{10, false},
-		{11, true},
-		{12, true},
-		{13, false},
-		{14, false}}
-
-	for _, test := range tests {
-		if isParamutable(test.position) != test.want {
-			t.Errorf("IsParamutable(%d)!=%t", test.position, test.want)
-		}
-	}
-}
-
 func TestSeparateInsertions(t *testing.T) {
 	gl := newGenomicLandscape([]int64{100, 100, 100, 100, 100})
 	cl := newCluster([]int64{10, 10, 10, 10, 10}, gl)
 	rr := newReferenceRegions([]int64{15, 15, 15, 15, 15}, gl)
-	var trigger = newRecurrentSite([]bool{false, false, true, false, false, false, false, false, false, false})
-	var para = newRecurrentSite([]bool{true, true, false, false, false, false, false, false, false, false})
 	env = Environment{genome: gl,
-		clusters:     cl,
-		refRegions:   rr,
-		paramutables: para,
-		triggers:     trigger}
+		clusters:   cl,
+		refRegions: rr}
 	sites := make([]int64, 500)
 	for i := int64(0); i < 500; i++ {
 		sites[i] = i
@@ -249,34 +205,28 @@ func TestSeparateInsertions(t *testing.T) {
 	if len(ret.RefRegion) != 75 {
 		t.Error("incorrect number of ref regions sites")
 	}
-	if len(ret.Trigger) != 40 {
-		t.Error("incorrect number of trigger sites")
-	}
-	if len(ret.Paramutable) != 80 {
-		t.Error("incorrect number of paramutable sites")
-	}
-	if len(ret.NOE) != 255 {
-		t.Errorf("incorrect number of NOE sites: 255!=%d", len(ret.NOE))
+	if len(ret.NOE) != 375 {
+		t.Errorf("incorrect number of NOE sites: 375!=%d", len(ret.NOE))
 	}
 }
 
 func TestGetNovelInsertionCount(t *testing.T) {
 	var tests = []struct {
-		tot   int64
-		matpi bool // are there piRNAS in the fly (irrespective of origin; i.e. cluster or paramutation)
-		jump  Jumper
-		want  float64
+		tot    int64
+		cluins int64 // number of cluster insertions
+		jump   Jumper
+		want   float64
 	}{
-		{tot: 10, matpi: false, jump: Jumper{u: 0.1, uc: 0.0}, want: 1.0},
-		{tot: 10, matpi: true, jump: Jumper{u: 0.1, uc: 0.0}, want: 0.0},
-		{tot: 100, matpi: false, jump: Jumper{u: 0.1, uc: 0.0}, want: 10.0},
-		{tot: 100, matpi: true, jump: Jumper{u: 0.1, uc: 0.0}, want: 0.0},
-		{tot: 100, matpi: true, jump: Jumper{u: 0.1, uc: 0.01}, want: 1.0},
+		{tot: 10, cluins: 0, jump: Jumper{u: 0.1, uc: 0.0}, want: 1.0},
+		{tot: 10, cluins: 1, jump: Jumper{u: 0.1, uc: 0.0}, want: 0.0},
+		{tot: 100, cluins: 0, jump: Jumper{u: 0.1, uc: 0.0}, want: 10.0},
+		{tot: 100, cluins: 1, jump: Jumper{u: 0.1, uc: 0.0}, want: 0.0},
+		{tot: 100, cluins: 1, jump: Jumper{u: 0.1, uc: 0.01}, want: 1.0},
 	}
 
 	for _, test := range tests {
 		ju := test.jump
-		got := ju.getNovelInsertionCount(test.tot, test.matpi)
+		got := ju.getNovelInsertionCount(test.tot, test.cluins)
 		dif := math.Abs(test.want - got)
 		if dif > 0.00001 {
 			t.Errorf("getNovelInsertionCount(); got %f wanted %f", got, test.want)
@@ -297,7 +247,7 @@ func TestStochasticGetNovelInsertionSites(test *testing.T) {
 	totcounter := 0
 	for i := 0; i < 1000; i++ {
 
-		newsites := GetNewTranspositionSites(100, false)
+		newsites := GetNewTranspositionSites(100, 0)
 		totcounter += len(newsites)
 		for _, n := range newsites {
 			sitecounter[n]++
@@ -428,8 +378,6 @@ func TestTranslateCoordinates(test *testing.T) {
 	SetupEnvironment([]int64{100, 200, 300, 400}, // two chromosomes of size 1000
 		nil, //
 		nil, // two reference regions of size 100
-		nil, //  trigger -> 0
-		nil, // para - > 1
 		[]float64{4, 4, 4, 4}, 0.1)
 	var tests = []struct {
 		pos     int64

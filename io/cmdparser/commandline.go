@@ -7,34 +7,32 @@ import (
 )
 
 type CommandLineParameters struct {
-	ArgString        string
-	Silent           bool
-	Popsize          int64
-	Genome           string
-	Cluster          string
-	RefRegion        string
-	RecRate          string
-	U                float64 // transposition rate
-	UC               float64 // transposition rate in the presence of piRNAs
-	X                float64 // deleterious effect of a TE insertion
-	T                float64 // exponential deleterious effect of a TE insertion
-	Steps            int64   // report output each Steps generations
-	Generations      int64
-	BasePop          string
-	Noxcluins        bool
-	SampleID         string
-	ReplicateOffset  int64
-	Replicates       int64
-	ParamutableSites string
-	TriggerSites     string
-	Seed             int64
-	Threads          int64
-	MinFitness       float64
-	MaxInsertions    int64
-	FileMHP          string
-	FileTally        string
-	FileDebug        string
-	FileSFS          string
+	ArgString       string
+	Silent          bool
+	Popsize         int64
+	Genome          string
+	Cluster         string
+	RefRegion       string
+	RecRate         string
+	U               float64 // transposition rate
+	UC              float64 // transposition rate in the presence of piRNAs
+	X               float64 // deleterious effect of a TE insertion
+	T               float64 // exponential deleterious effect of a TE insertion
+	Steps           int64   // report output each Steps generations
+	Generations     int64
+	BasePop         string
+	Noxcluins       bool
+	SampleID        string
+	ReplicateOffset int64
+	Replicates      int64
+	Seed            int64
+	Threads         int64
+	MinFitness      float64
+	MaxInsertions   int64
+	FileMHP         string
+	FileTally       string
+	FileDebug       string
+	FileSFS         string
 }
 
 func ParseCommandLine() *CommandLineParameters {
@@ -52,8 +50,6 @@ func ParseCommandLine() *CommandLineParameters {
 	sampleid := flag.String("sampleid", "", "the ID of the sample; will be a help in R to group samples like with facete_grid()")
 	refregion := flag.String("ref-region", "", "reference region; e.g. 'kb:1,1,1,1' specifies a reference region of 1kb at the end of each chromosome")
 	rr := flag.String("rr", "", "the recombination rate per chromosome in cm/Mb; e.g. '3,4,4,5' ")
-	paramutSites := flag.String("paramutation", "", "paramutable sites, e.g. '10:1,2,9' with modulo 10 the residuals 1,2,9 are paramutable ")
-	triggerSites := flag.String("trigger", "", "triggers sites, e.g. '10:3,4,5' with modulo 10 the residuals 3,4,5 trigger the production of piRNAs ")
 	x := flag.Float64("x", 0.0, "the deleterious effect of a single TE insertions")
 	t := flag.Float64("t", 1.0, "the synergistic effect of TE insertions")
 	noxcluins := flag.Bool("no-x-cluins", false, "cluster insertions incur no negative effects")
@@ -102,32 +98,30 @@ func ParseCommandLine() *CommandLineParameters {
 		panic("Provide suitable steps --steps; must be larger or equal to 1")
 	}
 	return &CommandLineParameters{
-		ArgString:        argstring,
-		Silent:           *silent,
-		Popsize:          *popsize,
-		Genome:           *genome,
-		Cluster:          *cluster,
-		RefRegion:        *refregion,
-		RecRate:          *rr,
-		BasePop:          *basepop,
-		U:                *transrate,
-		UC:               *transrateResidual,
-		X:                *x,
-		T:                *t,
-		Steps:            *steps,
-		Noxcluins:        *noxcluins,
-		ReplicateOffset:  *reploffset,
-		ParamutableSites: *paramutSites,
-		TriggerSites:     *triggerSites,
-		Seed:             *seed,
-		Threads:          *threads,
-		MinFitness:       *minw,
-		Replicates:       *replicates,
-		MaxInsertions:    *maxins,
-		FileMHP:          *fileMHP,
-		FileDebug:        *fileDebug,
-		FileTally:        *fileTally,
-		FileSFS:          *fileSFS,
-		Generations:      *generations,
-		SampleID:         *sampleid} //TODO implement as output
+		ArgString:       argstring,
+		Silent:          *silent,
+		Popsize:         *popsize,
+		Genome:          *genome,
+		Cluster:         *cluster,
+		RefRegion:       *refregion,
+		RecRate:         *rr,
+		BasePop:         *basepop,
+		U:               *transrate,
+		UC:              *transrateResidual,
+		X:               *x,
+		T:               *t,
+		Steps:           *steps,
+		Noxcluins:       *noxcluins,
+		ReplicateOffset: *reploffset,
+		Seed:            *seed,
+		Threads:         *threads,
+		MinFitness:      *minw,
+		Replicates:      *replicates,
+		MaxInsertions:   *maxins,
+		FileMHP:         *fileMHP,
+		FileDebug:       *fileDebug,
+		FileTally:       *fileTally,
+		FileSFS:         *fileSFS,
+		Generations:     *generations,
+		SampleID:        *sampleid} //TODO implement as output
 }

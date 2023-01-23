@@ -81,30 +81,6 @@ func TestFitnessOmxnt(t *testing.T) {
 	}
 }
 
-func TestSeparateSexes(test *testing.T) {
-	var tests = []struct {
-		flies []Fly
-		wantf int64
-		wantm int64
-	}{
-		{flies: []Fly{Fly{Sex: MALE}}, wantf: 0, wantm: 1},
-		{flies: []Fly{Fly{Sex: FEMALE}}, wantf: 1, wantm: 0},
-		{flies: []Fly{}, wantf: 0, wantm: 0},
-		{flies: []Fly{Fly{Sex: FEMALE}, Fly{Sex: FEMALE}, Fly{Sex: FEMALE}}, wantf: 3, wantm: 0},
-		{flies: []Fly{Fly{Sex: FEMALE}, Fly{Sex: FEMALE}, Fly{Sex: FEMALE}, Fly{Sex: MALE}, Fly{Sex: MALE}}, wantf: 3, wantm: 2},
-	}
-	for _, t := range tests {
-		ma, fe := SeparateSexes(t.flies)
-		if len(ma) != int(t.wantm) {
-			test.Errorf("Incorrect number of males; want %d, got %d", t.wantm, len(ma))
-		}
-		if len(fe) != int(t.wantf) {
-			test.Errorf("Incorrect number of males; want %d, got %d", t.wantf, len(ma))
-		}
-
-	}
-}
-
 func TestGenerateCumFitness(test *testing.T) {
 	var tests = []struct {
 		flies []Fly
@@ -169,7 +145,7 @@ func TestGetFlyForRandomNumberLargePop(test *testing.T) {
 	fems := make([]Fly, 0, 100)
 	for i := 0; i < 100; i++ {
 
-		fems = append(fems, *NewFly([]int64{}, []int64{}, FEMALE, 0))
+		fems = append(fems, *NewFly([]int64{}, []int64{}))
 	}
 	var tests = []struct {
 		index float64
@@ -196,79 +172,23 @@ func TestGetFlyForRandomNumberLargePop(test *testing.T) {
 
 }
 
-func TestGetMaternalPirnaStatus(test *testing.T) {
-	var tests = []struct {
-		fs    FlyStatistic
-		matpi int64
-		fc    int64 // fly counter
-		want  int64
-	}{
-		{fs: FlyStatistic{}, matpi: 0, fc: 133, want: 0},
-		{fs: FlyStatistic{CountCluster: 1}, matpi: 0, fc: 133, want: 133},
-		{fs: FlyStatistic{CountCluster: 0, CountPara: 1}, matpi: 0, fc: 133, want: 0},
-		{fs: FlyStatistic{CountCluster: 0, CountPara: 1, CountTrigger: 1}, matpi: 0, fc: 133, want: 133},    // GAIN
-		{fs: FlyStatistic{CountCluster: 1, CountPara: 1, CountTrigger: 1}, matpi: 0, fc: 133, want: 133},    // GAIN
-		{fs: FlyStatistic{CountCluster: 0, CountPara: 10, CountTrigger: 10}, matpi: 0, fc: 133, want: 133},  // GAIN
-		{fs: FlyStatistic{CountCluster: 10, CountPara: 10, CountTrigger: 10}, matpi: 0, fc: 133, want: 133}, // GAIN
-		{fs: FlyStatistic{CountCluster: 0, CountPara: 0, CountTrigger: 0}, matpi: 211, fc: 133, want: 0},    // LOSS
-		{fs: FlyStatistic{CountCluster: 1, CountPara: 0, CountTrigger: 0}, matpi: 211, fc: 133, want: 211},  // RETAIN
-		{fs: FlyStatistic{CountCluster: 0, CountPara: 1, CountTrigger: 0}, matpi: 211, fc: 133, want: 211},  // RETAIN
-		{fs: FlyStatistic{CountCluster: 0, CountPara: 0, CountTrigger: 1}, matpi: 211, fc: 133, want: 0},    // LOSS
-	}
-
-	for _, t := range tests {
-		got := getMaternalPirnaStatus(t.fs, t.matpi, t.fc)
-
-		if got != t.want {
-			test.Errorf("Incorrect getMaternalPirnaStatus(); got %d, want %d", got, t.want)
-
-		}
-
-	}
-}
-
-func TestStochasticGetRandomSex(test *testing.T) {
-	util.SetSeed(6)
-	cmale := 0
-	cfem := 0
-	for i := 0; i < 10000; i++ {
-		sex := GetRandomSex()
-		if sex == MALE {
-			cmale++
-		} else if sex == FEMALE {
-			cfem++
-		} else {
-			panic("unknown sex")
-		}
-	}
-	// should be around 5000 for both sexes
-	if cmale < 4900 || cmale > 5900 {
-		test.Errorf("Problematic number of males %d", cmale)
-	}
-	if cfem < 4900 || cfem > 5900 {
-		test.Errorf("Problematic number of males %d", cfem)
-	}
-
-}
-
 /*
 With equal fitness, all flies (males and females) should participate in a similar number of matings;
 ie around 200 matings in the following scenario
 */
 func TestStochasticGetMatePairs(test *testing.T) {
-	util.SetSeed(5)
+	util.SetSeed(8)
 	flies := make([]Fly, 0, 100)
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 100; i++ {
 
-		flies = append(flies, *NewFly([]int64{}, []int64{}, FEMALE, 0))
-		flies = append(flies, *NewFly([]int64{}, []int64{}, MALE, 0))
+		flies = append(flies, *NewFly([]int64{}, []int64{}))
 	}
 
 	matep := getMatePairs(flies, 10000)
 	var flycounter = make(map[int64]int64)
 	for _, mp := range matep {
-		flycounter[mp.female.FlyNumber]++
-		flycounter[mp.male.FlyNumber]++
+		flycounter[mp.mate1.FlyNumber]++
+		flycounter[mp.mate2.FlyNumber]++
 	}
 
 	for _, val := range flycounter {
