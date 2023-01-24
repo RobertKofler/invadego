@@ -2,6 +2,7 @@ package env
 
 // command line, run all tests "go test ./..." yes three points
 import (
+	"fmt"
 	"invade/util"
 	"math"
 	"testing"
@@ -41,9 +42,17 @@ func TestGenomicLandscape(t *testing.T) {
 		t.Error("incorrect fourth interval")
 	}
 }
-func TestNewCluster(t *testing.T) { // TODO test non cluster
+
+func TestByte(t *testing.T) { // TODO test non cluster
+	bi := byte(0)
+	bii2 := float64(bi)/100.0 - 1.0
+	bii := (float64(bi) - 100.0) / 100.0
+	fmt.Print(bii, bii2)
+}
+
+func TestNewClusterNonCluster(t *testing.T) { // TODO test non cluster
 	gl := newGenomicLandscape([]int64{100, 200, 300, 400})
-	cl, _ := newClusterNonClusters([]int64{10, 20, 30, 40}, gl)
+	cl, ncl := newClusterNonClusters([]int64{10, 20, 30, 40}, gl)
 	if cl.Count() != 4 {
 		t.Error("incorrect number of cluster")
 	}
@@ -58,6 +67,22 @@ func TestNewCluster(t *testing.T) { // TODO test non cluster
 	}
 	if cl.Intervals[3].Start != 600 || cl.Intervals[3].End != 639 {
 		t.Error("incorrect third cluster")
+	}
+
+	if ncl.Count() != 4 {
+		t.Error("incorrect number of cluster")
+	}
+	if ncl.Intervals[0].Start != 10 || ncl.Intervals[0].End != 99 {
+		t.Error("incorrect first cluster")
+	}
+	if ncl.Intervals[1].Start != 120 || ncl.Intervals[1].End != 299 {
+		t.Error("incorrect first cluster")
+	}
+	if ncl.Intervals[2].Start != 330 || ncl.Intervals[2].End != 599 {
+		t.Error("incorrect first cluster")
+	}
+	if ncl.Intervals[3].Start != 640 || ncl.Intervals[3].End != 999 {
+		t.Error("incorrect first cluster")
 	}
 }
 func TestIsClusterInsertion(t *testing.T) {
@@ -96,14 +121,120 @@ func TestIsClusterInsertion(t *testing.T) {
 
 }
 
+func TestPositionTranslationCluster(t *testing.T) {
+	// PRIME example on how tests should be implemented in Go, according to Kerninghan
+	gl := newGenomicLandscape([]int64{10, 10, 10})
+	cl, ncl := newClusterNonClusters([]int64{5, 5, 5}, gl)
+	env = Environment{genome: gl,
+		clusters:    *cl,
+		nonClusters: *ncl}
+	var tests = []struct {
+		index int64
+		want  int64
+	}{
+		{0, 0},
+		{4, 4},
+		{5, 10},
+		{9, 14},
+		{10, 20},
+		{14, 24}}
+
+	for _, test := range tests {
+		if cl.Positions[test.index] != test.want {
+			t.Errorf("Position translation of clusters screwed up (%d)!=%d", cl.Positions[test.index], test.want)
+		}
+	}
+}
+
+func TestPositionTranslationNonCluster(t *testing.T) {
+	// PRIME example on how tests should be implemented in Go, according to Kerninghan
+	gl := newGenomicLandscape([]int64{10, 10, 10})
+	cl, ncl := newClusterNonClusters([]int64{5, 5, 5}, gl)
+	env = Environment{genome: gl,
+		clusters:    *cl,
+		nonClusters: *ncl}
+	var tests = []struct {
+		index int64
+		want  int64
+	}{
+		{0, 5},
+		{4, 9},
+		{5, 15},
+		{9, 19},
+		{10, 25},
+		{14, 29}}
+
+	for _, test := range tests {
+		if ncl.Positions[test.index] != test.want {
+			t.Errorf("Position translation of non-clusters screwed up (%d)!=%d", cl.Positions[test.index], test.want)
+		}
+	}
+}
 func TestNilClusterReference(t *testing.T) {
 	gl := newGenomicLandscape([]int64{100, 100, 100, 100})
-	cl, _ := newClusterNonClusters(nil, gl)
+	cl, ncl := newClusterNonClusters(nil, gl)
 	env = Environment{genome: gl,
 		clusters: *cl}
 	for i := int64(0); i < gl.totalGenome; i++ {
 		if IsClusterInsertion(i) {
 			t.Errorf("incorrect cluster insertion in nil cluster, position %d", i)
+		}
+	}
+	if ncl.Count() != 4 {
+		t.Error("incorrect number of non cluster regions")
+	}
+	if ncl.Size() != 400 {
+		t.Error("incorrect size of non cluster regions")
+	}
+	if ncl.Intervals[0].Start != 0 || ncl.Intervals[0].End != 99 {
+		t.Error("incorrect first cluster")
+	}
+	if ncl.Intervals[1].Start != 100 || ncl.Intervals[1].End != 199 {
+		t.Error("incorrect first cluster")
+	}
+	if ncl.Intervals[2].Start != 200 || ncl.Intervals[2].End != 299 {
+		t.Error("incorrect first cluster")
+	}
+	if ncl.Intervals[3].Start != 300 || ncl.Intervals[3].End != 399 {
+		t.Error("incorrect first cluster")
+	}
+
+}
+
+func TestStochasticGetNovelClusterSites(t *testing.T) {
+	util.SetSeed(5)
+	genome := newGenomicLandscape([]int64{10, 10, 10})
+
+	cl, ncl := newClusterNonClusters([]int64{5, 5, 5}, genome)
+	env = Environment{
+		genome:      genome,
+		clusters:    *cl,
+		nonClusters: *ncl,
+	}
+
+	for i := 0; i < 1000; i++ {
+		pos := GetRandomClusterSite()
+		if !IsClusterInsertion(pos) {
+			t.Errorf("genomic site is OUTSIDE of piRNA clusters %d", pos)
+		}
+	}
+}
+
+func TestStochasticGetNovelNonClusterSites(t *testing.T) {
+	util.SetSeed(5)
+	genome := newGenomicLandscape([]int64{10, 10, 10})
+
+	cl, ncl := newClusterNonClusters([]int64{5, 5, 5}, genome)
+	env = Environment{
+		genome:      genome,
+		clusters:    *cl,
+		nonClusters: *ncl,
+	}
+
+	for i := 0; i < 1000; i++ {
+		pos := GetRandomNonClusterSite()
+		if IsClusterInsertion(pos) {
+			t.Errorf("genomic site is INSIDE of piRNA clusters %d", pos)
 		}
 	}
 }
@@ -153,35 +284,6 @@ func TestGetNovelInsertionCount(t *testing.T) {
 			t.Errorf("getNovelInsertionCount(); got %f wanted %f", got, test.want)
 		}
 
-	}
-}
-
-func TestStochasticGetNovelInsertionSites(test *testing.T) {
-	util.SetSeed(5)
-	SetJumper(0.1, 0.0)
-	genome := newGenomicLandscape([]int64{10, 10})
-	env = Environment{
-		genome: genome,
-	}
-
-	var sitecounter = make(map[int64]int64)
-	totcounter := 0
-	for i := 0; i < 1000; i++ {
-
-		newsites := GetNewTranspositionSites(100, 0)
-		totcounter += len(newsites)
-		for _, n := range newsites {
-			sitecounter[n]++
-		}
-	}
-	if totcounter < 4900 || totcounter > 5100 {
-		// why 5000? 1000 * 0.1*100 / 2 (division by two because insertions in a haploid gamete
-		test.Errorf("Invalid number of novel TE insertion events, should be around 5000; observed %d ", totcounter)
-	}
-	for site, count := range sitecounter {
-		if count < 200 || count > 3000 {
-			test.Errorf("Invalid number of TE insertion events for site %d, should be around 250; observed %d ", site, count)
-		}
 	}
 }
 

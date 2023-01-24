@@ -6,17 +6,17 @@ import (
 )
 
 /*
-Total size of some genomic region, i.e. all regions summed up
-*/
-func (r RegionCollection) Size() int64 {
-	return sizeOfGenomicIntervals(r.Intervals)
-}
-
-/*
 Count the number of regions
 */
 func (r RegionCollection) Count() int64 {
 	return int64(len(r.Intervals))
+}
+
+/*
+Total size of the regions
+*/
+func (r RegionCollection) Size() int64 {
+	return int64(len(r.Positions))
 }
 
 // compute the size of some genomic intervals

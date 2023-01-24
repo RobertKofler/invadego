@@ -67,6 +67,7 @@ type GenomicLandscape struct {
 }
 
 /*
+likely not needed with insertion bias; TODO -> commented out to avoid problems
 Get a random insertio site in the genome;
 0-based; ranges from 0 to totalGenome-1
 */
@@ -77,13 +78,59 @@ func GetRandomSite() int64 {
 // Get random site WITHIN a piRNA cluster
 func GetRandomClusterSite() int64 {
 	//
-	return 0
+	ci := int64(rand.Intn(int(env.clusters.Size())))
+	return env.clusters.Positions[ci]
 }
 
 // Get random site OUTSIDE of a piRNA cluster
 func GetRandomNonClusterSite() int64 {
 	//
-	return 0
+	nci := int64(rand.Intn(int(env.nonClusters.Size())))
+	return env.nonClusters.Positions[nci]
+}
+
+/*
+Get threshold for random number between 0 and 1
+*/
+func GetThresholdForBias(insertionbias float64) float64 {
+	/*
+			Old java code
+			    // if insbias =0.0 clusterFitness=0.5
+		        // if insbias =1.0 clusterFitness=1.0
+		        // if insbias =-1.0 clusterFitness =0
+		        float clusterFitness = (insbias + 1.0F) / 2.0F;
+		        float genomeFitness = 1.0F - clusterFitness;
+		        float totFit = clufrac * clusterFitness + genomeFitness * (1.0F - clufrac);
+
+		        float threshold = clufrac * clusterFitness / totFit;
+		        return threshold;
+	*/
+	clusterfrac := float64(env.clusters.Size()) / float64(env.genome.totalGenome)
+	genomefrac := 1 - clusterfrac
+	clusterfit := (insertionbias + 1.0) / 2.0
+	genomefit := 1.0 - clusterfit
+	totalfit := clusterfrac*clusterfit + genomefrac*genomefit
+
+	threshold := clusterfrac * clusterfit / totalfit
+
+	return threshold
+}
+func GetSitesForBias(numberofsites int64, insertionbias float64) []int64 {
+	//
+	sites := make([]int64, numberofsites)
+	threshold := GetThresholdForBias(insertionbias)
+	for i := 0; i < int(numberofsites); i++ {
+		if rand.Float64() < threshold {
+			// cluster
+			sites[i] = GetRandomClusterSite()
+		} else {
+			// non cluster
+			sites[i] = GetRandomNonClusterSite()
+		}
+
+	}
+	return sites
+
 }
 
 // TODO TEST
