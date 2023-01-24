@@ -174,7 +174,7 @@ func (p *Population) GetAverageClusterInsertions() float64 {
 
 func (p *Population) GetFixedClusterInsertionCount() int64 {
 	fixedIns := p.GetFixedInsertions()
-	fclu, _, _ := env.CountHaploidInsertions(fixedIns)
+	fclu, _ := env.CountHaploidInsertions(fixedIns)
 	return fclu
 }
 

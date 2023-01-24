@@ -20,10 +20,9 @@ type Fly struct {
 	FlyStat   *FlyStatistic
 }
 type FlyStatistic struct {
-	CountTotal     int64
-	CountCluster   int64
-	CountReference int64
-	CountNOE       int64
+	CountTotal   int64
+	CountCluster int64
+	CountNON     int64
 }
 
 func (f *Fly) CountTotalInsertions() int64 {
@@ -64,12 +63,11 @@ Compute basic statistics for a fly, ie number of cluster insertions, number of r
 */
 func getFlyStat(femgam []int64, malegam []int64) FlyStatistic {
 	totcount := int64(len(femgam) + len(malegam))
-	cluster, reference, noe := env.CountDiploidInsertions(femgam, malegam)
+	cluster, non := env.CountDiploidInsertions(femgam, malegam)
 	fs := FlyStatistic{
-		CountTotal:     totcount,
-		CountCluster:   cluster,
-		CountReference: reference,
-		CountNOE:       noe,
+		CountTotal:   totcount,
+		CountCluster: cluster,
+		CountNON:     non,
 	}
 	return fs
 }

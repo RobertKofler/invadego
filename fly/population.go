@@ -88,7 +88,7 @@ func updatePhase(newPop *Population, oldPhase Phase) Phase {
 		}
 	} else if oldPhase == SHOTGUN {
 		fixedIns := newPop.GetFixedInsertions()
-		fclu, _, _ := env.CountHaploidInsertions(fixedIns)
+		fclu, _ := env.CountHaploidInsertions(fixedIns)
 		if fclu > 0 { // conditon for inactive -> at least one fixed cluster insertion
 			return INACTIVE
 		}

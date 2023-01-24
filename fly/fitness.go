@@ -13,11 +13,10 @@ type FitnessFunction struct {
 var ff FitnessFunction
 var minimumFitness float64
 
-func (f *FitnessFunction) ComputeFitness(counttotal int64, countcluster int64, countreference int64) float64 {
+func (f *FitnessFunction) ComputeFitness(counttotal int64, countcluster int64) float64 {
 	frc := counttotal // fitness relevant count
 	if f.noxincluins {
-		frc -= countcluster   // if clusterinsertions are not deleterios subtract them
-		frc -= countreference // reference insertions need to be subtracted as well
+		frc -= countcluster // if clusterinsertions are not deleterios subtract them
 	}
 
 	// equation is 1.0- n*x^t
@@ -36,5 +35,5 @@ func SetupFitness(x float64, t float64, noxincluins bool, minFitness float64) {
 
 func GetFitness(f *Fly) float64 {
 	total := f.CountTotalInsertions()
-	return ff.ComputeFitness(total, f.FlyStat.CountCluster, f.FlyStat.CountReference)
+	return ff.ComputeFitness(total, f.FlyStat.CountCluster)
 }

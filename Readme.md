@@ -1,8 +1,11 @@
-InvadeGo - Chassis branch
+InvadeGo - Insertionbias branch
 ================
 
 # Info about branch
-The insertionbias branch performs simulations with TEs having an insertion bias towards or against piRNA clusters; It also allows to compete different families with different insertion biases
+The insertionbias branch performs simulations with TEs having an insertion bias towards or against piRNA clusters; It also allows to compete different families with different insertion biases.
+
+## Historical
+This is a reimplementation of a previous version in Java https://sourceforge.net/p/invade/insertbias/HEAD/tree/
 
 
 ## Assumptions
@@ -11,8 +14,10 @@ The insertionbias branch performs simulations with TEs having an insertion bias 
 * genome may be several chromosomes with some recombination rate
 * simulated regions: piRNA clusters
 * each TE insertion has a position and an insertion bias into piRNA clusters (int64 and byte)
+* the insertion bias ranges from -100 to +100 according to the equation
 * the insertion bias can evolve at some rate (--im)
 * clonal propagation can be simulated
 * two modes of TE silencing by an insertion into a piRNA cluster; i) a cluster insertion silences all insertions, irrespective of the insertion bias ii) a cluster insertion with a given insertion bias silences only those with the same insertion bias
-* TEs may have negative effects; negative effect of insertions in clusters can be switched off
+* TEs may have negative effects;  negative effect of insertions in clusters can be switched off
+* the negative effect of all TEs is identical, irrespective of the insertion bias 
 

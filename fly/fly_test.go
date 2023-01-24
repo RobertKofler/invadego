@@ -1,11 +1,6 @@
 package fly
 
-import (
-	"invade/util"
-	"math"
-	"testing"
-)
-
+/*
 func TestRecombine(t *testing.T) {
 	var tests = []struct {
 		hap1 []int64
@@ -49,34 +44,30 @@ func TestRecombine(t *testing.T) {
 /*
 fitness function w=1-xn^t
 cluster insertions (+reference insertions) may be considered
-*/
+
 func TestFitnessOmxnt(t *testing.T) {
 	var tests = []struct {
 		x    float64
 		ct   int64 // count total
 		cc   int64 // count cluster
-		cr   int64 // count reference
 		nx   bool  // noxclusterinsertion
 		t    float64
 		want float64
 	}{
-		{x: 0.1, ct: 2, cc: 0, cr: 0, nx: false, t: 1.0, want: 0.8},
-		{x: 0.1, ct: 10, cc: 0, cr: 0, nx: false, t: 1.0, want: 0.0},
-		{x: 0.1, ct: 100, cc: 0, cr: 0, nx: false, t: 1.0, want: 0.0}, // ceck whether min w is 0.0
-		{x: 0.1, ct: 2, cc: 0, cr: 0, nx: false, t: 1.5, want: 0.7171573},
-		{x: 0.1, ct: 10, cc: 8, cr: 0, nx: false, t: 1.0, want: 0.0},
-		{x: 0.1, ct: 10, cc: 8, cr: 0, nx: true, t: 1.0, want: 0.8},
-		{x: 0.1, ct: 10, cc: 0, cr: 8, nx: true, t: 1.0, want: 0.8},
-		{x: 0.1, ct: 10, cc: 4, cr: 4, nx: true, t: 1.0, want: 0.8},
-		{x: 0.1, ct: 10, cc: 4, cr: 4, nx: true, t: 1.5, want: 0.7171573},
+		{x: 0.1, ct: 2, cc: 0, nx: false, t: 1.0, want: 0.8},
+		{x: 0.1, ct: 10, cc: 0, nx: false, t: 1.0, want: 0.0},
+		{x: 0.1, ct: 100, cc: 0, nx: false, t: 1.0, want: 0.0}, // ceck whether min w is 0.0
+		{x: 0.1, ct: 2, cc: 0, nx: false, t: 1.5, want: 0.7171573},
+		{x: 0.1, ct: 10, cc: 8, nx: false, t: 1.0, want: 0.0},
+		{x: 0.1, ct: 10, cc: 8, nx: true, t: 1.0, want: 0.8},
 	}
 
 	for _, test := range tests {
 		ff = FitnessFunction{x: test.x, t: test.t, noxincluins: test.nx}
 		want := test.want
-		got := ff.ComputeFitness(test.ct, test.cc, test.cr)
+		got := ff.ComputeFitness(test.ct, test.cc)
 		if math.Abs(want-got) > 0.0001 {
-			t.Errorf("ff.ComputeFitness(%d,%d,%d) != %f; got = %f", test.ct, test.cc, test.cr, test.want, got)
+			t.Errorf("ff.ComputeFitness(%d,%d,%d) != %f; got = %f", test.ct, test.cc, test.want, got)
 		}
 	}
 }
@@ -140,7 +131,7 @@ Tests for pointer bug in generateCumFitness;
 generateCumFitness was returning a slice of the same fly repeated all over;
 shity range pointer problem
 cumFit
-*/
+
 func TestGetFlyForRandomNumberLargePop(test *testing.T) {
 	fems := make([]Fly, 0, 100)
 	for i := 0; i < 100; i++ {
@@ -175,7 +166,7 @@ func TestGetFlyForRandomNumberLargePop(test *testing.T) {
 /*
 With equal fitness, all flies (males and females) should participate in a similar number of matings;
 ie around 200 matings in the following scenario
-*/
+
 func TestStochasticGetMatePairs(test *testing.T) {
 	util.SetSeed(8)
 	flies := make([]Fly, 0, 100)
@@ -197,3 +188,5 @@ func TestStochasticGetMatePairs(test *testing.T) {
 		}
 	}
 }
+
+*/

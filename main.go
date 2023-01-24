@@ -42,7 +42,6 @@ func main() {
 	// Get command line arguments
 
 	usedseed := util.SetSeed(clp.Seed) // set seed of random number generator
-	// TODO other basis stuff, threads
 
 	// Genome
 	util.InvadeLogger.Printf("parsing genome definition %s", clp.Genome)
@@ -62,15 +61,6 @@ func main() {
 		util.InvadeLogger.Printf("parsed piRNA cluster definitions, will use: %v", cluster)
 	}
 
-	// Reference regions
-	util.InvadeLogger.Printf("parsing reference region definition %s", clp.RefRegion)
-	refregion := cmdparser.ParseRegions(clp.RefRegion)
-	if refregion == nil {
-		util.InvadeLogger.Printf("no reference regions were provided - will not simulate reference regions")
-	} else {
-		util.InvadeLogger.Printf("parsed reference regions, will use: %v", refregion)
-	}
-
 	// Recombination rates
 	util.InvadeLogger.Printf("parsing recombination rates %s", clp.RecRate)
 	recrate := cmdparser.ParseRecombination(clp.RecRate)
@@ -81,7 +71,7 @@ func main() {
 	}
 
 	util.InvadeLogger.Printf("Setting up environment; genome, piRNA cluster, reference regions, trigger sites, paramutable sites and the recombination rate")
-	env.SetupEnvironment(genome, cluster, refregion, recrate, clp.MinFitness)
+	env.SetupEnvironment(genome, cluster, recrate, clp.MinFitness)
 	util.InvadeLogger.Print("Setting up jumper")
 	env.SetJumper(clp.U, clp.UC)
 	util.InvadeLogger.Print("Setting up fitness function")

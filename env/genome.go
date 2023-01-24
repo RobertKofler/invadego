@@ -10,7 +10,7 @@ import (
 type Environment struct {
 	genome               *GenomicLandscape
 	clusters             RegionCollection
-	refRegions           RegionCollection
+	nonClusters          RegionCollection
 	recombinationWindows []*RecombinationWindow
 	minimumFitness       float64
 }
@@ -72,6 +72,18 @@ Get a random insertio site in the genome;
 */
 func GetRandomSite() int64 {
 	return int64(rand.Intn(int(env.genome.totalGenome)))
+}
+
+// Get random site WITHIN a piRNA cluster
+func GetRandomClusterSite() int64 {
+	//
+	return 0
+}
+
+// Get random site OUTSIDE of a piRNA cluster
+func GetRandomNonClusterSite() int64 {
+	//
+	return 0
 }
 
 // TODO TEST

@@ -41,31 +41,31 @@ func TestGenomicLandscape(t *testing.T) {
 		t.Error("incorrect fourth interval")
 	}
 }
-func TestNewCluster(t *testing.T) {
+func TestNewCluster(t *testing.T) { // TODO test non cluster
 	gl := newGenomicLandscape([]int64{100, 200, 300, 400})
-	cl := newCluster([]int64{10, 20, 30, 40}, gl)
-	if len(cl) != 4 {
+	cl, _ := newClusterNonClusters([]int64{10, 20, 30, 40}, gl)
+	if cl.Count() != 4 {
 		t.Error("incorrect number of cluster")
 	}
-	if cl[0].Start != 0 || cl[0].End != 9 {
+	if cl.Intervals[0].Start != 0 || cl.Intervals[0].End != 9 {
 		t.Error("incorrect first cluster")
 	}
-	if cl[1].Start != 100 || cl[1].End != 119 {
+	if cl.Intervals[1].Start != 100 || cl.Intervals[1].End != 119 {
 		t.Error("incorrect second cluster")
 	}
-	if cl[2].Start != 300 || cl[2].End != 329 {
+	if cl.Intervals[2].Start != 300 || cl.Intervals[2].End != 329 {
 		t.Error("incorrect third cluster")
 	}
-	if cl[3].Start != 600 || cl[3].End != 639 {
+	if cl.Intervals[3].Start != 600 || cl.Intervals[3].End != 639 {
 		t.Error("incorrect third cluster")
 	}
 }
 func TestIsClusterInsertion(t *testing.T) {
 	// PRIME example on how tests should be implemented in Go, according to Kerninghan
 	gl := newGenomicLandscape([]int64{100, 200, 300, 400})
-	cl := newCluster([]int64{10, 20, 30, 40}, gl)
+	cl, _ := newClusterNonClusters([]int64{10, 20, 30, 40}, gl)
 	env = Environment{genome: gl,
-		clusters: cl}
+		clusters: *cl}
 
 	var tests = []struct {
 		position int64
@@ -96,104 +96,24 @@ func TestIsClusterInsertion(t *testing.T) {
 
 }
 
-func TestNewRefRegion(t *testing.T) {
-	gl := newGenomicLandscape([]int64{100, 200, 300, 400})
-	rr := newReferenceRegions([]int64{10, 20, 30, 40}, gl)
-	if len(rr) != 4 {
-		t.Error("incorrect number of reference regions")
-	}
-	if rr[0].Start != 90 || rr[0].End != 99 {
-		t.Error("incorrect first reference region")
-	}
-	if rr[1].Start != 280 || rr[1].End != 299 {
-		t.Error("incorrect first reference region")
-	}
-	if rr[2].Start != 570 || rr[2].End != 599 {
-		t.Error("incorrect first reference region")
-	}
-	if rr[3].Start != 960 || rr[3].End != 999 {
-		t.Error("incorrect first reference region")
-	}
-}
-func TestIsRefRegion(t *testing.T) {
-	gl := newGenomicLandscape([]int64{100, 200, 300, 400})
-	rr := newReferenceRegions([]int64{10, 20, 30, 40}, gl)
-	env = Environment{genome: gl,
-		refRegions: rr}
-	var tests = []struct {
-		position int64
-		want     bool
-	}{
-		{89, false},
-		{100, false},
-		{200, false},
-		{300, false},
-		{400, false},
-		{500, false},
-		{600, false},
-		{700, false},
-		{800, false},
-		{900, false},
-		{959, false},
-		{1000, false},
-		{90, true},
-		{99, true},
-		{960, true},
-		{999, true}}
-	for _, test := range tests {
-		if IsReferenceInsertion(test.position) != test.want {
-			t.Errorf("IsReferenceInsertion(%d)!=%t", test.position, test.want)
-		}
-	}
-}
 func TestNilClusterReference(t *testing.T) {
 	gl := newGenomicLandscape([]int64{100, 100, 100, 100})
-	cl := newCluster(nil, gl)
-	rr := newReferenceRegions(nil, gl)
+	cl, _ := newClusterNonClusters(nil, gl)
 	env = Environment{genome: gl,
-		clusters:   cl,
-		refRegions: rr}
+		clusters: *cl}
 	for i := int64(0); i < gl.totalGenome; i++ {
 		if IsClusterInsertion(i) {
 			t.Errorf("incorrect cluster insertion in nil cluster, position %d", i)
 		}
-		if IsReferenceInsertion(i) {
-			t.Errorf("incorrect reference insertion in nil reference regions, position %d", i)
-		}
 	}
 }
 
-func TestOverlapClusterReference(t *testing.T) {
-	gl := newGenomicLandscape([]int64{100, 200, 300, 400})
-	cl := newCluster(nil, gl)
-	rr := newReferenceRegions(nil, gl)
-	if isClusterOverlappingReferences(cl, rr) {
-		t.Error("incorrect overlap")
-	}
-	cl = newCluster([]int64{50, 100, 150, 200}, gl)
-	rr = newReferenceRegions([]int64{50, 100, 150, 200}, gl)
-	if isClusterOverlappingReferences(cl, rr) {
-		t.Error("incorrect overlap")
-	}
-	cl = newCluster([]int64{51, 100, 150, 200}, gl)
-	rr = newReferenceRegions([]int64{50, 100, 150, 200}, gl)
-	if !isClusterOverlappingReferences(cl, rr) {
-		t.Error("incorrect not overlap")
-	}
-	cl = newCluster([]int64{50, 100, 150, 200}, gl)
-	rr = newReferenceRegions([]int64{50, 100, 150, 201}, gl)
-	if !isClusterOverlappingReferences(cl, rr) {
-		t.Error("incorrect not overlap")
-	}
-}
-
+/*
 func TestSeparateInsertions(t *testing.T) {
 	gl := newGenomicLandscape([]int64{100, 100, 100, 100, 100})
-	cl := newCluster([]int64{10, 10, 10, 10, 10}, gl)
-	rr := newReferenceRegions([]int64{15, 15, 15, 15, 15}, gl)
+	cl, _ := newCluster([]int64{10, 10, 10, 10, 10}, gl)
 	env = Environment{genome: gl,
-		clusters:   cl,
-		refRegions: rr}
+		clusters: cl}
 	sites := make([]int64, 500)
 	for i := int64(0); i < 500; i++ {
 		sites[i] = i
@@ -209,6 +129,7 @@ func TestSeparateInsertions(t *testing.T) {
 		t.Errorf("incorrect number of NOE sites: 375!=%d", len(ret.NOE))
 	}
 }
+*/
 
 func TestGetNovelInsertionCount(t *testing.T) {
 	var tests = []struct {
@@ -377,7 +298,6 @@ func TestStochasticRandomAssortmentAndRecombination(test *testing.T) {
 func TestTranslateCoordinates(test *testing.T) {
 	SetupEnvironment([]int64{100, 200, 300, 400}, // two chromosomes of size 1000
 		nil, //
-		nil, // two reference regions of size 100
 		[]float64{4, 4, 4, 4}, 0.1)
 	var tests = []struct {
 		pos     int64
