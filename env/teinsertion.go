@@ -1,6 +1,9 @@
 package env
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+)
 
 type TEInsertion byte
 
@@ -26,4 +29,36 @@ func (te TEInsertion) BiasFraction() float64 {
 		panic(fmt.Sprintf("Invalid insertion bias, must be between -1.0 and 1.0, got %f", bias))
 	}
 	return bias
+}
+
+/*
+introduces a stepwise mutation of the insertion bias; either randomly increase or decresase it by 1
+*/
+func (te TEInsertion) Mutate() TEInsertion {
+
+	if rand.Float64() < 0.5 {
+		return te.increase()
+
+	} else {
+		return te.decrease()
+	}
+
+}
+
+func (te TEInsertion) increase() TEInsertion {
+	current := byte(te)
+	// solely increase if the maximum (200) has not yet been reached
+	if current < 200 {
+		current++
+	}
+	return TEInsertion(current)
+}
+
+func (te TEInsertion) decrease() TEInsertion {
+	current := byte(te)
+	// solely decrease if the minimum (0) has not yet been reached
+	if current > 0 {
+		current--
+	}
+	return TEInsertion(current)
 }

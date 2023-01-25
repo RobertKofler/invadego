@@ -90,9 +90,13 @@ func GetRandomNonClusterSite() int64 {
 }
 
 /*
-Get threshold for random number between 0 and 1
+Insertion probability into a piRNA cluster when the insertion bias is considered
+with a bias of 0 -> p=fc (size of the cluster eg 3%)
+with a bias of -1 -> p=0
+with a bias of 1 -> p=1
+acts as the threshold for random number between 0 and 1
 */
-func GetThresholdForBias(insertionbias float64) float64 {
+func GetInsertionProbabilityWithBias(insertionbias float64) float64 {
 	/*
 			Old java code
 			    // if insbias =0.0 clusterFitness=0.5
@@ -118,7 +122,7 @@ func GetThresholdForBias(insertionbias float64) float64 {
 func GetSitesForBias(numberofsites int64, insertionbias float64) []int64 {
 	//
 	sites := make([]int64, numberofsites)
-	threshold := GetThresholdForBias(insertionbias)
+	threshold := GetInsertionProbabilityWithBias(insertionbias)
 	for i := 0; i < int(numberofsites); i++ {
 		if rand.Float64() < threshold {
 			// cluster

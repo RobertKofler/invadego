@@ -170,6 +170,56 @@ func TestPositionTranslationNonCluster(t *testing.T) {
 		}
 	}
 }
+
+func TestTEBiasIncrease(test *testing.T) {
+	var tests = []struct {
+		start     byte
+		wantend   byte
+		wantstart byte
+	}{
+		{4, 5, 4},
+		{0, 1, 0},
+		{199, 200, 199},
+		{200, 200, 200}, // no increase at maximum
+	}
+
+	for _, t := range tests {
+		ste := TEInsertion(t.start)
+		ete := ste.increase()
+		if byte(ste) != byte(t.wantstart) {
+			test.Errorf("Insertionbias of parent changed (%d)!=%d", ste, t.wantstart)
+		}
+		if byte(ete) != byte(t.wantend) {
+			test.Errorf("Insertionbias of child incorrect (%d)!=%d", ete, t.wantend)
+		}
+	}
+}
+
+func TestTEBiasDecrease(test *testing.T) {
+	var tests = []struct {
+		start     byte
+		wantend   byte
+		wantstart byte
+	}{
+		{4, 3, 4},
+		{0, 0, 0},
+		{1, 0, 1},
+		{199, 198, 199},
+		{200, 199, 200}, // no increase at maximum
+	}
+
+	for _, t := range tests {
+		ste := TEInsertion(t.start)
+		ete := ste.decrease()
+		if byte(ste) != byte(t.wantstart) {
+			test.Errorf("Insertionbias of parent changed (%d)!=%d", ste, t.wantstart)
+		}
+		if byte(ete) != byte(t.wantend) {
+			test.Errorf("Insertionbias of child incorrect (%d)!=%d", ete, t.wantend)
+		}
+	}
+}
+
 func TestNilClusterReference(t *testing.T) {
 	gl := newGenomicLandscape([]int64{100, 100, 100, 100})
 	cl, ncl := newClusterNonClusters(nil, gl)
