@@ -17,10 +17,13 @@ type CommandLineParameters struct {
 	UC              float64 // transposition rate in the presence of piRNAs
 	X               float64 // deleterious effect of a TE insertion
 	T               float64 // exponential deleterious effect of a TE insertion
+	MuBias          float64 // probability that a given TE insertion is mutating and changing its bias
 	Steps           int64   // report output each Steps generations
 	Generations     int64
+	Clonal          bool
 	BasePop         string
 	Noxcluins       bool
+	Selectivecluins bool // selective cluster insertions, eg an insertion of bias 100 only silences insertions with the same bias
 	SampleID        string
 	ReplicateOffset int64
 	Replicates      int64
@@ -41,7 +44,7 @@ func ParseCommandLine() *CommandLineParameters {
 	popsize := flag.Int64("N", -1, "mandatory; the population size")
 	genome := flag.String("genome", "", "mandatory; the genomic landscape; e.g. 'MB:2,3,1,5' specifiies four chromosomes with sizes of 2,3,1,5 Mb")
 	generations := flag.Int64("gen", -1, "mandatory; run the simulations for '--gen' generations")
-	basepop := flag.String("basepop", "", "mandatory; the segregating insertions in the starting population; either 'count(bias),count(bias)' or file-path; see manual")
+	basepop := flag.String("basepop", "", "mandatory; the segregating insertions in the starting population; either 'count(bias),count(bias)' or file-path; see manual") //manual
 
 	// Optional parameters
 	transrate := flag.Float64("u", 0.0, "the transposition rate")
@@ -51,8 +54,11 @@ func ParseCommandLine() *CommandLineParameters {
 	x := flag.Float64("x", 0.0, "the deleterious effect of a single TE insertions")
 	t := flag.Float64("t", 1.0, "the synergistic effect of TE insertions")
 	noxcluins := flag.Bool("no-x-cluins", false, "cluster insertions incur no negative effects")
+	selectivcluins := flag.Bool("selective-cluins", false, "cluster insertions with a given bias will only suppress insertions with the same bias") // manual
 	//ignoreFailed := flag.Bool("ignored-failed", false, "ignore invasions where the TE did not get established")
+	clonal := flag.Bool("clonal", false, "clonal propagation; no recombination, no mating")
 	transrateResidual := flag.Float64("uc", 0.0, "the transposition rate in the presence of piRNAs")
+	biasmutrate := flag.Float64("mu-bias", 0.0, "mutation rate of the bias, the probability that a given TE insertion will mutate its bias; all genomic insertions are considered") // manual
 	steps := flag.Int64("steps", 20, "report the output at each '--steps' generations")
 	replicates := flag.Int64("rep", 1, "the number of replicates")
 	reploffset := flag.Int64("replicate-offset", 1, "starting index of the replicates; may be used for pseudo-parallelization)")
@@ -83,6 +89,9 @@ func ParseCommandLine() *CommandLineParameters {
 	if *t < 1.0 {
 		panic("Provide a suitable epistatic effect of TEs --t; must be larger or equal to 1.0")
 	}
+	if *biasmutrate < 0.0 {
+		panic("Provide a suitable mutation rate of the bias; must be larger or equal to 0.0")
+	}
 	if *genome == "" {
 		panic("Provide a suitable genome --genome")
 	}
@@ -107,8 +116,11 @@ func ParseCommandLine() *CommandLineParameters {
 		UC:              *transrateResidual,
 		X:               *x,
 		T:               *t,
+		MuBias:          *biasmutrate,
 		Steps:           *steps,
 		Noxcluins:       *noxcluins,
+		Selectivecluins: *selectivcluins,
+		Clonal:          *clonal,
 		ReplicateOffset: *reploffset,
 		Seed:            *seed,
 		Threads:         *threads,

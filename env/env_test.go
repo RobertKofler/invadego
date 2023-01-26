@@ -342,21 +342,28 @@ func TestSeparateInsertions(t *testing.T) {
 
 func TestGetNovelInsertionCount(t *testing.T) {
 	var tests = []struct {
-		tot    int64
-		cluins int64 // number of cluster insertions
-		jump   Jumper
-		want   float64
+		tot  int64
+		totc int64 // number of cluster insertions
+		scc  int64
+		jump Jumper
+		want float64
 	}{
-		{tot: 10, cluins: 0, jump: Jumper{u: 0.1, uc: 0.0}, want: 1.0},
-		{tot: 10, cluins: 1, jump: Jumper{u: 0.1, uc: 0.0}, want: 0.0},
-		{tot: 100, cluins: 0, jump: Jumper{u: 0.1, uc: 0.0}, want: 10.0},
-		{tot: 100, cluins: 1, jump: Jumper{u: 0.1, uc: 0.0}, want: 0.0},
-		{tot: 100, cluins: 1, jump: Jumper{u: 0.1, uc: 0.01}, want: 1.0},
+		{tot: 10, totc: 0, jump: Jumper{u: 0.1, uc: 0.0}, want: 1.0},
+		{tot: 10, totc: 1, jump: Jumper{u: 0.1, uc: 0.0}, want: 0.0},
+		{tot: 100, totc: 0, jump: Jumper{u: 0.1, uc: 0.0}, want: 10.0},
+		{tot: 100, totc: 1, jump: Jumper{u: 0.1, uc: 0.0}, want: 0.0},
+		{tot: 100, totc: 1, jump: Jumper{u: 0.1, uc: 0.01}, want: 1.0},
+		// selective cluster insertions test
+		{tot: 10, totc: 1, jump: Jumper{u: 0.1, uc: 0.0, sci: true}, want: 1.0},
+		{tot: 10, totc: 1, scc: 1, jump: Jumper{u: 0.1, uc: 0.0, sci: true}, want: 0.0},
+		{tot: 10, totc: 0, scc: 1, jump: Jumper{u: 0.1, uc: 0.0, sci: true}, want: 0.0},
+		{tot: 10, totc: 1, scc: 1, jump: Jumper{u: 0.1, uc: 0.0, sci: false}, want: 0.0},
+		{tot: 10, totc: 0, scc: 1, jump: Jumper{u: 0.1, uc: 0.0, sci: false}, want: 1.0},
 	}
 
 	for _, test := range tests {
 		ju := test.jump
-		got := ju.getNovelInsertionCount(test.tot, test.cluins)
+		got := ju.getNovelInsertionCount(test.tot, test.scc, test.totc)
 		dif := math.Abs(test.want - got)
 		if dif > 0.00001 {
 			t.Errorf("getNovelInsertionCount(); got %f wanted %f", got, test.want)
@@ -478,7 +485,7 @@ func TestStochasticRandomAssortmentAndRecombination(test *testing.T) {
 func TestTranslateCoordinates(test *testing.T) {
 	SetupEnvironment([]int64{100, 200, 300, 400}, // two chromosomes of size 1000
 		nil, //
-		[]float64{4, 4, 4, 4}, 0.1)
+		[]float64{4, 4, 4, 4}, 0.1, 0.0)
 	var tests = []struct {
 		pos     int64
 		wantchr int64

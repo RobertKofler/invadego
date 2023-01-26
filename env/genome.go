@@ -13,6 +13,7 @@ type Environment struct {
 	nonClusters          RegionCollection
 	recombinationWindows []*RecombinationWindow
 	minimumFitness       float64
+	mubias               float64
 }
 
 var env Environment
@@ -120,6 +121,7 @@ func getProbForBiasAndClusi(insertionbias float64, clufrac float64) float64 {
 	return threshold
 }
 
+// get novel insertion sites for a given bias (-1.0 to 1.0)
 func GetSitesForBias(numberofsites int64, insertionbias float64) []int64 {
 	//
 

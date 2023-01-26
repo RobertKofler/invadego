@@ -59,6 +59,20 @@ func (p *Population) GetNextGeneration() *Population {
 	return &newPop
 }
 
+func (p *Population) GetNextGenerationClonal() *Population {
+	matePairs := getMatePairs(p.Flies, int64(len(p.Flies)))
+	nextGen := make([]Fly, len(matePairs))
+	for i, mp := range matePairs {
+		nextGen[i] = *mp.mate1.GetClone() // simple hack, i just take the first fly, and get a clonal offspring
+	}
+	newPop := Population{Flies: nextGen}
+	newPhase := updatePhase(&newPop, p.phase)
+	newPop.phase = newPhase
+	newMinFit := updateFitness(&newPop, p.minFit)
+	newPop.minFit = newMinFit
+	return &newPop
+}
+
 /*
 Find the novel minimum Fitness;
 Does the new population have a lower average fitness than the previous one?

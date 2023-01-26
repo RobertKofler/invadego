@@ -29,6 +29,21 @@ func (f *Fly) CountTotalInsertions() int64 {
 	return int64(len(f.Hap1) + len(f.Hap2))
 }
 
+func (f *Fly) GetClone() *Fly {
+	malegam := make(map[int64]env.TEInsertion)
+	femgam := make(map[int64]env.TEInsertion)
+	for k, v := range f.Hap1 {
+		malegam[k] = v
+	}
+	for k, v := range f.Hap2 {
+		femgam[k] = v
+	}
+
+	malegam = env.InsertNewTranspositionSites(malegam, f.FlyStat.TotMap, f.FlyStat.ClusterMap, f.FlyStat.CountCluster)
+	femgam = env.InsertNewTranspositionSites(femgam, f.FlyStat.TotMap, f.FlyStat.ClusterMap, f.FlyStat.CountCluster)
+	return NewFly(malegam, femgam)
+}
+
 /*
 Get a gamete from the Fly;
 First recombination among the two haplotypes will take place;
@@ -46,17 +61,9 @@ func (f *Fly) GetGamete() map[int64]env.TEInsertion {
 	// First get recombined game
 	gamete := f.getRecombinedGamete()
 
-	// Second introduce novel transposition events
-	counttotal := int64(len(f.Hap1) + len(f.Hap2))
+	// insert novel transposition sites into the gamete
+	gamete = env.InsertNewTranspositionSites(gamete, f.FlyStat.TotMap, f.FlyStat.ClusterMap, f.FlyStat.CountCluster)
 
-	// the function generates novel transposition events for a HAPLOID genome, i.e. a gamete
-	// if the number of cluster insertions > 0 than we have piRNAs and thus no novel insertions (zero is default)
-	newsites := env.GetNewTranspositionSites(counttotal, f.FlyStat.CountCluster)
-
-	//TODO delete and implement newsites
-	newsites = append(newsites, 0)
-
-	// merge old and new insertion sites, make them unique and sort
 	return gamete
 
 }

@@ -104,7 +104,7 @@ func TestParseGenome(t *testing.T) {
 
 func TestLoadGenome(t *testing.T) {
 	util.SetSeed(8)
-	env.SetupEnvironment([]int64{10000, 10000}, []int64{0, 0}, []float64{1, 1}, 0.1)
+	env.SetupEnvironment([]int64{10000, 10000}, []int64{0, 0}, []float64{1, 1}, 0.1, 0.0)
 	var tests = []struct {
 		popsize       int64
 		basestring    string

@@ -31,14 +31,14 @@ func main_profile() {
 func main() {
 
 	// VERSION NUMBER
-	version := "0.2.3"
+	version := "0.1.2"
 
 	clp := cmdparser.ParseCommandLine()
 	if clp.Silent {
 		util.InvadeLogger.SetOutput(ioutil.Discard)
 	}
 
-	util.InvadeLogger.Println(fmt.Sprintf("Welcome to InvadeGo %s", version))
+	util.InvadeLogger.Println(fmt.Sprintf("Welcome to InvadeGo InsBias %s", version))
 	// Get command line arguments
 
 	usedseed := util.SetSeed(clp.Seed) // set seed of random number generator
@@ -71,9 +71,9 @@ func main() {
 	}
 
 	util.InvadeLogger.Printf("Setting up environment; genome, piRNA cluster, reference regions, trigger sites, paramutable sites and the recombination rate")
-	env.SetupEnvironment(genome, cluster, recrate, clp.MinFitness)
+	env.SetupEnvironment(genome, cluster, recrate, clp.MinFitness, clp.MuBias)
 	util.InvadeLogger.Print("Setting up jumper")
-	env.SetJumper(clp.U, clp.UC)
+	env.SetJumper(clp.U, clp.UC, clp.Selectivecluins)
 	util.InvadeLogger.Print("Setting up fitness function")
 	fly.SetupFitness(clp.X, clp.T, clp.Noxcluins, clp.MinFitness)
 	util.InvadeLogger.Print("Setting up output manager")
@@ -82,8 +82,8 @@ func main() {
 	// Simulate the thing
 	util.InvadeLogger.Print("Commencing simulations")
 	outman.WriteInfo(clp.ArgString, usedseed, version)
-	sim.SimulateInvasions(clp.BasePop, clp.Popsize, clp.Replicates, clp.Generations)
+	sim.SimulateInvasions(clp.BasePop, clp.Popsize, clp.Replicates, clp.Generations, clp.Clonal)
 	outman.Done() // let the output manager know the simulations are done
-	util.InvadeLogger.Print("Done - thank you for using InvadeGo")
+	util.InvadeLogger.Print("Done - thank you for using InvadeGo InsBias")
 
 }
