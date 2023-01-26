@@ -41,7 +41,7 @@ func ParseCommandLine() *CommandLineParameters {
 	popsize := flag.Int64("N", -1, "mandatory; the population size")
 	genome := flag.String("genome", "", "mandatory; the genomic landscape; e.g. 'MB:2,3,1,5' specifiies four chromosomes with sizes of 2,3,1,5 Mb")
 	generations := flag.Int64("gen", -1, "mandatory; run the simulations for '--gen' generations")
-	basepop := flag.String("basepop", "", "mandatory; the segregating insertions in the starting population; either number (e.g. 100) or file")
+	basepop := flag.String("basepop", "", "mandatory; the segregating insertions in the starting population; either 'count(bias),count(bias)' or file-path; see manual")
 
 	// Optional parameters
 	transrate := flag.Float64("u", 0.0, "the transposition rate")

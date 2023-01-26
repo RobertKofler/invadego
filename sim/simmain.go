@@ -7,12 +7,12 @@ import (
 )
 
 /*
- perform the simulations;
- multiple replicates and generations
+perform the simulations;
+multiple replicates and generations
 */
 func SimulateInvasions(basepop string, popsize int64, replicates int64, generation int64) {
 	for k := int64(0); k < replicates; k++ {
-		pop := cmdparser.ParseBasePop(basepop, popsize)
+		pop := cmdparser.ParseBasePop(basepop, popsize) // reload base population; can not just reuse old one, needs to be novel random insertion sites!
 		status := pop.GetStatus()
 		outman.RecordPopulation(pop, k, 0, status)
 		if status != fly.OK {

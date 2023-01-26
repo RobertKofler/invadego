@@ -2,10 +2,7 @@ package fly
 
 import (
 	"invade/env"
-	"invade/util"
 )
-
-type Sex int64
 
 // count the total number of flies
 // ToDo problematic; needs to be reset for each replicate;
@@ -14,15 +11,18 @@ var FLYCOUNTER int64 = 1
 
 type Fly struct {
 	FlyNumber int64 // each fly has a number; starting at 1
-	Hap1      []int64
-	Hap2      []int64
+	Hap1      map[int64]env.TEInsertion
+	Hap2      map[int64]env.TEInsertion
 	Fitness   float64
 	FlyStat   *FlyStatistic
 }
 type FlyStatistic struct {
 	CountTotal   int64
 	CountCluster int64
-	CountNON     int64
+	CountNoc     int64
+	TotMap       map[env.TEInsertion]int64
+	ClusterMap   map[env.TEInsertion]int64
+	NocMap       map[env.TEInsertion]int64
 }
 
 func (f *Fly) CountTotalInsertions() int64 {
@@ -39,7 +39,7 @@ iii) the transposition rate.
 The number and position of new insertions will be random.
 Multiple insertions at the same site will be ignored.
 */
-func (f *Fly) GetGamete() []int64 {
+func (f *Fly) GetGamete() map[int64]env.TEInsertion {
 	if f.FlyStat == nil {
 		panic("Fly statistics not initialized")
 	}
@@ -53,21 +53,27 @@ func (f *Fly) GetGamete() []int64 {
 	// if the number of cluster insertions > 0 than we have piRNAs and thus no novel insertions (zero is default)
 	newsites := env.GetNewTranspositionSites(counttotal, f.FlyStat.CountCluster)
 
+	//TODO delete and implement newsites
+	newsites = append(newsites, 0)
+
 	// merge old and new insertion sites, make them unique and sort
-	return util.MergeUniqueSort(gamete, newsites)
+	return gamete
 
 }
 
 /*
 Compute basic statistics for a fly, ie number of cluster insertions, number of reference insertions, total number of insertions etc
 */
-func getFlyStat(femgam []int64, malegam []int64) FlyStatistic {
-	totcount := int64(len(femgam) + len(malegam))
-	cluster, non := env.CountDiploidInsertions(femgam, malegam)
+func getFlyStat(femgam map[int64]env.TEInsertion, malegam map[int64]env.TEInsertion) FlyStatistic {
+
+	totc, cc, nocc, totmap, cmap, nocmap := env.CountDiploidInsertions(femgam, malegam)
 	fs := FlyStatistic{
-		CountTotal:   totcount,
-		CountCluster: cluster,
-		CountNON:     non,
+		CountTotal:   totc,
+		CountCluster: cc,
+		CountNoc:     nocc,
+		ClusterMap:   cmap,
+		NocMap:       nocmap,
+		TotMap:       totmap,
 	}
 	return fs
 }
@@ -79,7 +85,7 @@ Homozygous insertions are only present once.
 Output is sorted.
 */
 func (f *Fly) GetInsertionSites() []int64 {
-	return util.MergeUniqueSort(f.Hap1, f.Hap2)
+	return env.MergeUniqueSort(f.Hap1, f.Hap2)
 }
 
 /*
@@ -87,23 +93,28 @@ Recombine the two haplotypes of a fly (f.hap1 and f.hap2) given a sorted list of
 Implements the RECOMBINATION FIRST principle. Eg if a TE and a rec.event are at site 20, than recombination is done first, and the TE is used second.
 (Rec first is important to enable random assortment of the first chromosome!)
 */
-func (f *Fly) recombine(recombinationEvents []int64) []int64 {
-	hap1 := f.Hap1
-	hap2 := f.Hap2
+func (f *Fly) recombine(recombinationEvents []int64) map[int64]env.TEInsertion {
+	hap1 := env.GetSortedKeys(f.Hap1)
+	hap2 := env.GetSortedKeys(f.Hap2)
 	ihap1 := 0
 	ihap2 := 0
 	ishap1 := true
-	newhap := make([]int64, 0, len(hap1))
+	newhap := make(map[int64]env.TEInsertion)
+
 	for _, r := range recombinationEvents {
 		for ihap1 < len(hap1) && hap1[ihap1] < r {
 			if ishap1 {
-				newhap = append(newhap, hap1[ihap1])
+				pos := hap1[ihap1]
+				te := f.Hap1[pos]
+				newhap[pos] = te
 			}
 			ihap1++
 		}
 		for ihap2 < len(hap2) && hap2[ihap2] < r {
 			if !ishap1 {
-				newhap = append(newhap, hap2[ihap2])
+				pos := hap2[ihap2]
+				te := f.Hap2[pos]
+				newhap[pos] = te
 			}
 			ihap2++
 		}
@@ -112,12 +123,16 @@ func (f *Fly) recombine(recombinationEvents []int64) []int64 {
 	// Deal with the last elements
 	for _ = ihap1; ihap1 < len(hap1); ihap1++ {
 		if ishap1 {
-			newhap = append(newhap, hap1[ihap1])
+			pos := hap1[ihap1]
+			te := f.Hap1[pos]
+			newhap[pos] = te
 		}
 	}
 	for _ = ihap2; ihap2 < len(hap2); ihap2++ {
 		if !ishap1 {
-			newhap = append(newhap, hap2[ihap2])
+			pos := hap2[ihap2]
+			te := f.Hap2[pos]
+			newhap[pos] = te
 		}
 	}
 	return newhap
@@ -127,7 +142,7 @@ func (f *Fly) recombine(recombinationEvents []int64) []int64 {
 Get a recombined gamete for the two haplotypes of a fly.
 Recombination events are random, according to environment settings (i.e. chromosomes, rec.rate)
 */
-func (f *Fly) getRecombinedGamete() []int64 {
+func (f *Fly) getRecombinedGamete() map[int64]env.TEInsertion {
 
 	recsites := env.GetRecombinationEvents()
 	rec := f.recombine(recsites)
@@ -138,7 +153,7 @@ func (f *Fly) getRecombinedGamete() []int64 {
 Setup a new Fly; given the gametes, the sex, and the maternal piRNAs;
 Will i) merge gametes ii) compute stats iii) determine piRNA status iv) compute fitness v) increase FLYCOUNTER
 */
-func NewFly(femgam []int64, malegam []int64) *Fly {
+func NewFly(femgam map[int64]env.TEInsertion, malegam map[int64]env.TEInsertion) *Fly {
 	// should give random numbers 0 or 1, ie male female
 	fstat := getFlyStat(femgam, malegam)
 	// multithreading lock and unlock

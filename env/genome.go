@@ -97,30 +97,32 @@ with a bias of 1 -> p=1
 acts as the threshold for random number between 0 and 1
 */
 func GetInsertionProbabilityWithBias(insertionbias float64) float64 {
-	/*
-			Old java code
-			    // if insbias =0.0 clusterFitness=0.5
-		        // if insbias =1.0 clusterFitness=1.0
-		        // if insbias =-1.0 clusterFitness =0
-		        float clusterFitness = (insbias + 1.0F) / 2.0F;
-		        float genomeFitness = 1.0F - clusterFitness;
-		        float totFit = clufrac * clusterFitness + genomeFitness * (1.0F - clufrac);
-
-		        float threshold = clufrac * clusterFitness / totFit;
-		        return threshold;
-	*/
 	clusterfrac := float64(env.clusters.Size()) / float64(env.genome.totalGenome)
-	genomefrac := 1 - clusterfrac
+	return getProbForBiasAndClusi(insertionbias, clusterfrac)
+}
+
+// helper function for insertion bias, allows for more easy debugging
+func getProbForBiasAndClusi(insertionbias float64, clufrac float64) float64 {
+	if insertionbias < -1.0 || insertionbias > 1.0 {
+		panic(fmt.Sprintf("invalid insertion bias, must be between -1.0 and 1.0; got %f", insertionbias))
+	}
+	if clufrac < 0.0 || clufrac > 1.0 {
+		panic(fmt.Sprintf("invalid cluster fraction; must be between 0.0 and 1.0; got %f", clufrac))
+	}
+
+	genomefrac := 1 - clufrac
 	clusterfit := (insertionbias + 1.0) / 2.0
 	genomefit := 1.0 - clusterfit
-	totalfit := clusterfrac*clusterfit + genomefrac*genomefit
+	totalfit := clufrac*clusterfit + genomefrac*genomefit
 
-	threshold := clusterfrac * clusterfit / totalfit
+	threshold := clufrac * clusterfit / totalfit
 
 	return threshold
 }
+
 func GetSitesForBias(numberofsites int64, insertionbias float64) []int64 {
 	//
+
 	sites := make([]int64, numberofsites)
 	threshold := GetInsertionProbabilityWithBias(insertionbias)
 	for i := 0; i < int(numberofsites); i++ {

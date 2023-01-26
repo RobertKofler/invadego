@@ -158,7 +158,7 @@ func SeparateInsertions(positions []int64) InsertionCollection {
 /*
 for a haploid genome, count the number of the following insertions "cluster and non-cluster";
 return in the given order
-*/
+
 func CountHaploidInsertions(positions []int64) (int64, int64) {
 	var cluster, noe int64
 	// Two steps
@@ -176,16 +176,73 @@ func CountHaploidInsertions(positions []int64) (int64, int64) {
 	}
 	return cluster, noe
 }
+*/
 
 /*
 for a diploid genome, count the number of the following insertions "cluster, non-cluster ";
 return in the given order
 */
-func CountDiploidInsertions(hap1 []int64, hap2 []int64) (int64, int64) {
-	cluster1, noe1 := CountHaploidInsertions(hap1)
-	cluster2, noe2 := CountHaploidInsertions(hap2)
-	return cluster1 + cluster2,
-		noe1 + noe2
+func CountDiploidInsertions(hap1 map[int64]TEInsertion, hap2 map[int64]TEInsertion) (int64, int64, int64, map[TEInsertion]int64, map[TEInsertion]int64, map[TEInsertion]int64) {
+	totc1, cc1, nocc1, totmap1, cmap1, nocmap1 := CountHaploidInsertions(hap1)
+	totc2, cc2, nocc2, totmap2, cmap2, nocmap2 := CountHaploidInsertions(hap2)
+	return totc1 + totc2, cc1 + cc2, nocc1 + nocc2,
+		mergeTEInsertionCountmap(totmap1, totmap2),
+		mergeTEInsertionCountmap(cmap1, cmap2),
+		mergeTEInsertionCountmap(nocmap1, nocmap2)
+}
+
+func mergeTEInsertionCountmap(m1 map[TEInsertion]int64, m2 map[TEInsertion]int64) map[TEInsertion]int64 {
+	toret := make(map[TEInsertion]int64)
+	for k, v := range m1 {
+		toret[k] += v
+	}
+	for k, v := range m2 {
+		toret[k] += v
+	}
+	return toret
+
+}
+
+/*
+totalcount, clustercount, no-cluster count, total map, cluster map, no-cluster map
+*/
+func CountHaploidInsertions(hap1 map[int64]TEInsertion) (int64, int64, int64, map[TEInsertion]int64, map[TEInsertion]int64, map[TEInsertion]int64) {
+	totc, cc, nocc := int64(0), int64(0), int64(0)
+	totmap, cmap, nocmap := make(map[TEInsertion]int64), make(map[TEInsertion]int64), make(map[TEInsertion]int64)
+	for pos, te := range hap1 {
+		if pos >= env.genome.totalGenome {
+			panic(fmt.Sprintf("position outside genome %d", pos))
+		}
+		totc++
+		totmap[te]++
+		if IsClusterInsertion(pos) {
+			cc++
+			cmap[te]++
+		} else {
+
+			nocc++
+			nocmap[te]++
+		}
+
+	}
+	return totc, cc, nocc, totmap, cmap, nocmap
+}
+
+func JustCountHaploidInsertions(hap1 []int64) (int64, int64, int64) {
+	totc, cc, nocc := int64(0), int64(0), int64(0)
+	for _, pos := range hap1 {
+		if pos >= env.genome.totalGenome {
+			panic(fmt.Sprintf("position outside genome %d", pos))
+		}
+		totc++
+		if IsClusterInsertion(pos) {
+			cc++
+		} else {
+			nocc++
+		}
+
+	}
+	return totc, cc, nocc
 }
 
 /*

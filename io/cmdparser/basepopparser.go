@@ -1,22 +1,23 @@
 package cmdparser
 
 import (
-	"bufio"
 	"fmt"
 	"invade/env"
 	"invade/fly"
-	"invade/util"
 	"math/rand"
-	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
 
 func ParseBasePop(basepop string, popsize int64) *fly.Population {
-	if inscount, err := strconv.ParseInt(basepop, 10, 64); err == nil {
-		return loadPopulation(inscount, popsize)
+
+	if strings.HasPrefix(basepop, "file:") {
+		// TODO implement file loading
+		return loadPopulation(basepop, popsize)
+
 	} else {
-		return loadPopulationFromFile(basepop, popsize)
+		return loadPopulation(basepop, popsize)
 	}
 }
 
@@ -25,20 +26,26 @@ Load a fly population of a given popsize;
 randomly inserts 'inscount' TE insertions;
 multiple insertions at the same site are ignored
 */
-func loadPopulation(inscount int64, popsize int64) *fly.Population {
-	fhaps := make([][]int64, 2*popsize)
+func loadPopulation(basepop string, popsize int64) *fly.Population {
+	fhaps := make([]map[int64]env.TEInsertion, 2*popsize)
 	for i := int64(0); i < 2*popsize; i++ {
-		fhaps[i] = []int64{}
+		fhaps[i] = make(map[int64]env.TEInsertion)
 	}
-	for i := int64(0); i < inscount; i++ {
-		ri := rand.Int63n(2 * popsize)
-		genpos := env.GetRandomSite()
-		fhaps[ri] = append(fhaps[ri], genpos)
+	parsed := parseBasepopString(basepop)
+	for _, ic := range parsed { // insertion class
+		teinsertion := env.TEInsertion(ic.bias)
+		biasf := teinsertion.BiasFraction()
+		inssites := env.GetSitesForBias(ic.count, biasf)
+		for _, is := range inssites {
+			ri := rand.Int63n(2 * popsize)
+			fhaps[ri][is] = teinsertion
+
+		}
 	}
 	flies := make([]fly.Fly, popsize)
 	for i := int64(0); i < popsize; i++ {
-		hap1 := util.UniqueSort(fhaps[2*i])
-		hap2 := util.UniqueSort(fhaps[2*i+1])
+		hap1 := fhaps[2*i]
+		hap2 := fhaps[2*i+1]
 		nf := fly.NewFly(hap1, hap2)
 		flies[i] = *nf
 	}
@@ -47,11 +54,50 @@ func loadPopulation(inscount int64, popsize int64) *fly.Population {
 }
 
 /*
+parse base population string; eg 100(-100),200(0);
+code nice example on how to use anonymous struct, but uff quite cumbersome; note bias = value+100 (byte can not be negative)
+*/
+func parseBasepopString(basepop string) []struct {
+	count int64
+	bias  byte
+} {
+	reg := regexp.MustCompile(`(?P<Count>\d+)\((?P<Bias>-?\d+)\)`)
+	var toret = make([]struct {
+		count int64
+		bias  byte
+	}, 0)
+
+	toparse := []string{basepop}
+	if strings.Contains(basepop, ",") {
+		toparse = strings.Split(basepop, ",")
+	}
+
+	for _, sus := range toparse {
+		match := reg.FindStringSubmatch(sus)
+		count, _ := strconv.ParseInt(match[1], 10, 64)
+		bias, _ := strconv.ParseInt(match[2], 10, 64)
+		if bias < -100 || bias > 100 {
+			panic(fmt.Sprintf("Invalid insertion bias, must be between -100 and 100, got %d", bias))
+		}
+		if count < 0 {
+			panic(fmt.Sprintf("Invalid insertion count, must not be smaller than zero; got %d", count))
+		}
+		bias += 100
+		toret = append(toret, struct {
+			count int64
+			bias  byte
+		}{count: count, bias: byte(bias)})
+
+	}
+	return toret
+}
+
+/*
 Example file
 500; 1 100 200 400; 0 5 5000
 250; 2 100 400;
 250;;
-*/
+
 func loadPopulationFromFile(file string, targetpopsize int64) *fly.Population {
 	flies := make([]fly.Fly, 0)
 	readFile, err := os.Open(file)
@@ -101,6 +147,8 @@ func loadPopulationFromFile(file string, targetpopsize int64) *fly.Population {
 	}
 	return fly.InitializePopulation(flies)
 }
+
+*/
 
 func sslice2islice(sslice []string) []int64 {
 	toret := make([]int64, 0)

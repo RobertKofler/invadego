@@ -11,10 +11,10 @@ func (p *Population) GetInsertionSites() []int64 {
 	// hash, get the unique sites
 	var insertionsites = make(map[int64]bool)
 	for _, fly := range p.Flies {
-		for _, is := range fly.Hap1 {
+		for is, _ := range fly.Hap1 {
 			insertionsites[is] = true
 		}
-		for _, is := range fly.Hap2 {
+		for is, _ := range fly.Hap2 {
 			insertionsites[is] = true
 		}
 	}
@@ -30,16 +30,18 @@ func (p *Population) GetInsertionSites() []int64 {
 }
 
 /*
-Get the fixed insertions in a population; the positions are provided
+Get the fixed insertions in a population; the positions are provided;
+NOTE: if individuals have an insertion at the same site but with DIFFERENT insertion biases, it still counts as fixed;
+This may be unwanted behaviour if statistics are required for each insertion bias separately
 */
 func (p *Population) GetFixedInsertions() []int64 {
 	// hash, get the unique sites
 	var insertionsites = make(map[int64]int64)
 	for _, fly := range p.Flies {
-		for _, is := range fly.Hap1 {
+		for is, _ := range fly.Hap1 {
 			insertionsites[is]++
 		}
-		for _, is := range fly.Hap2 {
+		for is, _ := range fly.Hap2 {
 			insertionsites[is]++
 		}
 	}
@@ -103,15 +105,15 @@ func (p *Population) GetAverageInsertions() float64 {
 }
 
 /*
-Get the average population frequency of all TE insertions
+Get the average population frequency of all TE insertions; heterogenous sites with different insertion biases are not discerned
 */
 func (p *Population) GetMHPPopulationFrequency() map[int64]float64 {
 	var insertionsites = make(map[int64]int64)
 	for _, fly := range p.Flies {
-		for _, is := range fly.Hap1 {
+		for is, _ := range fly.Hap1 {
 			insertionsites[is]++
 		}
-		for _, is := range fly.Hap2 {
+		for is, _ := range fly.Hap2 {
 			insertionsites[is]++
 		}
 	}
@@ -174,18 +176,49 @@ func (p *Population) GetAverageClusterInsertions() float64 {
 
 func (p *Population) GetFixedClusterInsertionCount() int64 {
 	fixedIns := p.GetFixedInsertions()
-	fclu, _ := env.CountHaploidInsertions(fixedIns)
+	_, fclu, _ := env.JustCountHaploidInsertions(fixedIns)
 	return fclu
 }
 
-func haplotypeContainsPosition(s []int64, p int64) bool {
-	for _, v := range s {
-		if v == p {
-			return true
+func (p *Population) GetBiasMapTotal() map[env.TEInsertion]int64 {
+	toretmap := make(map[env.TEInsertion]int64)
+	for _, f := range p.Flies {
+		m := f.FlyStat.TotMap
+		for te, count := range m {
+			toretmap[te] += count
 		}
-	}
 
-	return false
+	}
+	return toretmap
+}
+
+func (p *Population) GetBiasMapCluster() map[env.TEInsertion]int64 {
+	toretmap := make(map[env.TEInsertion]int64)
+	for _, f := range p.Flies {
+		m := f.FlyStat.ClusterMap
+		for te, count := range m {
+			toretmap[te] += count
+		}
+
+	}
+	return toretmap
+}
+
+func (p *Population) GetBiasMapNonCluster() map[env.TEInsertion]int64 {
+	toretmap := make(map[env.TEInsertion]int64)
+	for _, f := range p.Flies {
+		m := f.FlyStat.NocMap
+		for te, count := range m {
+			toretmap[te] += count
+		}
+
+	}
+	return toretmap
+}
+
+func haplotypeContainsPosition(s map[int64]env.TEInsertion, p int64) bool {
+	_, ok := s[p]
+	return ok
 }
 
 /*

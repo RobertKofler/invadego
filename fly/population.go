@@ -87,8 +87,9 @@ func updatePhase(newPop *Population, oldPhase Phase) Phase {
 			return SHOTGUN
 		}
 	} else if oldPhase == SHOTGUN {
+		// NOTE that heterogenous sites with mixed insertion biases are considered as fixed!
 		fixedIns := newPop.GetFixedInsertions()
-		fclu, _ := env.CountHaploidInsertions(fixedIns)
+		_, fclu, _ := env.JustCountHaploidInsertions(fixedIns)
 		if fclu > 0 { // conditon for inactive -> at least one fixed cluster insertion
 			return INACTIVE
 		}
@@ -122,8 +123,8 @@ func (p *Population) GetStatus() PopStatus {
 	}
 }
 
-func (p *Population) GetHaplotypes() [][]int64 {
-	toret := make([][]int64, 0, p.Size()*2)
+func (p *Population) GetHaplotypes() []map[int64]env.TEInsertion {
+	toret := make([]map[int64]env.TEInsertion, 0, p.Size()*2)
 	for _, f := range p.Flies {
 		toret = append(toret, f.Hap1)
 		toret = append(toret, f.Hap2)

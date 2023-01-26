@@ -220,6 +220,34 @@ func TestTEBiasDecrease(test *testing.T) {
 	}
 }
 
+func TestInsertionBias(test *testing.T) {
+	var tests = []struct {
+		bias  float64
+		clusi float64
+		want  float64
+	}{
+		{0.0, 0.03, 0.03},
+		{-1.0, 0.03, 0.0},
+		{1.0, 0.03, 1.0},
+		{0.0, 0.5, 0.5},
+		{-1.0, 0.5, 0.0},
+		{1.0, 0.5, 1.0},
+		{0.1, 0.03, 0.03642384},
+		{0.5, 0.03, 0.08490566},
+		{-0.5, 0.03, 0.01020408},
+		{0.9, 0.03, 0.3701299},
+	}
+
+	for _, t := range tests {
+		got := getProbForBiasAndClusi(t.bias, t.clusi)
+		want := t.want
+		if math.Abs(got-want) > 0.000001 {
+			test.Errorf("getProbForBiasAndClusi(%f,%f)!=%f", t.bias, t.clusi, t.want)
+		}
+
+	}
+}
+
 func TestNilClusterReference(t *testing.T) {
 	gl := newGenomicLandscape([]int64{100, 100, 100, 100})
 	cl, ncl := newClusterNonClusters(nil, gl)

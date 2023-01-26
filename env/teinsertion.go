@@ -3,6 +3,7 @@ package env
 import (
 	"fmt"
 	"math/rand"
+	"sort"
 )
 
 type TEInsertion byte
@@ -61,4 +62,39 @@ func (te TEInsertion) decrease() TEInsertion {
 		current--
 	}
 	return TEInsertion(current)
+}
+
+/*
+get the sorted keys for a map
+*/
+func GetSortedKeys(hap map[int64]TEInsertion) []int64 {
+	// sort the recombinatin events by position
+	keys := make([]int64, len(hap)) // if leng == capacity
+	i := 0
+	for k := range hap {
+		keys[i] = k
+		i++
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+	return keys
+}
+
+func MergeUniqueSort(sites1 map[int64]TEInsertion, sites2 map[int64]TEInsertion) []int64 {
+	// add them and make them unique
+	var insertionsites = make(map[int64]bool)
+	for k, _ := range sites1 {
+		insertionsites[k] = true
+	}
+	for k, _ := range sites2 {
+		insertionsites[k] = true
+	}
+	// sort the recombinatin events by position
+	keys := make([]int64, len(insertionsites)) // if leng == capacity
+	i := 0
+	for k := range insertionsites {
+		keys[i] = k
+		i++
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+	return keys
 }
