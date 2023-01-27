@@ -67,7 +67,8 @@ func main() {
 	if recrate == nil {
 		util.InvadeLogger.Printf("no recombination rate provided - will not simulate recombination")
 	} else {
-		util.InvadeLogger.Printf("parsed recombination rate, will use: %v", recrate)
+		util.InvadeLogger.Printf("Parsed recombination rate; will proceed with a recombination rate of %v cM/Mb for the different chormosomes", recrate)
+
 	}
 
 	util.InvadeLogger.Printf("Setting up environment; genome, piRNA cluster, reference regions, trigger sites, paramutable sites and the recombination rate")

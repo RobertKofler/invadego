@@ -97,8 +97,8 @@ func ParseRecurrentRegions(s string) []bool {
 }
 
 /*
-	Parses recombination rate argument
-	returns the recombination rate in cm/Mb for each window
+Parses recombination rate argument
+returns the recombination rate in cm/Mb for each window
 */
 func ParseRecombination(s string) []float64 {
 	if s == "" {
@@ -120,7 +120,6 @@ func ParseRecombination(s string) []float64 {
 		}
 		toret[idx] = rit
 	}
-	util.InvadeLogger.Printf("Parsed recombination rate; will proceed with a recombination rate of %v cM/Mb for the different chormosomes", toret)
 	return toret
 
 }

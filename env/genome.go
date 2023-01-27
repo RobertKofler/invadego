@@ -4,6 +4,7 @@ package env
 
 import (
 	"fmt"
+	"invade/util"
 	"math/rand"
 )
 
@@ -156,4 +157,31 @@ func TranslateCoordinates(pos int64) (int64, int64) {
 	}
 	panic(fmt.Sprintf("invalid index; smaller than allowed %d", pos))
 
+}
+
+func IntroduceMutations(gamete map[int64]TEInsertion) map[int64]TEInsertion {
+	insertions := len(gamete)
+	avnewins := float64(insertions) * env.mubias
+	mutatetes := util.Poisson(avnewins)
+	if mutatetes == 0 { // ok if no mutations are required just get the hell out of here
+		return gamete
+	}
+	keys := make([]int64, 0)
+	for g, _ := range gamete {
+		keys = append(keys, g)
+	}
+	pos := make([]int64, mutatetes)
+	for i := 0; i < int(mutatetes); i++ {
+		ri := rand.Int63n(int64(len(keys)))
+		pos[i] = keys[ri]
+	}
+
+	return helperIntroduceMutations(gamete, pos)
+}
+
+func helperIntroduceMutations(gamete map[int64]TEInsertion, pos []int64) map[int64]TEInsertion {
+	for _, p := range pos {
+		gamete[p] = gamete[p].Mutate()
+	}
+	return gamete
 }

@@ -6,6 +6,17 @@ import (
 	"sort"
 )
 
+// function for generating TE insertions
+// encapsulates the internal representation by a byte+100
+func NewTEInsertion(bias int64) TEInsertion {
+
+	if bias < -100 || bias > 100 {
+		panic(fmt.Sprintf("Invalid insertion bias, must be between -100 and 100, got %d", bias))
+	}
+	bi := bias + 100
+	return TEInsertion(byte(bi))
+}
+
 type TEInsertion byte
 
 // report the insertion bias into piRNA clusters in %;

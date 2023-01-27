@@ -195,6 +195,52 @@ func TestTEBiasIncrease(test *testing.T) {
 	}
 }
 
+// Test if direction of mutation is stochastic, half up and half down
+func TestStochasticMutationDirection(test *testing.T) {
+	tei := NewTEInsertion(0)
+	biasmap := make(map[TEInsertion]int64)
+
+	for i := 0; i < 10000; i++ {
+		tem := tei.Mutate()
+		biasmap[tem]++
+	}
+	print(biasmap)
+	if biasmap[99] < 4800 || biasmap[99] > 5200 {
+		test.Errorf("Non stochastic number of down mutations: %d does not approx %d", 5000, biasmap[99])
+	}
+	if biasmap[101] < 4800 || biasmap[101] > 5200 {
+		test.Errorf("Non stochastic number of up mutations: %d does not approx %d", 5000, biasmap[101])
+	}
+}
+
+func TestStochasticIntroduceMutations(test *testing.T) {
+	gl := newGenomicLandscape([]int64{100, 100})
+	env = Environment{genome: gl, mubias: 1.0}
+	util.SetSeed(199)
+	tei := NewTEInsertion(0)
+
+	pos := make([]int64, 0)
+	gamete := make(map[int64]TEInsertion)
+	for i := int64(0); i < 50; i++ {
+		gamete[i] = tei
+		pos = append(pos, i)
+	}
+
+	// check if every position is mutated
+	gamete = helperIntroduceMutations(gamete, pos)
+
+	biasmap := make(map[TEInsertion]int64)
+
+	for _, te := range gamete {
+		biasmap[te]++
+	}
+
+	if biasmap[100] != 0 {
+		test.Errorf("Incorrect number of non-mutated sites; should be zero, found: %d", biasmap[100])
+	}
+
+}
+
 func TestTEBiasDecrease(test *testing.T) {
 	var tests = []struct {
 		start     byte

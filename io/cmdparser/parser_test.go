@@ -37,17 +37,17 @@ func TestParseBasePopulationParser(test *testing.T) {
 		toparse   string
 		wantindex int64
 		wantcount int64
-		wantbias  byte
+		wantbias  int64
 	}{
-		{toparse: "100(0)", wantindex: 0, wantcount: 100, wantbias: 100}, // Note bias +100 (byte can not be negative, therefore i use a 100 shift)
-		{toparse: "100(-100)", wantindex: 0, wantcount: 100, wantbias: 0},
-		{toparse: "1(100)", wantindex: 0, wantcount: 1, wantbias: 200},
-		{toparse: "1(1)", wantindex: 0, wantcount: 1, wantbias: 101},
-		{toparse: "10(100),100(0)", wantindex: 0, wantcount: 10, wantbias: 200},
-		{toparse: "10(100),100(0)", wantindex: 1, wantcount: 100, wantbias: 100},
-		{toparse: "10(-100),100000(-50)", wantindex: 1, wantcount: 100000, wantbias: 50},
-		{toparse: "10(-100),100000(-50)", wantindex: 0, wantcount: 10, wantbias: 0},
-		{toparse: "1(1),1(1),100(0)", wantindex: 2, wantcount: 100, wantbias: 100},
+		{toparse: "100(0)", wantindex: 0, wantcount: 100, wantbias: 0},
+		{toparse: "100(-100)", wantindex: 0, wantcount: 100, wantbias: -100},
+		{toparse: "1(100)", wantindex: 0, wantcount: 1, wantbias: 100},
+		{toparse: "1(1)", wantindex: 0, wantcount: 1, wantbias: 1},
+		{toparse: "10(100),100(0)", wantindex: 0, wantcount: 10, wantbias: 100},
+		{toparse: "10(100),100(0)", wantindex: 1, wantcount: 100, wantbias: 0},
+		{toparse: "10(-100),100000(-50)", wantindex: 1, wantcount: 100000, wantbias: -50},
+		{toparse: "10(-100),100000(-50)", wantindex: 0, wantcount: 10, wantbias: -100},
+		{toparse: "1(1),1(1),100(0)", wantindex: 2, wantcount: 100, wantbias: 0},
 	}
 	for _, t := range tests {
 		got := parseBasepopString(t.toparse)

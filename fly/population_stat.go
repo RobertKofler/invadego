@@ -6,6 +6,11 @@ import (
 	"sort"
 )
 
+type BiasCount struct {
+	Bias    int64
+	AvCount float64
+}
+
 func (p *Population) GetInsertionSites() []int64 {
 
 	// hash, get the unique sites
@@ -190,6 +195,47 @@ func (p *Population) GetBiasMapTotal() map[env.TEInsertion]int64 {
 
 	}
 	return toretmap
+}
+
+func (p *Population) convertBiasMapToSortedBiasSlice(bmap map[env.TEInsertion]int64) []BiasCount {
+	toret := make([]BiasCount, len(bmap))
+
+	for te, count := range bmap {
+		avcount := float64(count) / float64(len(p.Flies))
+		toret = append(toret, BiasCount{Bias: te.BiasPercent(), AvCount: avcount})
+	}
+	// Then sorting the slice by the average count
+	sort.Slice(toret, func(i, j int) bool {
+		return toret[i].AvCount > toret[j].AvCount
+	})
+	return toret
+}
+
+/*
+Get the average number of insertions per diploid having the given bias; sorted by most abundant biases
+*/
+func (p *Population) GetAverageBiasCountTotal() []BiasCount {
+	bmt := p.GetBiasMapTotal()
+	return p.convertBiasMapToSortedBiasSlice(bmt)
+}
+
+func (p *Population) GetAverageBiasCountCluster() []BiasCount {
+	bmt := p.GetBiasMapCluster()
+	return p.convertBiasMapToSortedBiasSlice(bmt)
+}
+
+// the average bias of a TE insertion in the population
+func (p *Population) GetAverageBias() float64 {
+	totm := p.GetBiasMapTotal()
+	avbias := int64(0)
+	totcount := int64(0)
+	for te, count := range totm {
+		totcount += count
+		b := te.BiasPercent() * count
+		avbias += b
+	}
+
+	return float64(avbias) / float64(totcount)
 }
 
 func (p *Population) GetBiasMapCluster() map[env.TEInsertion]int64 {

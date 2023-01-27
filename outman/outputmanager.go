@@ -71,6 +71,10 @@ func WriteInfo(userargs string, usedseed int64, version string) {
 	buf.WriteString("fwcli\t")     // fraction of individuals with a cluster insertion
 	buf.WriteString("avcli\t")     //  number of cluster insertions per individual
 	buf.WriteString("fixcli\t")    // number of fixed cluster insertions
+	buf.WriteString("|\t")         // |
+	buf.WriteString("avbias\t")    //  average insertion bias; per TE insertion
+	buf.WriteString("3tot\t")      // average number of total insertions for the 3 most abundant biases in the total genome; per diploid
+	buf.WriteString("3cluster\t")  // average number of cluster insertions for the 3 most abundant biases in clusters; per diploid
 	buf.WriteString("|\t")
 	buf.WriteString("sampleids")
 	fmt.Println(buf.String())
@@ -82,6 +86,24 @@ func WriteInfo(userargs string, usedseed int64, version string) {
 func Done() {
 	writer.CloseMHPWriter()
 	writer.CloseDebugWriter()
+
+}
+
+func formatTopBias(biasmap []fly.BiasCount, topn int64) string {
+
+	if len(biasmap) == 0 {
+		return ""
+	}
+	buf := new(bytes.Buffer)
+	buf.WriteString(fmt.Sprintf("%.1f(%d)", biasmap[0].AvCount, biasmap[0].Bias))
+	if len(biasmap) == 1 {
+		return buf.String()
+	}
+	for i := int64(1); i < topn && i < int64(len(biasmap)); i++ {
+
+		buf.WriteString(fmt.Sprintf(",%.1f(%d)", biasmap[i].AvCount, biasmap[i].Bias))
+	}
+	return buf.String()
 
 }
 
@@ -127,7 +149,13 @@ func writePopulation(p *fly.Population, replicate int64, generation int64, popst
 	buf.WriteString(fmt.Sprintf("%s\t", getPhaseString(p.GetPhase())))           // Phase
 	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetWithClusterInsertionFrequency())) // fw cluster insertions
 	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetAverageClusterInsertions()))      //  number of cluster insertions
-	buf.WriteString(fmt.Sprintf("%d\t", p.GetFixedClusterInsertionCount()))      // get fixed cluster insertions                                                    // |
+	buf.WriteString(fmt.Sprintf("%d\t", p.GetFixedClusterInsertionCount()))      // get fixed cluster insertions
+	buf.WriteString("|\t")                                                       // |// |
+	buf.WriteString(fmt.Sprintf("%.1f\t", p.GetAverageBias()))                   // get average bias
+	buf.WriteString(formatTopBias(p.GetAverageBiasCountTotal(), 3))
+	buf.WriteString("\t")
+	buf.WriteString(formatTopBias(p.GetAverageBiasCountCluster(), 3))
+	buf.WriteString("\t")
 
 	if len(outman.sampleparsed) > 0 {
 		buf.WriteString("|\t")

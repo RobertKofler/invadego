@@ -10,6 +10,11 @@ import (
 	"strings"
 )
 
+type biasparse struct {
+	count int64
+	bias  int64
+}
+
 func ParseBasePop(basepop string, popsize int64) *fly.Population {
 
 	if strings.HasPrefix(basepop, "file:") {
@@ -33,7 +38,7 @@ func loadPopulation(basepop string, popsize int64) *fly.Population {
 	}
 	parsed := parseBasepopString(basepop)
 	for _, ic := range parsed { // insertion class
-		teinsertion := env.TEInsertion(ic.bias)
+		teinsertion := env.NewTEInsertion(ic.bias)
 		biasf := teinsertion.BiasFraction()
 		inssites := env.GetSitesForBias(ic.count, biasf)
 		for _, is := range inssites {
@@ -57,15 +62,9 @@ func loadPopulation(basepop string, popsize int64) *fly.Population {
 parse base population string; eg 100(-100),200(0);
 code nice example on how to use anonymous struct, but uff quite cumbersome; note bias = value+100 (byte can not be negative)
 */
-func parseBasepopString(basepop string) []struct {
-	count int64
-	bias  byte
-} {
+func parseBasepopString(basepop string) []biasparse {
 	reg := regexp.MustCompile(`(?P<Count>\d+)\((?P<Bias>-?\d+)\)`)
-	var toret = make([]struct {
-		count int64
-		bias  byte
-	}, 0)
+	var toret = make([]biasparse, 0)
 
 	toparse := []string{basepop}
 	if strings.Contains(basepop, ",") {
@@ -82,11 +81,7 @@ func parseBasepopString(basepop string) []struct {
 		if count < 0 {
 			panic(fmt.Sprintf("Invalid insertion count, must not be smaller than zero; got %d", count))
 		}
-		bias += 100
-		toret = append(toret, struct {
-			count int64
-			bias  byte
-		}{count: count, bias: byte(bias)})
+		toret = append(toret, biasparse{count: count, bias: bias})
 
 	}
 	return toret

@@ -41,6 +41,9 @@ func (f *Fly) GetClone() *Fly {
 
 	malegam = env.InsertNewTranspositionSites(malegam, f.FlyStat.TotMap, f.FlyStat.ClusterMap, f.FlyStat.CountCluster)
 	femgam = env.InsertNewTranspositionSites(femgam, f.FlyStat.TotMap, f.FlyStat.ClusterMap, f.FlyStat.CountCluster)
+
+	malegam = env.IntroduceMutations(malegam)
+	femgam = env.IntroduceMutations(femgam)
 	return NewFly(malegam, femgam)
 }
 
@@ -63,6 +66,8 @@ func (f *Fly) GetGamete() map[int64]env.TEInsertion {
 
 	// insert novel transposition sites into the gamete
 	gamete = env.InsertNewTranspositionSites(gamete, f.FlyStat.TotMap, f.FlyStat.ClusterMap, f.FlyStat.CountCluster)
+	// finally introduce mutations, eg increase or decrease the insertion bias as requested
+	gamete = env.IntroduceMutations(gamete)
 
 	return gamete
 
