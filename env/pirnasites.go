@@ -129,8 +129,8 @@ TE insertions separated into categories.
 There may be overlap between Paramutated and Trigger
 */
 type InsertionCollection struct {
-	Cluster []int64
-	NOE     []int64 // non of either
+	Cluster    []int64
+	NonCluster []int64 // non of either
 }
 
 /*
@@ -151,8 +151,8 @@ func SeparateInsertions(positions []int64) InsertionCollection {
 	}
 
 	return InsertionCollection{
-		Cluster: cluster,
-		NOE:     noe}
+		Cluster:    cluster,
+		NonCluster: noe}
 }
 
 /*

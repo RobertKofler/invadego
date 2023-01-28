@@ -363,12 +363,11 @@ func TestStochasticGetNovelNonClusterSites(t *testing.T) {
 	}
 }
 
-/*
 func TestSeparateInsertions(t *testing.T) {
 	gl := newGenomicLandscape([]int64{100, 100, 100, 100, 100})
-	cl, _ := newCluster([]int64{10, 10, 10, 10, 10}, gl)
+	cl, _ := newClusterNonClusters([]int64{10, 10, 10, 10, 10}, gl)
 	env = Environment{genome: gl,
-		clusters: cl}
+		clusters: *cl}
 	sites := make([]int64, 500)
 	for i := int64(0); i < 500; i++ {
 		sites[i] = i
@@ -377,14 +376,10 @@ func TestSeparateInsertions(t *testing.T) {
 	if len(ret.Cluster) != 50 {
 		t.Error("incorrect number of cluster sites")
 	}
-	if len(ret.RefRegion) != 75 {
-		t.Error("incorrect number of ref regions sites")
-	}
-	if len(ret.NOE) != 375 {
-		t.Errorf("incorrect number of NOE sites: 375!=%d", len(ret.NOE))
+	if len(ret.NonCluster) != 450 {
+		t.Errorf("incorrect number of NOE sites: 375!=%d", len(ret.NonCluster))
 	}
 }
-*/
 
 func TestGetNovelInsertionCount(t *testing.T) {
 	var tests = []struct {

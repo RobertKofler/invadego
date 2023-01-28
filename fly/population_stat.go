@@ -198,7 +198,7 @@ func (p *Population) GetBiasMapTotal() map[env.TEInsertion]int64 {
 }
 
 func (p *Population) convertBiasMapToSortedBiasSlice(bmap map[env.TEInsertion]int64) []BiasCount {
-	toret := make([]BiasCount, len(bmap))
+	toret := make([]BiasCount, 0)
 
 	for te, count := range bmap {
 		avcount := float64(count) / float64(len(p.Flies))

@@ -95,13 +95,13 @@ func formatTopBias(biasmap []fly.BiasCount, topn int64) string {
 		return ""
 	}
 	buf := new(bytes.Buffer)
-	buf.WriteString(fmt.Sprintf("%.1f(%d)", biasmap[0].AvCount, biasmap[0].Bias))
+	buf.WriteString(fmt.Sprintf("%.2f(%d)", biasmap[0].AvCount, biasmap[0].Bias))
 	if len(biasmap) == 1 {
 		return buf.String()
 	}
 	for i := int64(1); i < topn && i < int64(len(biasmap)); i++ {
 
-		buf.WriteString(fmt.Sprintf(",%.1f(%d)", biasmap[i].AvCount, biasmap[i].Bias))
+		buf.WriteString(fmt.Sprintf(",%.2f(%d)", biasmap[i].AvCount, biasmap[i].Bias))
 	}
 	return buf.String()
 

@@ -1,6 +1,16 @@
 package fly
 
-/*
+import (
+	"invade/env"
+	"math"
+	"testing"
+)
+
+type BiasCounter struct {
+	bias  int64
+	count int64
+}
+
 func testhelper_generatewithclusterfrequency(clustercount []int64) Population {
 	flies := make([]Fly, 0, len(clustercount))
 	for _, cc := range clustercount {
@@ -10,33 +20,45 @@ func testhelper_generatewithclusterfrequency(clustercount []int64) Population {
 	return Population{Flies: flies}
 }
 
-
-	func testhelper_generatetotalcount(clustercount []int64) Population {
-		flies := make([]Fly, 0, len(clustercount))
-		for _, cc := range clustercount {
-			f := Fly{FlyStat: &FlyStatistic{CountTotal: cc}}
-			flies = append(flies, f)
-		}
-		return Population{Flies: flies}
+func testhelper_generatetotalcount(clustercount []int64) Population {
+	flies := make([]Fly, 0, len(clustercount))
+	for _, cc := range clustercount {
+		f := Fly{FlyStat: &FlyStatistic{CountTotal: cc}}
+		flies = append(flies, f)
 	}
+	return Population{Flies: flies}
+}
 
-	func testhelper_setdefaultenv() {
-		env.SetupEnvironment([]int64{100, 100}, // two chromosomes of size 100
-			[]int64{0, 0}, // two clusters of size 100
-			[]float64{0, 0}, 0.1)
+func testhelper_generateBiasTot(biaslist []BiasCounter) Population {
+	flies := make([]Fly, 0, len(biaslist))
+	for _, bc := range biaslist {
+		tm := make(map[env.TEInsertion]int64)
+		te := env.NewTEInsertion(bc.bias)
+		tm[te] = bc.count
+
+		f := Fly{FlyStat: &FlyStatistic{TotMap: tm}}
+		flies = append(flies, f)
+	}
+	return Population{Flies: flies}
+}
+
+func testhelper_setdefaultenv() {
+	env.SetupEnvironment([]int64{100, 100}, // two chromosomes of size 100
+		[]int64{0, 0}, // two clusters of size 100
+		[]float64{0, 0}, 0.1, 0.0)
 
 }
 
-	func testhelper_hapmerger(haps [][]int64) *Population {
-		flies := make([]Fly, 0)
-		for i := 0; i < len(haps); i += 2 {
-			femgam := haps[i]
-			malegam := haps[i+1]
-			f := NewFly(femgam, malegam)
-			flies = append(flies, *f)
-		}
-		return &Population{Flies: flies}
+func testhelper_hapmerger(haps [][]int64) *Population {
+	flies := make([]Fly, 0)
+	for i := 0; i < len(haps); i += 2 {
+		femgam := haps[i]
+		malegam := haps[i+1]
+		f := NewFly(hm(femgam), hm(malegam))
+		flies = append(flies, *f)
 	}
+	return &Population{Flies: flies}
+}
 
 func TestGetWithClusterInsertionFrequency(test *testing.T) {
 
@@ -61,8 +83,7 @@ func TestGetWithClusterInsertionFrequency(test *testing.T) {
 	}
 
 }
-*/
-/*
+
 func TestGetAverageClusterInsertions(test *testing.T) {
 
 	var tests = []struct {
@@ -83,16 +104,13 @@ func TestGetAverageClusterInsertions(test *testing.T) {
 		if math.Abs(got-t.want) > 0.001 {
 			test.Errorf("Incorrect average number of cluster insertions; got %f, want %f", got, t.want)
 		}
-
 	}
-
 }
-
 
 func TestGetFlyStat(test *testing.T) {
 	env.SetupEnvironment([]int64{1000, 1000}, // two chromosomes of size 1000
 		[]int64{100, 100}, // two clusters of size 100
-		[]float64{0, 0}, 0.1)
+		[]float64{0, 0}, 0.1, 0.0)
 
 	var tests = []struct {
 		male        []int64
@@ -108,8 +126,8 @@ func TestGetFlyStat(test *testing.T) {
 	}
 
 	for _, t := range tests {
-		fsm := getFlyStat(t.female, t.male)
-		fsf := getFlyStat(t.male, t.female)
+		fsm := getFlyStat(hm(t.female), hm(t.male))
+		fsf := getFlyStat(hm(t.male), hm(t.female))
 
 		if t.wantCluster != fsm.CountCluster || fsm.CountCluster != fsf.CountCluster {
 			test.Errorf("Incorrect number of cluster insertions; want %d, got %d, %d", t.wantCluster, fsm.CountCluster, fsf.CountCluster)
@@ -165,6 +183,7 @@ func TestGetAverageInsertions(test *testing.T) {
 
 	}
 }
+
 func TestGetAveragePopulationFrequency(test *testing.T) {
 	testhelper_setdefaultenv()
 	var tests = []struct {
@@ -236,4 +255,47 @@ func TestGetHaplotypes(test *testing.T) {
 	}
 }
 
-*/
+func TestAverageInsertionBias(test *testing.T) {
+	var tests = []struct {
+		totb []BiasCounter
+		want float64
+	}{
+		{totb: []BiasCounter{{50, 1}, {50, 1}, {50, 1}, {50, 1}, {50, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}}, want: 25},
+		{totb: []BiasCounter{{50, 10}, {0, 10}}, want: 25},
+		{totb: []BiasCounter{{50, 10}, {25, 10}, {0, 10}}, want: 25},
+		{totb: []BiasCounter{{50, 10}, {50, 9}, {50, 8}, {50, 7}, {50, 6}, {0, 5}, {0, 4}, {0, 3}, {0, 2}, {0, 1}}, want: 36.36364}}
+
+	for _, t := range tests {
+		pop := testhelper_generateBiasTot(t.totb)
+		got := pop.GetAverageBias()
+		if math.Abs(got-t.want) > 0.001 {
+			test.Errorf("Incorrect average bias; got %f, want %f", got, t.want)
+		}
+	}
+}
+
+func TestBiasMapTotal(test *testing.T) {
+	var tests = []struct {
+		totb      []BiasCounter
+		wantbias  int64
+		wantcount int64
+		wantlen   int64
+	}{
+		{totb: []BiasCounter{{50, 1}, {50, 1}, {50, 1}, {50, 1}, {50, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}}, wantbias: 50, wantcount: 5, wantlen: 2},
+		{totb: []BiasCounter{{50, 10}, {0, 10}}, wantbias: 50, wantcount: 10, wantlen: 2},
+		{totb: []BiasCounter{{50, 10}, {0, 10}}, wantbias: 0, wantcount: 10, wantlen: 2},
+		{totb: []BiasCounter{{50, 10}, {25, 2}, {0, 10}}, wantbias: 25, wantcount: 2, wantlen: 3},
+	}
+
+	for _, t := range tests {
+		pop := testhelper_generateBiasTot(t.totb)
+		got := pop.GetBiasMapTotal()
+		if len(got) != int(t.wantlen) {
+			test.Errorf("Incorrect length of biasmap; got %d, want %d", len(got), t.wantlen)
+		}
+		tei := env.NewTEInsertion(t.wantbias)
+		if got[tei] != t.wantcount {
+			test.Errorf("Incorrect count for bias; got %d, want %d", got[tei], t.wantcount)
+		}
+	}
+}

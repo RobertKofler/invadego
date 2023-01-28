@@ -1,6 +1,20 @@
 package fly
 
-/*
+import (
+	"invade/env"
+	"invade/util"
+	"math"
+	"testing"
+)
+
+func hm(sites []int64) map[int64]env.TEInsertion {
+	toret := make(map[int64]env.TEInsertion)
+
+	for _, s := range sites {
+		toret[s] = env.NewTEInsertion(0)
+	}
+	return toret
+}
 func TestRecombine(t *testing.T) {
 	var tests = []struct {
 		hap1 []int64
@@ -24,16 +38,16 @@ func TestRecombine(t *testing.T) {
 
 	for _, test := range tests {
 		f := Fly{
-			Hap1: test.hap1,
-			Hap2: test.hap2}
+			Hap1: hm(test.hap1),
+			Hap2: hm(test.hap2)}
 		got := f.recombine(test.rec)
-		want := test.want
+		want := hm(test.want)
 		if len(got) != len(want) {
 			t.Errorf("recombine(); unequal length %v vs %v", got, want)
 		} else {
-			for i, val := range got {
-				if want[i] != val {
-					t.Errorf("recombine(); Different entries at position %d;  %v vs %v", i, got, want)
+			for i, _ := range got {
+				if want[i] != got[i] {
+					t.Errorf("recombine(); Different entries at position %d;  %d vs %d", i, got[i], want[i])
 				}
 			}
 		}
@@ -44,7 +58,7 @@ func TestRecombine(t *testing.T) {
 /*
 fitness function w=1-xn^t
 cluster insertions (+reference insertions) may be considered
-
+*/
 func TestFitnessOmxnt(t *testing.T) {
 	var tests = []struct {
 		x    float64
@@ -67,7 +81,7 @@ func TestFitnessOmxnt(t *testing.T) {
 		want := test.want
 		got := ff.ComputeFitness(test.ct, test.cc)
 		if math.Abs(want-got) > 0.0001 {
-			t.Errorf("ff.ComputeFitness(%d,%d,%d) != %f; got = %f", test.ct, test.cc, test.want, got)
+			t.Errorf("ff.ComputeFitness(%d,%d) != %f; got = %f", test.ct, test.cc, test.want, got)
 		}
 	}
 }
@@ -131,12 +145,12 @@ Tests for pointer bug in generateCumFitness;
 generateCumFitness was returning a slice of the same fly repeated all over;
 shity range pointer problem
 cumFit
-
+*/
 func TestGetFlyForRandomNumberLargePop(test *testing.T) {
 	fems := make([]Fly, 0, 100)
 	for i := 0; i < 100; i++ {
 
-		fems = append(fems, *NewFly([]int64{}, []int64{}))
+		fems = append(fems, *NewFly(make(map[int64]env.TEInsertion), make(map[int64]env.TEInsertion)))
 	}
 	var tests = []struct {
 		index float64
@@ -166,13 +180,13 @@ func TestGetFlyForRandomNumberLargePop(test *testing.T) {
 /*
 With equal fitness, all flies (males and females) should participate in a similar number of matings;
 ie around 200 matings in the following scenario
-
+*/
 func TestStochasticGetMatePairs(test *testing.T) {
 	util.SetSeed(8)
 	flies := make([]Fly, 0, 100)
 	for i := 0; i < 100; i++ {
 
-		flies = append(flies, *NewFly([]int64{}, []int64{}))
+		flies = append(flies, *NewFly(make(map[int64]env.TEInsertion), make(map[int64]env.TEInsertion)))
 	}
 
 	matep := getMatePairs(flies, 10000)
@@ -188,5 +202,3 @@ func TestStochasticGetMatePairs(test *testing.T) {
 		}
 	}
 }
-
-*/
