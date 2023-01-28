@@ -130,7 +130,7 @@ func loadPopulationFromFile(file string, targetpopsize int64) *fly.Population {
 
 		count, errcount := strconv.ParseInt(tmp[0], 10, 64)
 		if errcount != nil {
-			panic(fmt.Sprintf("Invalid number of flies; must be integer; got", tmp[0]))
+			panic(fmt.Sprintf("Invalid number of flies; must be integer; got %s", tmp[0]))
 		}
 
 		femhap := make(map[int64]env.TEInsertion)

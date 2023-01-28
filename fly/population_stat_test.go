@@ -299,3 +299,40 @@ func TestBiasMapTotal(test *testing.T) {
 		}
 	}
 }
+
+func TestConvertBiasMap(test *testing.T) {
+	popsize := int64(10)
+	var tests = []struct {
+		totb      []BiasCounter
+		wantbias  int64
+		wantcount float64
+		pos       int64
+		wantlen   int64
+	}{
+		{totb: []BiasCounter{{50, 100}, {0, 20}}, pos: 0, wantbias: 50, wantcount: 10, wantlen: 2},
+		{totb: []BiasCounter{{50, 100}, {0, 20}}, pos: 1, wantbias: 0, wantcount: 2, wantlen: 2},
+		{totb: []BiasCounter{{50, 100}, {-100, 2}}, pos: 1, wantbias: -100, wantcount: 0.2, wantlen: 2},
+		{totb: []BiasCounter{{50, 100}, {-100, 2}, {-50, 40}, {90, 90}}, pos: 1, wantbias: 90, wantcount: 9, wantlen: 4},
+	}
+
+	for _, te := range tests {
+		bm := make(map[env.TEInsertion]int64)
+		for _, b := range te.totb {
+			te := env.NewTEInsertion(b.bias)
+			bm[te] = b.count
+		}
+		got := convertBiasMapToSortedBiasSlice(bm, popsize)
+
+		if len(got) != int(te.wantlen) {
+			test.Errorf("invalid length, got %d want %d", len(got), te.wantlen)
+		}
+		if got[te.pos].Bias != te.wantbias {
+			test.Errorf("invalid bias, got %d want %d", got[te.pos].Bias, te.wantbias)
+		}
+
+		if math.Abs(got[te.pos].AvCount-te.wantcount) > 0.001 {
+			test.Errorf("invalid average count, got %f want %f", got[te.pos].AvCount, te.wantcount)
+		}
+	}
+
+}
