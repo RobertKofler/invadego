@@ -39,6 +39,25 @@
                 "--steps","100",
                 "--sampleid","test",
                 "--gen","5000"]
+        },
+        {
+            "name": "from-file",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "main.go",
+            "args": ["--N", "1000",
+                "--u","0.1",
+                "--genome","MB:2,2,3,1",
+                "--cluster","kb:1000,1000,1000,900",
+                "--basepop","file:/Users/robertkofler/dev/invadego/debug/basepop.txt",
+                "--rr","4,4,4,4",
+                "--x","0.005",
+                "--rep","1",
+                "--mu-bias","0.0",
+                "--steps","100",
+                "--sampleid","test",
+                "--gen","5000"]
         }
 ]
 }

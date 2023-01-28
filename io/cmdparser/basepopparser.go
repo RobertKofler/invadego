@@ -1,10 +1,12 @@
 package cmdparser
 
 import (
+	"bufio"
 	"fmt"
 	"invade/env"
 	"invade/fly"
 	"math/rand"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -18,8 +20,8 @@ type biasparse struct {
 func ParseBasePop(basepop string, popsize int64) *fly.Population {
 
 	if strings.HasPrefix(basepop, "file:") {
-		// TODO implement file loading
-		return loadPopulation(basepop, popsize)
+
+		return loadPopulationFromFile(basepop[5:], popsize)
 
 	} else {
 		return loadPopulation(basepop, popsize)
@@ -87,12 +89,30 @@ func parseBasepopString(basepop string) []biasparse {
 	return toret
 }
 
+func parseTEEntry(entry string) (int64, env.TEInsertion) {
+
+	reg := regexp.MustCompile(`(?P<Count>\d+)\((?P<Bias>-?\d+)\)`)
+	match := reg.FindStringSubmatch(entry)
+	position, _ := strconv.ParseInt(match[1], 10, 64)
+	bias, _ := strconv.ParseInt(match[2], 10, 64)
+	te := env.NewTEInsertion(bias)
+	return position, te
+}
+
+func cloneHapmap(toclone map[int64]env.TEInsertion) map[int64]env.TEInsertion {
+	toret := make(map[int64]env.TEInsertion)
+	for p, te := range toclone {
+		toret[p] = te
+	}
+	return toret
+}
+
 /*
 Example file
 500; 1 100 200 400; 0 5 5000
 250; 2 100 400;
 250;;
-
+*/
 func loadPopulationFromFile(file string, targetpopsize int64) *fly.Population {
 	flies := make([]fly.Fly, 0)
 	readFile, err := os.Open(file)
@@ -101,36 +121,37 @@ func loadPopulationFromFile(file string, targetpopsize int64) *fly.Population {
 	}
 	fileScanner := bufio.NewScanner(readFile)
 	fileScanner.Split(bufio.ScanLines)
-	for fileScanner.Scan() {
+	for fileScanner.Scan() { // for each line
 		line := fileScanner.Text()
 		tmp := strings.Split(line, ";")
 		if len(tmp) != 3 {
 			panic(fmt.Sprintf("Invalid base population entry %s", line))
 		}
-		tempsplit := strings.Split(tmp[0], " ")
-		if len(tempsplit) != 3 {
-			panic(fmt.Sprintf("Invalid base population entry %s", line))
+
+		count, errcount := strconv.ParseInt(tmp[0], 10, 64)
+		if errcount != nil {
+			panic(fmt.Sprintf("Invalid number of flies; must be integer; got", tmp[0]))
 		}
-		femhap := []int64{}
-		malehap := []int64{}
+
+		femhap := make(map[int64]env.TEInsertion)
+		malehap := make(map[int64]env.TEInsertion)
 		if tmp[1] != "" {
 			femsplit := strings.Split(strings.TrimSpace(tmp[1]), " ")
-			femsslice := sslice2islice(femsplit)
-			femhap = util.UniqueSort(femsslice)
+			for _, f := range femsplit {
+				pos, te := parseTEEntry(f)
+				femhap[pos] = te
+			}
 		}
 		if tmp[2] != "" {
 			malesplit := strings.Split(strings.TrimSpace(tmp[2]), " ")
-			malesslice := sslice2islice(malesplit)
-			malehap = util.UniqueSort(malesslice)
+			for _, m := range malesplit {
+				pos, te := parseTEEntry(m)
+				malehap[pos] = te
+			}
 		}
 
-		count, errcount := strconv.ParseInt(tmp[0], 10, 64)
-
-		if errcount != nil {
-			panic(fmt.Sprintf("Invalid base population entry %s", line))
-		}
 		for i := int64(0); i < count; i++ {
-			f := fly.NewFly(femhap, malehap)
+			f := fly.NewFly(cloneHapmap(femhap), cloneHapmap(malehap))
 			flies = append(flies, *f)
 		}
 
@@ -141,19 +162,4 @@ func loadPopulationFromFile(file string, targetpopsize int64) *fly.Population {
 		panic("Invalid base population; population size does not match user specificiations")
 	}
 	return fly.InitializePopulation(flies)
-}
-
-*/
-
-func sslice2islice(sslice []string) []int64 {
-	toret := make([]int64, 0)
-	for _, s := range sslice {
-		si, err := strconv.ParseInt(s, 10, 64)
-		if err != nil {
-			panic(fmt.Sprintf("Invalid base population character %s", s))
-		}
-		toret = append(toret, si)
-	}
-	return toret
-
 }
