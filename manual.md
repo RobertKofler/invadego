@@ -64,4 +64,4 @@ Some examples
 * `1;10(0);` simulate one indivdual with a heterozygous TE insertion at position 10, that has no insertion bias
 * `5;10(0);10(0)` simulate 5 indivdiuals with a homozygous TE insertion at position 10, the insertion has no insertion bias
 * `3;1(-50);5(50)` simulate 3 individuals with two heterozygouse insertions in different haploid genomes; one at position 1 with an insertion bias of -50 and one at position 5 with an insertio bias of 50
-* `3;1(-50) 5(50;` simulate 3 individuals with two heterozygouse insertions in the same (the first) haploid genome; one at position 1 with an insertion bias of -50 and one at position 5 with an insertio bias of 50
+* `3;1(-50) 5(50);` simulate 3 individuals with two heterozygouse insertions in the same (the first) haploid genome; one at position 1 with an insertion bias of -50 and one at position 5 with an insertio bias of 50
