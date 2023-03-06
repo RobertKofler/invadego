@@ -39,3 +39,14 @@ InvadeGo - Insertionbias branch
 * --seed for the simulations; if not provided current time in ticks is used
 * --threads number of threads; not yet supported; likely never will
 * --silent just show relevant output, not the messages
+
+## Base pop file
+With the flag `--basepop` a user may specify a base population file, eg. `file:/user/rober/sim/basepop.txt`
+
+This file should look like in the following example:
+
+```
+250; 1(-2) 400(-12); 50000(-22)
+250;;
+500; 2(0) 10000(10) 50000(20);
+```
