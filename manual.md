@@ -50,3 +50,17 @@ This file should look like in the following example:
 250;;
 500; 2(0) 10000(10) 50000(20);
 ```
+
+The file may have between 1 and infinite many rows, where each row specifies the genotype for one or more individuals in the base population;
+Each row has 3-columns that are delimited by `;`
+
+* col-1: number of indivdiuals having the given genotype; **Note** the total number of individuals needs to sum to the population size `--N`
+* col-2: genotype of the haploid genome 1
+* col-3: genotype of the haploid genome 2
+
+For each haploid genome the positions and the insertion bias (in bracket) of the TE insertions can be provided.
+Some examples
+* `500;;` simulate 500 individuals without any TE insertion
+* `1;10(0);` simulate one indivdual with a heterozygous TE insertion at position 10, that has no insertion bias
+* `5;10(0);10(0)` simulate 5 indivdiuals with a homozygous TE insertion at position 10, the insertion has no insertion bias
+* `3;1(-50);5(50)
