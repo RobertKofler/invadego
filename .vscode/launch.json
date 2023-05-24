@@ -24,6 +24,23 @@
                 "--sampleid","para,100,20",
                 "--gen","300"]
         },
+		{
+            "name": "max-insertions",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "main.go",
+            "args": ["--N", "1000",
+                "--u","0.05",
+                "--genome","MB:2,2,3,1",
+                "--basepop","1000",
+                "--rr","4,4,4,4",
+                "--rep","3",
+                "--steps","20",
+				"--max-insertions","50",
+                "--sampleid","para,100,20",
+                "--gen","5000"]
+        },
         {
             "name": "Cluster-removal",
             "type": "go",

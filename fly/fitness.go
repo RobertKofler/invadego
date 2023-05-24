@@ -12,6 +12,7 @@ type FitnessFunction struct {
 
 var ff FitnessFunction
 var minimumFitness float64
+var maximumInsertions float64
 
 func (f *FitnessFunction) ComputeFitness(counttotal int64, countcluster int64, countreference int64) float64 {
 	frc := counttotal // fitness relevant count
@@ -29,9 +30,10 @@ func (f *FitnessFunction) ComputeFitness(counttotal int64, countcluster int64, c
 	return fit
 }
 
-func SetupFitness(x float64, t float64, noxincluins bool, minFitness float64) {
+func SetupFitness(x float64, t float64, noxincluins bool, minFitness float64, maxInsertions int64) {
 	ff = FitnessFunction{x: x, t: t, noxincluins: noxincluins}
 	minimumFitness = minFitness
+	maximumInsertions = float64(maxInsertions)
 }
 
 func GetFitness(f *Fly) float64 {

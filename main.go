@@ -33,7 +33,7 @@ func main_profile() {
 func main() {
 
 	// VERSION NUMBER
-	version := "br.rc-0.2.3"
+	version := "br.rc-0.2.4"
 
 	clp := cmdparser.ParseCommandLine()
 	if clp.Silent {
@@ -104,7 +104,7 @@ func main() {
 	util.InvadeLogger.Print("Setting up jumper")
 	env.SetJumper(clp.U, clp.UC)
 	util.InvadeLogger.Print("Setting up fitness function")
-	fly.SetupFitness(clp.X, clp.T, clp.Noxcluins, clp.MinFitness)
+	fly.SetupFitness(clp.X, clp.T, clp.Noxcluins, clp.MinFitness, clp.MaxInsertions)
 	util.InvadeLogger.Print("Setting up output manager")
 	outman.SetupOutputManager(clp.Steps, clp.ReplicateOffset, clp.FileMHP, clp.FileTally, clp.FileSFS, clp.FileDebug, clp.SampleID)
 

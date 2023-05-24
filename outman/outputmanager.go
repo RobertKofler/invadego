@@ -102,7 +102,7 @@ func RecordPopulation(p *fly.Population, replicate int64, generation int64, pops
 	}
 	// Write populations if it is failure (including base population!)
 	// or else if the generation has the required step (modulo == 0, hence including base population)
-	if popstat == fly.FAIL0 || popstat == fly.FAILW || popstat == fly.FAILSEX {
+	if popstat == fly.FAIL0 || popstat == fly.FAILW || popstat == fly.FAILSEX || popstat == fly.FAILMAX {
 		writePopulation(p, replicate, generation, popstat)
 	} else if popstat == fly.OK && generation%outman.steps == 0 {
 		writePopulation(p, replicate, generation, popstat)
@@ -180,6 +180,8 @@ func getStatusString(popstat fly.PopStatus) string {
 		return "fail-sex"
 	} else if popstat == fly.FAILW {
 		return "fail-w"
+	} else if popstat == fly.FAILMAX {
+		return "fail-max"
 	} else if popstat == fly.OK {
 		return "ok"
 	} else {
