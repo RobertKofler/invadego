@@ -27,6 +27,7 @@ const (
 	FAIL0   PopStatus = 2
 	FAILW   PopStatus = 3
 	FAILSEX PopStatus = 4
+	FAILMAX PopStatus = 5
 )
 
 func (p *Population) Size() int64 {
@@ -157,12 +158,15 @@ func (p *Population) GetStatus() PopStatus {
 		}
 	}
 	avfit := fitcount / float64(p.Size())
+	avins := p.GetAverageInsertions()
 	if tecount == 0 {
 		return FAIL0
 	} else if femcount == 0 || femcount == int(p.Size()) {
 		return FAILSEX
 	} else if avfit < minimumFitness {
 		return FAILW
+	} else if avins > maximumInsertions {
+		return FAILMAX
 	} else {
 		return OK
 	}

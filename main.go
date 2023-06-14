@@ -102,7 +102,7 @@ func main() {
 	util.InvadeLogger.Print("Setting up jumper")
 	env.SetJumper(clp.U, clp.UC)
 	util.InvadeLogger.Print("Setting up fitness function")
-	fly.SetupFitness(clp.X, clp.T, clp.Noxcluins, clp.MinFitness)
+	fly.SetupFitness(clp.X, clp.T, clp.Noxcluins, clp.MinFitness, clp.MaxInsertions)
 	util.InvadeLogger.Print("Setting up output manager")
 	outman.SetupOutputManager(clp.Steps, clp.ReplicateOffset, clp.FileMHP, clp.FileTally, clp.FileSFS, clp.FileDebug, clp.SampleID)
 
