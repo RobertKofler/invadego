@@ -15,6 +15,15 @@ type Environment struct {
 	triggers             *RecurrentSites
 	recombinationWindows []*RecombinationWindow
 	minimumFitness       float64
+	maximumInsertions    float64
+}
+
+func GetMinimumFitness() float64 {
+	return env.minimumFitness
+}
+
+func GetMaximumInsertions() float64 {
+	return env.maximumInsertions
 }
 
 var env Environment

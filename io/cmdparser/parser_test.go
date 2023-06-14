@@ -73,7 +73,8 @@ func TestParseGenome(t *testing.T) {
 
 func TestLoadGenome(t *testing.T) {
 	util.SetSeed(7)
-	env.SetupEnvironment([]int64{5000, 5000}, []int64{0, 0}, []int64{0, 0}, []bool{}, []bool{}, []float64{1, 1}, 0.1)
+	env.SetupEnvironment([]int64{5000, 5000}, []int64{0, 0}, []int64{0, 0}, []bool{}, []bool{}, []float64{1, 1}, 0.1, 1000.0)
+	fly.SetupFitness(0, 0, true, false)
 	var tests = []struct {
 		popsize   int64
 		inscount  int64

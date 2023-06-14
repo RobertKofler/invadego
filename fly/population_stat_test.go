@@ -29,7 +29,7 @@ func testhelper_setdefaultenv() {
 		[]int64{0, 0}, // two reference regions of size 100
 		[]bool{false}, //  trigger -> 0
 		[]bool{false}, // para - > 1
-		[]float64{0, 0}, 0.1)
+		[]float64{0, 0}, 0.1, 1000.0)
 
 }
 
@@ -103,7 +103,7 @@ func TestGetFlyStat(test *testing.T) {
 		[]int64{100, 100}, // two reference regions of size 100
 		[]bool{true, false, false, false, false, false, false, false, false, false}, //  trigger -> 0
 		[]bool{false, true, false, false, false, false, false, false, false, false}, // para - > 1
-		[]float64{0, 0}, 0.1)
+		[]float64{0, 0}, 0.1, 1000.0)
 
 	var tests = []struct {
 		male          []int64

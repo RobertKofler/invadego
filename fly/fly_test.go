@@ -46,11 +46,40 @@ func TestRecombine(t *testing.T) {
 	}
 }
 
+func TestFitnessOmxnMultiplicative(t *testing.T) {
+	var tests = []struct {
+		x    float64
+		ct   int64 // count total
+		cc   int64 // count cluster
+		cr   int64 // count reference
+		nx   bool  // noxclusterinsertion
+		want float64
+	}{
+		{x: 0.1, ct: 2, cc: 0, cr: 0, nx: false, want: 0.81},
+		{x: 0.1, ct: 10, cc: 0, cr: 0, nx: false, want: 0.3486784},
+		{x: 0.1, ct: 100, cc: 0, cr: 0, nx: false, want: 0.0000265},
+
+		{x: 0.1, ct: 10, cc: 8, cr: 0, nx: false, want: 0.3486784},
+		{x: 0.1, ct: 10, cc: 8, cr: 0, nx: true, want: 0.81},
+		{x: 0.1, ct: 10, cc: 0, cr: 8, nx: true, want: 0.81},
+		{x: 0.1, ct: 10, cc: 4, cr: 4, nx: true, want: 0.81},
+	}
+
+	for _, test := range tests {
+		iff = FitnessFunctionMultiplicative{x: test.x, noxincluins: test.nx}
+		want := test.want
+		got := iff.ComputeFitness(test.ct, test.cc, test.cr)
+		if math.Abs(want-got) > 0.0001 {
+			t.Errorf("ff.ComputeFitness(%d,%d,%d) != %f; got = %f", test.ct, test.cc, test.cr, test.want, got)
+		}
+	}
+}
+
 /*
 fitness function w=1-xn^t
 cluster insertions (+reference insertions) may be considered
 */
-func TestFitnessOmxnt(t *testing.T) {
+func TestFitnessOmxntLinear(t *testing.T) {
 	var tests = []struct {
 		x    float64
 		ct   int64 // count total
@@ -72,9 +101,9 @@ func TestFitnessOmxnt(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		ff = FitnessFunction{x: test.x, t: test.t, noxincluins: test.nx}
+		iff = FitnessFunctionLinear{x: test.x, t: test.t, noxincluins: test.nx}
 		want := test.want
-		got := ff.ComputeFitness(test.ct, test.cc, test.cr)
+		got := iff.ComputeFitness(test.ct, test.cc, test.cr)
 		if math.Abs(want-got) > 0.0001 {
 			t.Errorf("ff.ComputeFitness(%d,%d,%d) != %f; got = %f", test.ct, test.cc, test.cr, test.want, got)
 		}

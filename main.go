@@ -98,11 +98,11 @@ func main() {
 	}
 
 	util.InvadeLogger.Printf("Setting up environment; genome, piRNA cluster, reference regions, trigger sites, paramutable sites and the recombination rate")
-	env.SetupEnvironment(genome, cluster, refregion, trigger, paramutable, recrate, clp.MinFitness)
+	env.SetupEnvironment(genome, cluster, refregion, trigger, paramutable, recrate, clp.MinFitness, float64(clp.MaxInsertions))
 	util.InvadeLogger.Print("Setting up jumper")
 	env.SetJumper(clp.U, clp.UC)
 	util.InvadeLogger.Print("Setting up fitness function")
-	fly.SetupFitness(clp.X, clp.T, clp.Noxcluins, clp.MinFitness, clp.MaxInsertions)
+	fly.SetupFitness(clp.X, clp.T, clp.Noxcluins, clp.Multiplicative)
 	util.InvadeLogger.Print("Setting up output manager")
 	outman.SetupOutputManager(clp.Steps, clp.ReplicateOffset, clp.FileMHP, clp.FileTally, clp.FileSFS, clp.FileDebug, clp.SampleID)
 

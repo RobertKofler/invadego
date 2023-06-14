@@ -22,6 +22,7 @@ type CommandLineParameters struct {
 	Generations      int64
 	BasePop          string
 	Noxcluins        bool
+	Multiplicative   bool
 	SampleID         string
 	ReplicateOffset  int64
 	Replicates       int64
@@ -57,6 +58,7 @@ func ParseCommandLine() *CommandLineParameters {
 	x := flag.Float64("x", 0.0, "the deleterious effect of a single TE insertions")
 	t := flag.Float64("t", 1.0, "the synergistic effect of TE insertions")
 	noxcluins := flag.Bool("no-x-cluins", false, "cluster insertions incur no negative effects")
+	multiplicative := flag.Bool("multiplicative", false, "multiplicative fitness decay (instead of linear, which is the default")
 	//ignoreFailed := flag.Bool("ignored-failed", false, "ignore invasions where the TE did not get established")
 	transrateResidual := flag.Float64("uc", 0.0, "the transposition rate in the presence of piRNAs")
 	steps := flag.Int64("steps", 20, "report the output at each '--steps' generations")
@@ -116,6 +118,7 @@ func ParseCommandLine() *CommandLineParameters {
 		T:                *t,
 		Steps:            *steps,
 		Noxcluins:        *noxcluins,
+		Multiplicative:   *multiplicative,
 		ReplicateOffset:  *reploffset,
 		ParamutableSites: *paramutSites,
 		TriggerSites:     *triggerSites,

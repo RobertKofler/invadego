@@ -5,7 +5,7 @@ Initialize the entire environment for the simulations, i.e. the chromosomes, the
 (fitness? mating?)
 */
 func SetupEnvironment(chrSizes []int64, cluSizes []int64, refSizes []int64,
-	trigger []bool, para []bool, recRate []float64, minFitness float64) {
+	trigger []bool, para []bool, recRate []float64, minFitness float64, maxInsertions float64) {
 	genome := newGenomicLandscape(chrSizes)             // setup genome
 	clusters := newCluster(cluSizes, genome)            // setup cluster, they depend on the genome
 	refRegions := newReferenceRegions(refSizes, genome) // setup reference regions
@@ -26,6 +26,7 @@ func SetupEnvironment(chrSizes []int64, cluSizes []int64, refSizes []int64,
 		triggers:             triggers,
 		paramutables:         paramutables,
 		minimumFitness:       minFitness,
+		maximumInsertions:    maxInsertions,
 		recombinationWindows: recwins,
 	}
 }

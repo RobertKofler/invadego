@@ -163,9 +163,9 @@ func (p *Population) GetStatus() PopStatus {
 		return FAIL0
 	} else if femcount == 0 || femcount == int(p.Size()) {
 		return FAILSEX
-	} else if avfit < minimumFitness {
+	} else if avfit < env.GetMinimumFitness() {
 		return FAILW
-	} else if avins > maximumInsertions {
+	} else if avins > env.GetMaximumInsertions() {
 		return FAILMAX
 	} else {
 		return OK

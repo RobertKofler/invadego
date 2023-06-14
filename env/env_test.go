@@ -430,7 +430,7 @@ func TestTranslateCoordinates(test *testing.T) {
 		nil, // two reference regions of size 100
 		nil, //  trigger -> 0
 		nil, // para - > 1
-		[]float64{4, 4, 4, 4}, 0.1)
+		[]float64{4, 4, 4, 4}, 0.1, 1000.0)
 	var tests = []struct {
 		pos     int64
 		wantchr int64
