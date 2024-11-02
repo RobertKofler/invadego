@@ -7,63 +7,66 @@ import (
 )
 
 type CommandLineParameters struct {
-	ArgString        string
-	Silent           bool
-	Popsize          int64
-	Genome           string
-	Cluster          string
-	RefRegion        string
-	RecRate          string
-	U                float64 // transposition rate
-	UC               float64 // transposition rate in the presence of piRNAs
-	X                float64 // deleterious effect of a TE insertion
-	T                float64 // exponential deleterious effect of a TE insertion
-	Steps            int64   // report output each Steps generations
-	Generations      int64
-	BasePop          string
-	Noxcluins        bool
-	Multiplicative   bool
-	SampleID         string
-	ReplicateOffset  int64
-	Replicates       int64
-	ParamutableSites string
-	TriggerSites     string
-	Seed             int64
-	Threads          int64
-	MinFitness       float64
-	MaxInsertions    int64
-	FileMHP          string
-	FileTally        string
-	FileDebug        string
-	FileSFS          string
+	Sex            string // herma or both
+	GridX          int64
+	GridY          int64
+	BasePop        string  // coordX,coordY,tecopynumber
+	EpiSilencing   string  // epigenetic silencing transmission eiter: male, female, or integer (100,0,50)
+	TriggerSilence int64   // TE copy number per diploid where silencing will be triggered
+	MateRadius     int64   // radius in grid where mates will be found
+	SelfingRate    float64 // selfing rate between 0 and 1.0
+	FileSpatial    string
+
+	ArgString       string
+	Silent          bool
+	Genome          string
+	RecRate         string
+	U               float64 // transposition rate
+	UC              float64 // transposition rate in the presence of host defence
+	X               float64 // deleterious effect of a TE insertion
+	T               float64 // exponential deleterious effect of a TE insertion
+	Steps           int64   // report output each Steps generations
+	Generations     int64
+	SampleID        string
+	ReplicateOffset int64
+	Replicates      int64
+	Seed            int64
+	Threads         int64
+	MinFitness      float64
+	MaxInsertions   int64
+	FileMHP         string
+	FileTally       string
+	FileDebug       string
+	FileSFS         string
 }
 
 func ParseCommandLine() *CommandLineParameters {
 	test := os.Args[1:]
 	argstring := strings.Join(test, " ")
 	// Mandatory parameters
-	popsize := flag.Int64("N", -1, "mandatory; the population size")
+	gridx := flag.Int64("grid-x", -1, "mandatory; the spatial grid size on X")
+	gridy := flag.Int64("grid-y", -1, "mandatory; the spatial grid size on X")
+	sex := flag.String("sex", "", "mandatory;  the simulated sexual system either 'mf' or 'h' male-female or hermaphrodite")
+	episilence := flag.String("epi-inherit", "", "mandatory;  how is epigenetic silencing inherited: male,female,integer")
+
 	genome := flag.String("genome", "", "mandatory; the genomic landscape; e.g. 'MB:2,3,1,5' specifiies four chromosomes with sizes of 2,3,1,5 Mb")
 	generations := flag.Int64("gen", -1, "mandatory; run the simulations for '--gen' generations")
-	basepop := flag.String("basepop", "", "mandatory; the segregating insertions in the starting population; either number (e.g. 100) or file")
+	basepop := flag.String("basepop", "", "mandatory; the individual(s) with the segregating insertions in the starting population; CoordX,CoordY,N")
 
 	// Optional parameters
+	triggerSilence := flag.Int64("trigger-defense", -1, "at which threshold value should the host defense been triggerd")
+	mateRadius := flag.Int64("mate-radius", 2, "at which spatial distance in grid should mates be found")
 	transrate := flag.Float64("u", 0.0, "the transposition rate")
-	cluster := flag.String("cluster", "", "piRNA clusters; e.g. 'kb:1,1,1,1' specifies a cluster of 1kb at the beginning of each chromosome")
+	selfrate := flag.Float64("selfing-rate", 0.0, "the selfing rate")
 	sampleid := flag.String("sampleid", "", "the ID of the sample; will be a help in R to group samples like with facete_grid()")
-	refregion := flag.String("ref-region", "", "reference region; e.g. 'kb:1,1,1,1' specifies a reference region of 1kb at the end of each chromosome")
 	rr := flag.String("rr", "", "the recombination rate per chromosome in cm/Mb; e.g. '3,4,4,5' ")
-	paramutSites := flag.String("paramutation", "", "paramutable sites, e.g. '10:1,2,9' with modulo 10 the residuals 1,2,9 are paramutable ")
-	triggerSites := flag.String("trigger", "", "triggers sites, e.g. '10:3,4,5' with modulo 10 the residuals 3,4,5 trigger the production of piRNAs ")
 	x := flag.Float64("x", 0.0, "the deleterious effect of a single TE insertions")
 	t := flag.Float64("t", 1.0, "the synergistic effect of TE insertions")
-	noxcluins := flag.Bool("no-x-cluins", false, "cluster insertions incur no negative effects")
-	multiplicative := flag.Bool("multiplicative", false, "multiplicative fitness decay (instead of linear, which is the default")
-	//ignoreFailed := flag.Bool("ignored-failed", false, "ignore invasions where the TE did not get established")
 	transrateResidual := flag.Float64("uc", 0.0, "the transposition rate in the presence of piRNAs")
 	steps := flag.Int64("steps", 20, "report the output at each '--steps' generations")
 	replicates := flag.Int64("rep", 1, "the number of replicates")
 	reploffset := flag.Int64("replicate-offset", 1, "starting index of the replicates; may be used for pseudo-parallelization)")
+	fileSpatial := flag.String("file-spatial", "", "optional output file: info about individual specimens including coordinates")
 	fileMHP := flag.String("file-mhp", "", "optional output file: position and population frequency of each insertion")
 	fileDebug := flag.String("file-debug", "", "optional output file for debugging various aspects")
 	fileSFS := flag.String("file-sfs", "", "optional output file: site frequency spectra of TE insertions")
@@ -76,8 +79,17 @@ func ParseCommandLine() *CommandLineParameters {
 	flag.Parse()
 
 	// basic checks if parameters are suitable
-	if *popsize < 2 {
-		panic("Provide a suitable population size --N; must be larger than 1")
+	if *gridx < 2 {
+		panic("Provide a suitable grid size --grid-x; must be larger than 1")
+	}
+	if *gridy < 2 {
+		panic("Provide a suitable grid size --grid-y; must be larger than 1")
+	}
+	if *mateRadius < 1 {
+		panic("Proivde a suitable mate radius --mate-radius; must be larger than 0")
+	}
+	if *selfrate < 0.0 || *selfrate > 1.0 {
+		panic("Provide a suitable selfing rate --self-rate; must be between 0.0 and 1.0")
 	}
 	if *transrate < 0.0 {
 		panic("Provide a suitable transposition rate --u; must be larger or equal to 0.0")
@@ -104,33 +116,35 @@ func ParseCommandLine() *CommandLineParameters {
 		panic("Provide suitable steps --steps; must be larger or equal to 1")
 	}
 	return &CommandLineParameters{
-		ArgString:        argstring,
-		Silent:           *silent,
-		Popsize:          *popsize,
-		Genome:           *genome,
-		Cluster:          *cluster,
-		RefRegion:        *refregion,
-		RecRate:          *rr,
-		BasePop:          *basepop,
-		U:                *transrate,
-		UC:               *transrateResidual,
-		X:                *x,
-		T:                *t,
-		Steps:            *steps,
-		Noxcluins:        *noxcluins,
-		Multiplicative:   *multiplicative,
-		ReplicateOffset:  *reploffset,
-		ParamutableSites: *paramutSites,
-		TriggerSites:     *triggerSites,
-		Seed:             *seed,
-		Threads:          *threads,
-		MinFitness:       *minw,
-		Replicates:       *replicates,
-		MaxInsertions:    *maxins,
-		FileMHP:          *fileMHP,
-		FileDebug:        *fileDebug,
-		FileTally:        *fileTally,
-		FileSFS:          *fileSFS,
-		Generations:      *generations,
-		SampleID:         *sampleid} //TODO implement as output
+		ArgString:      argstring,
+		Silent:         *silent,
+		GridX:          *gridx,
+		GridY:          *gridy,
+		Genome:         *genome,
+		TriggerSilence: *triggerSilence,
+		Sex:            *sex,
+		SelfingRate:    *selfrate,
+		EpiSilencing:   *episilence,
+		MateRadius:     *mateRadius,
+
+		RecRate:         *rr,
+		BasePop:         *basepop,
+		U:               *transrate,
+		UC:              *transrateResidual,
+		X:               *x,
+		T:               *t,
+		Steps:           *steps,
+		ReplicateOffset: *reploffset,
+		Seed:            *seed,
+		Threads:         *threads,
+		MinFitness:      *minw,
+		Replicates:      *replicates,
+		MaxInsertions:   *maxins,
+		FileSpatial:     *fileSpatial,
+		FileMHP:         *fileMHP,
+		FileDebug:       *fileDebug,
+		FileTally:       *fileTally,
+		FileSFS:         *fileSFS,
+		Generations:     *generations,
+		SampleID:        *sampleid} //TODO implement as output
 }
