@@ -7,11 +7,10 @@ import (
 )
 
 type CommandLineParameters struct {
-	Sex            string // herma or both
 	GridX          int64
 	GridY          int64
 	BasePop        string  // coordX,coordY,tecopynumber
-	EpiSilencing   string  // epigenetic silencing transmission eiter: male, female, or integer (100,0,50)
+	EpiSilencing   float64 // fraction of offspring that ends up with epigenetic silencing
 	TriggerSilence int64   // TE copy number per diploid where silencing will be triggered
 	MateRadius     int64   // radius in grid where mates will be found
 	SelfingRate    float64 // selfing rate between 0 and 1.0
@@ -46,8 +45,7 @@ func ParseCommandLine() *CommandLineParameters {
 	// Mandatory parameters
 	gridx := flag.Int64("grid-x", -1, "mandatory; the spatial grid size on X")
 	gridy := flag.Int64("grid-y", -1, "mandatory; the spatial grid size on X")
-	sex := flag.String("sex", "", "mandatory;  the simulated sexual system either 'mf' or 'h' male-female or hermaphrodite")
-	episilence := flag.String("epi-inherit", "", "mandatory;  how is epigenetic silencing inherited: male,female,integer")
+	episilence := flag.Float64("epi-inherit", -1.0, "mandatory;  fraction of offspring with epigenetic silencing")
 
 	genome := flag.String("genome", "", "mandatory; the genomic landscape; e.g. 'MB:2,3,1,5' specifiies four chromosomes with sizes of 2,3,1,5 Mb")
 	generations := flag.Int64("gen", -1, "mandatory; run the simulations for '--gen' generations")
@@ -91,6 +89,9 @@ func ParseCommandLine() *CommandLineParameters {
 	if *selfrate < 0.0 || *selfrate > 1.0 {
 		panic("Provide a suitable selfing rate --self-rate; must be between 0.0 and 1.0")
 	}
+	if *episilence < 0.0 || *episilence > 1.0 {
+		panic("Provide a suitable epigenetic inheritance rate --epi-inherit; must be between 0.0 and 1.0")
+	}
 	if *transrate < 0.0 {
 		panic("Provide a suitable transposition rate --u; must be larger or equal to 0.0")
 	}
@@ -122,7 +123,6 @@ func ParseCommandLine() *CommandLineParameters {
 		GridY:          *gridy,
 		Genome:         *genome,
 		TriggerSilence: *triggerSilence,
-		Sex:            *sex,
 		SelfingRate:    *selfrate,
 		EpiSilencing:   *episilence,
 		MateRadius:     *mateRadius,
