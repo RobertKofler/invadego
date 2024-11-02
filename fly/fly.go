@@ -21,24 +21,26 @@ var FLYCOUNTER int64 = 1
 const (
 	FEMALE Sex = 0
 	MALE   Sex = 1
+	HERMA  Sex = 2
 )
+
+type Position struct {
+	X int64
+	Y int64
+}
 
 type Fly struct {
 	FlyNumber int64 // each fly has a number; starting at 1
+	Pos       Position
 	Hap1      []int64
 	Hap2      []int64
-	Matpirna  int64 // number of the fly that triggered the maternal piRNAs; allows to identify soft sweeps from recurrent mutations!
+	Silenced  bool
 	Sex       Sex
 	Fitness   float64
 	FlyStat   *FlyStatistic
 }
 type FlyStatistic struct {
-	CountTotal     int64
-	CountCluster   int64
-	CountReference int64
-	CountPara      int64
-	CountTrigger   int64
-	CountNOE       int64
+	CountTotal int64
 }
 
 func (f *Fly) CountTotalInsertions() int64 {
