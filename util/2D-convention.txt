@@ -1,0 +1,25 @@
+=> convention inner loop is X outer is stack of Y
+	
+	// make y
+	pop := make([][]uint8, 3)
+	for i,_ := range pop {
+	
+		//make x
+		pop[i] = make([]uint8, 2)
+		fmt.Println(t)
+	}
+
+	// parse y,x with range
+	for y_cord, xslice := range pop {
+		for x_cord, _ := range xslice {
+			fmt.Println(fmt.Sprintf("%d,%d:%d", y_cord, x_cord, pop[y_cord][x_cord]))
+		}
+	}
+
+
+// parse with for loop
+	for y := 0; y < len(pop); y++ {
+		for x := 0; x < len(pop[y]); x++ {
+			fmt.Println(fmt.Sprintf("%d,%d:%d", y, x, pop[y][x]))
+		}
+	}
