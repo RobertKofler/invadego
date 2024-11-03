@@ -29,8 +29,16 @@ type cumFitFly struct {
 }
 
 func getNeighborhoodCoordinates(ycord int64, xcord int64, radius int64) neighborhood {
-	// find the coordinates of the neighborhood
+
+	// are coordinates within bounds?
 	ysize, xsize := env.GetYSize(), env.GetXSize()
+	if ycord < 0 || ycord >= ysize {
+		panic(fmt.Sprintf("invalid y-coordinate %d", ycord))
+	}
+	if xcord < 0 || xcord >= xsize {
+		panic(fmt.Sprintf("invalid x-coordinate %d", xcord))
+	}
+	// find the coordinates of the neighborhood
 	ystart, yend := ycord-radius, ycord+radius
 	xstart, xend := xcord-radius, xcord+radius
 	if ystart < 0 {
@@ -96,12 +104,11 @@ func getMatePairs(flies [][]Fly, n int64) [][]matePair {
 				// here goes non selfing
 				male := getFlyForRandomNumber(neigcum, rand.Float64())
 				// avoid selfing by mistake!!
-				// todo - this may need a more efficient implementation; eg remove the already picked one?
 				counter := 0
 				for male.fly.FlyNumber == fem.fly.FlyNumber {
 					male = getFlyForRandomNumber(neigcum, rand.Float64())
 					counter++
-					if counter > 5 {
+					if counter > 5 { // prevent being stuck in a loop
 						break
 					}
 				}
