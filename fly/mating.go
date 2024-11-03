@@ -2,6 +2,7 @@ package fly
 
 import (
 	"fmt"
+	"invade/env"
 	"math/rand"
 	"sort"
 )
@@ -9,6 +10,13 @@ import (
 type matePair struct {
 	female *Fly
 	male   *Fly
+}
+
+type neighborhood struct {
+	xstart int64
+	xend   int64
+	ystart int64
+	yend   int64
 }
 
 /*
@@ -20,23 +28,90 @@ type cumFitFly struct {
 
 }
 
+func getNeighborhoodCoordinates(ycord int64, xcord int64, radius int64) neighborhood {
+	// find the coordinates of the neighborhood
+	ysize, xsize := env.GetYSize(), env.GetXSize()
+	ystart, yend := ycord-radius, ycord+radius
+	xstart, xend := xcord-radius, xcord+radius
+	if ystart < 0 {
+		ystart = 0
+	}
+	if yend >= ysize {
+		yend = ysize - 1
+	}
+	if xstart < 0 {
+		xstart = 0
+	}
+	if xend >= xsize {
+		xend = xsize - 1
+	}
+	return neighborhood{
+		xstart: xstart,
+		xend:   xend,
+		ystart: ystart,
+		yend:   yend,
+	}
+
+}
+
+/*
+find the neighbors for a given coordinate
+*/
+func getNeighbors(flies [][]Fly, ycord int64, xcord int64, radius int64) []Fly {
+
+	ncoord := getNeighborhoodCoordinates(ycord, xcord, radius)
+	ncount := (ncoord.yend - ncoord.ystart + 1) * (ncoord.xend - ncoord.xstart + 1)
+	neighbors := make([]Fly, 0, ncount)
+
+	for y := ncoord.ystart; y <= ncoord.yend; y++ {
+		for x := ncoord.xstart; x <= ncoord.xend; x++ {
+			neighbors = append(neighbors, flies[y][x])
+		}
+	}
+	return neighbors
+}
+
 /*
  Get mate pairs; has random component
 */
-func getMatePairs(flies []Fly, n int64) []matePair {
-	males, females := SeparateSexes(flies)
-	// cumulative fitness
-	malecum := generateCumFitness(males)
-	femcum := generateCumFitness(females)
-	merryCouples := make([]matePair, n)
-	for i := int64(0); i < n; i++ {
-		rimale := rand.Float64()
-		rifem := rand.Float64()
-		male := getFlyForRandomNumber(malecum, rimale)
-		female := getFlyForRandomNumber(femcum, rifem)
-		merryCouples[i] = matePair{female: female.fly, male: male.fly}
+func getMatePairs(flies [][]Fly, n int64) [][]matePair {
+
+	// initialize
+	ysize, xsize := env.GetYSize(), env.GetXSize()
+	merryCouples := make([][]matePair, ysize)
+	for i, _ := range merryCouples {
+		//make x
+		merryCouples[i] = make([]matePair, xsize)
+	}
+
+	for y := 0; y < int(ysize); y++ {
+		for x := 0; x < int(xsize); x++ {
+			neighbors := getNeighbors(flies, int64(y), int64(x), env.GetMateRadius())
+			neigcum := generateCumFitness(neighbors)
+			fem := getFlyForRandomNumber(neigcum, rand.Float64())
+			if rand.Float64() < env.GetSelfingRate() { // eg selfing rate 0.9 and number 0.0 - 0.89999 will result in selfing
+				// here goes selfing
+				merryCouples[y][x] = matePair{female: fem.fly, male: fem.fly} // for selfing, male and female is the same
+			} else {
+				// here goes non selfing
+				male := getFlyForRandomNumber(neigcum, rand.Float64())
+				// avoid selfing by mistake!!
+				// todo - this may need a more efficient implementation; eg remove the already picked one?
+				counter := 0
+				for male.fly.FlyNumber == fem.fly.FlyNumber {
+					male = getFlyForRandomNumber(neigcum, rand.Float64())
+					counter++
+					if counter > 5 {
+						break
+					}
+				}
+				merryCouples[y][x] = matePair{female: fem.fly, male: male.fly}
+
+			}
+		}
 	}
 	return merryCouples
+
 }
 
 func generateCumFitness(flies []Fly) []cumFitFly {

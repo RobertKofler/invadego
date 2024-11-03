@@ -4,8 +4,10 @@ import (
 	"invade/env"
 )
 
+// important testing https://go.dev/tour/flowcontrol/1
+
 type Population struct {
-	Flies  []Fly
+	Flies  [][]Fly
 	phase  Phase
 	minFit float64
 }
@@ -14,9 +16,10 @@ type Phase int64
 
 const (
 	RAPIDINVASION Phase = 0
-	TRIGGERED     Phase = 1
-	SHOTGUN       Phase = 2
-	INACTIVE      Phase = 3
+	SGPATCHY      Phase = 2
+	SGPANDEMIC    Phase = 3
+	IAPATCHY      Phase = 4
+	IAPANDEMIC    Phase = 5
 )
 
 type PopStatus int64
@@ -26,15 +29,22 @@ const (
 	OK      PopStatus = 1
 	FAIL0   PopStatus = 2
 	FAILW   PopStatus = 3
-	FAILSEX PopStatus = 4
-	FAILMAX PopStatus = 5
+	FAILMAX PopStatus = 4
 )
 
+/*
+	Population size;
+	total number of individuals in 2D grid
+*/
 func (p *Population) Size() int64 {
-	return int64(len(p.Flies))
+	sum := 0
+	for _, i := range p.Flies {
+		sum += len(i)
+	}
+	return int64(sum)
 }
 
-func InitializePopulation(flies []Fly) *Population {
+func InitializePopulation(flies [][]Fly) *Population {
 	p := Population{Flies: flies}
 	p.minFit = p.GetAverageFitness()
 	p.phase = updatePhase(&p, RAPIDINVASION)

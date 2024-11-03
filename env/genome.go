@@ -15,6 +15,9 @@ type Environment struct {
 	selfingRate          float64
 	minimumFitness       float64
 	maximumInsertions    float64
+	gridX                int64
+	gridY                int64
+	mateRadius           int64
 }
 
 func GetMinimumFitness() float64 {
@@ -41,6 +44,18 @@ func GetEpigeneticSilencingRate() float64 {
 
 func GetTriggerThreshold() int64 {
 	return env.triggerThreshold
+}
+
+func GetYSize() int64 {
+	return env.gridY
+}
+
+func GetXSize() int64 {
+	return env.gridX
+}
+
+func GetMateRadius() int64 {
+	return env.mateRadius
 }
 
 var env Environment
