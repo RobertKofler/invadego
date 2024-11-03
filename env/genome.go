@@ -9,11 +9,10 @@ import (
 
 type Environment struct {
 	genome               *GenomicLandscape
-	clusters             RegionCollection
-	refRegions           RegionCollection
-	paramutables         *RecurrentSites
-	triggers             *RecurrentSites
 	recombinationWindows []*RecombinationWindow
+	triggerThreshold     int64
+	epiRate              float64
+	selfingRate          float64
 	minimumFitness       float64
 	maximumInsertions    float64
 }
@@ -24,6 +23,24 @@ func GetMinimumFitness() float64 {
 
 func GetMaximumInsertions() float64 {
 	return env.maximumInsertions
+}
+
+/*
+Rate of selfing
+*/
+func GetSelfingRate() float64 {
+	return env.selfingRate
+}
+
+/*
+How many of the offspring of a silenced plant receive the silencing info
+*/
+func GetEpigeneticSilencingRate() float64 {
+	return env.epiRate
+}
+
+func GetTriggerThreshold() int64 {
+	return env.triggerThreshold
 }
 
 var env Environment

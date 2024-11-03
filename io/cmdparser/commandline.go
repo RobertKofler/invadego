@@ -23,7 +23,6 @@ type CommandLineParameters struct {
 	U               float64 // transposition rate
 	UC              float64 // transposition rate in the presence of host defence
 	X               float64 // deleterious effect of a TE insertion
-	T               float64 // exponential deleterious effect of a TE insertion
 	Steps           int64   // report output each Steps generations
 	Generations     int64
 	SampleID        string
@@ -59,7 +58,7 @@ func ParseCommandLine() *CommandLineParameters {
 	sampleid := flag.String("sampleid", "", "the ID of the sample; will be a help in R to group samples like with facete_grid()")
 	rr := flag.String("rr", "", "the recombination rate per chromosome in cm/Mb; e.g. '3,4,4,5' ")
 	x := flag.Float64("x", 0.0, "the deleterious effect of a single TE insertions")
-	t := flag.Float64("t", 1.0, "the synergistic effect of TE insertions")
+	//t := flag.Float64("t", 1.0, "the synergistic effect of TE insertions")
 	transrateResidual := flag.Float64("uc", 0.0, "the transposition rate in the presence of piRNAs")
 	steps := flag.Int64("steps", 20, "report the output at each '--steps' generations")
 	replicates := flag.Int64("rep", 1, "the number of replicates")
@@ -101,9 +100,9 @@ func ParseCommandLine() *CommandLineParameters {
 	if *x < 0.0 {
 		panic("Provide a suitable deleterious effect of TEs --x; must be larger or equal to 0.0")
 	}
-	if *t < 1.0 {
-		panic("Provide a suitable epistatic effect of TEs --t; must be larger or equal to 1.0")
-	}
+	//if *t < 1.0 {
+	//	panic("Provide a suitable epistatic effect of TEs --t; must be larger or equal to 1.0")
+	//}
 	if *genome == "" {
 		panic("Provide a suitable genome --genome")
 	}

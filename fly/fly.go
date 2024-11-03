@@ -34,8 +34,7 @@ type Fly struct {
 	Pos       Position
 	Hap1      []int64
 	Hap2      []int64
-	Silenced  bool
-	Sex       Sex
+	Silenced  int64
 	Fitness   float64
 	FlyStat   *FlyStatistic
 }
@@ -52,9 +51,8 @@ Get a gamete from the Fly;
 First recombination among the two haplotypes will take place;
 Second the number of new insertions will be computed based on
 i) the TE insertions in the diploid parent
-ii) piRNA cluster insertions
-iii) maternal piRNAs and paramutable sites
-iv) the transposition rate.
+ii) epigenetic silencing
+iii) the transposition rate.
 The number and position of new insertions will be random.
 Multiple insertions at the same site will be ignored.
 */
@@ -69,8 +67,8 @@ func (f *Fly) GetGamete() []int64 {
 	counttotal := int64(len(f.Hap1) + len(f.Hap2))
 
 	// the function generates novel transposition events for a HAPLOID genome, i.e. a gamete
-	// if f.matpirna > 0 than we have piRNAs and thus no novel insertions (zero is default)
-	newsites := env.GetNewTranspositionSites(counttotal, f.Matpirna > 0)
+	// if epigenetically sileneced we have no novel insertions (zero is default)
+	newsites := env.GetNewTranspositionSites(counttotal, f.Silenced)
 
 	// merge old and new insertion sites, make them unique and sort
 	return util.MergeUniqueSort(gamete, newsites)
@@ -82,41 +80,35 @@ Compute basic statistics for a fly, ie number of cluster insertions, number of r
 */
 func getFlyStat(femgam []int64, malegam []int64) FlyStatistic {
 	totcount := int64(len(femgam) + len(malegam))
-	cluster, reference, para, trigger, noe := env.CountDiploidInsertions(femgam, malegam)
 	fs := FlyStatistic{
-		CountTotal:     totcount,
-		CountCluster:   cluster,
-		CountReference: reference,
-		CountPara:      para,
-		CountTrigger:   trigger,
-		CountNOE:       noe,
+		CountTotal: totcount,
 	}
 	return fs
 }
 
-func getMaternalPirnaStatus(fstat FlyStatistic, matpirna int64, fc int64) int64 {
-	// Gain maternal piRNAs
-	if matpirna == 0 {
-		// check for new trigger events
+/*
+Check if the TE is silenced
+Silenced if a) count of TE is larger than threshold b) if the parent transmitted its epigenetic silencing status and the
+individum has at least one insertion
+*/
+func getSilencingStatus(fstat FlyStatistic, silenced int64, fc int64) int64 {
 
-		if fstat.CountCluster > 0 {
-			return fc // if there are cluster insertions -> we gained maternal piRNAs
-		} else if fstat.CountTrigger > 0 && fstat.CountPara > 0 {
-			return fc // if there are paramutable sites and trigger sites -> we gained maternal piRNAs
+	// trigger 'de novo' silencing
+	if silenced == 0 {
+		// check for new trigger events
+		if fstat.CountTotal >= env.GetTriggerThreshold() {
+			return fc // silenced
 		} else {
-			return 0 // ok still no maternal piRNAs
+			return 0
 		}
 	} else {
-		// ok there were maternal piRNAs: wuhu
-		// if there is a cluster insertion or a paramutable site -> maternal piRNAs are preserved
-		// otherwise maternal piRNAs are LOST!
-
-		if fstat.CountCluster > 0 {
-			return matpirna // cluster insertion -> preserve maternal piRNAs
-		} else if fstat.CountPara > 0 {
-			return matpirna // paramutable site -> preserve maternal piRNAs
+		// ok there is epigenetic silencing inherited wuhu
+		// if there is a TE insertion it can be preserved,
+		// otherwise the epigenetic silencing is lost
+		if fstat.CountTotal > 0 {
+			return silenced // silenced (id of old fly that triggered it)
 		} else {
-			return 0 // LOSS of maternal PIRNAS
+			return 0 // lost
 		}
 	}
 }
@@ -185,7 +177,6 @@ func (f *Fly) getRecombinedGamete() []int64 {
 
 /*
 	Separate flies into males and females; return value provided in this order
-*/
 func SeparateSexes(flies []Fly) ([]Fly, []Fly) {
 	males := []Fly{}
 	females := []Fly{}
@@ -198,6 +189,7 @@ func SeparateSexes(flies []Fly) ([]Fly, []Fly) {
 	}
 	return males, females
 }
+*/
 
 /*
 Get random sex
@@ -211,7 +203,7 @@ func GetRandomSex() Sex {
 Setup a new Fly; given the gametes, the sex, and the maternal piRNAs;
 Will i) merge gametes ii) compute stats iii) determine piRNA status iv) compute fitness v) increase FLYCOUNTER
 */
-func NewFly(femgam []int64, malegam []int64, sex Sex, matpirna int64) *Fly {
+func NewFly(femgam []int64, malegam []int64, sex Sex, silenced int64) *Fly {
 	// should give random numbers 0 or 1, ie male female
 	fstat := getFlyStat(femgam, malegam)
 	// multithreading lock and unlock
@@ -220,8 +212,8 @@ func NewFly(femgam []int64, malegam []int64, sex Sex, matpirna int64) *Fly {
 	FLYCOUNTER++
 	//flylock.Unlock()
 
-	matpi := getMaternalPirnaStatus(fstat, matpirna, currentCounter)
-	newFly := Fly{Hap1: malegam, Hap2: femgam, FlyNumber: currentCounter, Matpirna: matpi, Sex: Sex(sex), FlyStat: &fstat}
+	matpi := getSilencingStatus(fstat, silenced, currentCounter)
+	newFly := Fly{Hap1: malegam, Hap2: femgam, FlyNumber: currentCounter, Silenced: matpi, FlyStat: &fstat}
 	newFly.Fitness = GetFitness(&newFly)
 
 	return &newFly
