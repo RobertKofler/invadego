@@ -36,8 +36,8 @@ Get the positions of novel insertions for a haploid gamete; Input parameters are
 Number of required insertions is then divided by two to obtain estimates for haploid genomes.
 returns a list of novel insertion sites; not unique, may contain same site twice
 */
-func GetNewTranspositionSites(totalCount int64, silenced int64) []int64 {
-	newcountAverageDiploid := jump.getNovelInsertionCount(totalCount, silenced > 0)
+func GetNewTranspositionSites(totalCount int64, silenced bool) []int64 {
+	newcountAverageDiploid := jump.getNovelInsertionCount(totalCount, silenced)
 	newcountAverageHaploid := float64(newcountAverageDiploid) / 2.0 // is this valid? see below
 	newcountHaploid := util.Poisson(newcountAverageHaploid)
 	toret := make([]int64, newcountHaploid)

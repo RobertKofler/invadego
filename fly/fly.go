@@ -34,7 +34,7 @@ type Fly struct {
 	Pos       Position
 	Hap1      []int64
 	Hap2      []int64
-	Silenced  int64
+	Silenced  bool
 	Fitness   float64
 	FlyStat   *FlyStatistic
 }
@@ -91,24 +91,24 @@ Check if the TE is silenced
 Silenced if a) count of TE is larger than threshold b) if the parent transmitted its epigenetic silencing status and the
 individum has at least one insertion
 */
-func getSilencingStatus(fstat FlyStatistic, silenced int64, fc int64) int64 {
+func getSilencingStatus(fstat FlyStatistic, silenced bool, fc int64) bool {
 
 	// trigger 'de novo' silencing
-	if silenced == 0 {
+	if !silenced {
 		// check for new trigger events
 		if fstat.CountTotal >= env.GetTriggerThreshold() {
-			return fc // silenced
+			return true // silenced
 		} else {
-			return 0
+			return false
 		}
 	} else {
 		// ok there is epigenetic silencing inherited wuhu
 		// if there is a TE insertion it can be preserved,
 		// otherwise the epigenetic silencing is lost
 		if fstat.CountTotal > 0 {
-			return silenced // silenced (id of old fly that triggered it)
+			return true // silenced (id of old fly that triggered it)
 		} else {
-			return 0 // lost
+			return false // no te insertion -> epigenetic silencing is lost
 		}
 	}
 }
@@ -200,10 +200,10 @@ func GetRandomSex() Sex {
 }
 
 /*
-Setup a new Fly; given the gametes, the sex, and the maternal piRNAs;
-Will i) merge gametes ii) compute stats iii) determine piRNA status iv) compute fitness v) increase FLYCOUNTER
+Setup a new Fly; given the gametes, the sex, and the epigenetic silencing
+Will i) merge gametes ii) compute stats iii) determine silencing status (could be lost) iv) compute fitness v) increase FLYCOUNTER
 */
-func NewFly(femgam []int64, malegam []int64, sex Sex, silenced int64) *Fly {
+func NewFly(femgam []int64, malegam []int64, silenced bool) *Fly {
 	// should give random numbers 0 or 1, ie male female
 	fstat := getFlyStat(femgam, malegam)
 	// multithreading lock and unlock

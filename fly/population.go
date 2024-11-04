@@ -2,13 +2,14 @@ package fly
 
 import (
 	"invade/env"
+	"math/rand"
 )
 
 // important testing https://go.dev/tour/flowcontrol/1
 
 type Population struct {
-	Flies  [][]Fly
-	phase  Phase
+	Flies [][]Fly
+	//phase  Phase
 	minFit float64
 }
 
@@ -47,7 +48,7 @@ func (p *Population) Size() int64 {
 func InitializePopulation(flies [][]Fly) *Population {
 	p := Population{Flies: flies}
 	p.minFit = p.GetAverageFitness()
-	p.phase = updatePhase(&p, RAPIDINVASION)
+	//p.phase = updatePhase(&p, RAPIDINVASION)
 	return &p
 }
 
@@ -56,7 +57,35 @@ Get the next generation i) get mate pairs according to fitness ii) get gametes w
 v) compute fitness and statistics
 */
 func (p *Population) GetNextGeneration() *Population {
-	matePairs := getMatePairs(p.Flies, int64(len(p.Flies)))
+
+	// get the merry couples; selfing is considered, in which case male and female are identical
+	matePairs := getMatePairs(p.Flies)
+
+	// initialize the grid for the next generation
+	ysize, xsize := env.GetYSize(), env.GetXSize()
+	nextGen := make([][]Fly, ysize)
+	for i, _ := range nextGen {
+		//make x
+		nextGen[i] = make([]Fly, xsize)
+	}
+	for y := 0; y < int(ysize); y++ {
+		for x := 0; x < int(xsize); x++ {
+			mp := matePairs[y][x]
+			// selfing considered in choice of mate pair! do not address here
+			femgam := mp.female.GetGamete()
+			malegam := mp.male.GetGamete()
+			parentSilenced := false
+			if mp.female.Silenced || mp.male.Silenced {
+				parentSilenced = true
+			}
+			if rand.Float64() > env.GetEpigeneticSilencingRate() {
+				parentSilenced = false
+			}
+
+			newFly := NewFly(femgam, malegam, parentSilenced)
+		}
+	}
+
 	nextGen := make([]Fly, len(matePairs))
 	for i, mp := range matePairs {
 		femgam := mp.female.GetGamete()

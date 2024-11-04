@@ -28,6 +28,9 @@ type cumFitFly struct {
 
 }
 
+/*
+for given coordinates, delinitate the neighborhood in the grid; considering the boundaries
+*/
 func getNeighborhoodCoordinates(ycord int64, xcord int64, radius int64) neighborhood {
 
 	// are coordinates within bounds?
@@ -80,9 +83,11 @@ func getNeighbors(flies [][]Fly, ycord int64, xcord int64, radius int64) []Fly {
 }
 
 /*
- Get mate pairs; has random component
+ Get mate pairs;
+ Get neighbors;
+ consider selfing (in which case both parents are identical)
 */
-func getMatePairs(flies [][]Fly, n int64) [][]matePair {
+func getMatePairs(flies [][]Fly) [][]matePair {
 
 	// initialize
 	ysize, xsize := env.GetYSize(), env.GetXSize()
@@ -108,12 +113,11 @@ func getMatePairs(flies [][]Fly, n int64) [][]matePair {
 				for male.fly.FlyNumber == fem.fly.FlyNumber {
 					male = getFlyForRandomNumber(neigcum, rand.Float64())
 					counter++
-					if counter > 5 { // prevent being stuck in a loop
+					if counter > 5 { // prevent being stuck in an endless loop
 						break
 					}
 				}
-				merryCouples[y][x] = matePair{female: fem.fly, male: male.fly}
-
+				merryCouples[y][x] = matePair{female: fem.fly, male: male.fly} // non-selfing: male and female are different
 			}
 		}
 	}
