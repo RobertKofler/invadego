@@ -10,7 +10,7 @@ import (
  perform the simulations;
  multiple replicates and generations
 */
-func SimulateInvasions(basepop string, popsize int64, replicates int64, generation int64) {
+func SimulateInvasions(basepop string, replicates int64, generation int64) {
 	for k := int64(0); k < replicates; k++ {
 		pop := cmdparser.ParseBasePop(basepop, popsize)
 		status := pop.GetStatus()

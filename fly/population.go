@@ -7,12 +7,13 @@ import (
 // important testing https://go.dev/tour/flowcontrol/1
 
 type Population struct {
-	Flies     [][]Fly
-	linearFly []Fly
+	Flies     [][]*Fly
+	linearFly []*Fly
 }
 
 type Phase int64
 
+// geographic phases...
 const (
 	RAPIDINVASION Phase = 0
 	SGPATCHY      Phase = 2
@@ -43,13 +44,13 @@ func (p *Population) Size() int64 {
 	return int64(sum)
 }
 
-func newPopulation(flies [][]Fly) *Population {
+func NewPopulation(flies [][]*Fly) *Population {
 	p := Population{Flies: flies}
-	linear := make([]Fly, 0, p.Size())
+	linear := make([]*Fly, 0, p.Size())
 	ysize, xsize := env.GetYSize(), env.GetXSize()
 	for y := 0; y < int(ysize); y++ {
 		for x := 0; x < int(xsize); x++ {
-			cf := p.Flies[y][x]
+			cf := flies[y][x]
 			linear = append(linear, cf)
 		}
 	}
@@ -68,10 +69,10 @@ func (p *Population) GetNextGeneration() *Population {
 
 	// initialize the grid for the next generation
 	ysize, xsize := env.GetYSize(), env.GetXSize()
-	nextGen := make([][]Fly, ysize)
+	nextGen := make([][]*Fly, ysize)
 	for i, _ := range nextGen {
 		//make x
-		nextGen[i] = make([]Fly, xsize)
+		nextGen[i] = make([]*Fly, xsize)
 	}
 	for y := 0; y < int(ysize); y++ {
 		for x := 0; x < int(xsize); x++ {
@@ -82,11 +83,12 @@ func (p *Population) GetNextGeneration() *Population {
 			issilenced := env.OffspringIsSilenced(mp.female.Silenced, mp.male.Silenced)
 
 			newFly := NewFly(femgam, malegam, issilenced)
-			nextGen[y][x] = *newFly
+			nextGen[y][x] = newFly
 		}
 	}
 
-	newPop := newPopulation(nextGen)
+	newPop := NewPopulation(nextGen)
+	// update phase would go here
 
 	return newPop
 }

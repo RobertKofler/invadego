@@ -12,12 +12,62 @@ import (
 	"strings"
 )
 
-func ParseBasePop(basepop string, popsize int64) *fly.Population {
-	if inscount, err := strconv.ParseInt(basepop, 10, 64); err == nil {
-		return loadPopulation(inscount, popsize)
-	} else {
-		return loadPopulationFromFile(basepop, popsize)
+func ParseBasePop(basepop string) *fly.Population {
+	countgrid := getPopCountGrrid(basepop)
+	ysize, xsize := env.GetYSize(), env.GetXSize()
+	pop := make([][]fly.Fly, ysize)
+	for i, _ := range pop {
+		pop[i] = make([]fly.Fly, xsize)
 	}
+	for y := 0; y < int(ysize); y++ {
+		for x := 0; x < int(xsize); x++ {
+			targetinsertions := countgrid[y][x]
+			hap1 := make([]int64, 0)
+			hap2 := make([]int64, 0)
+			for i := 0; i < int(targetinsertions); i++ {
+				genpos := env.GetRandomSite()
+				if rand.Intn(2) == 1 {
+					hap1 = append(hap1, genpos)
+				} else {
+					hap2 = append(hap2, genpos)
+				}
+			}
+			h1 := util.UniqueSort(hap1)
+			h2 := util.UniqueSort(hap2)
+			nf := fly.NewFly(h1, h2, false)
+			pop[y][x] = *nf
+		}
+	}
+	return fly.newPopulation(pop)
+}
+
+func getPopCountGrrid(basepop string) [][]int64 {
+	popcount := make([][]int64, env.GetYSize())
+	for i, _ := range popcount {
+		popcount[i] = make([]int64, env.GetXSize())
+	}
+
+	//Y,X,count;Y,X,count
+	toparse := make([]string, 0)
+	if strings.Contains(basepop, ";") {
+		toparse = strings.Split(basepop, ";")
+
+	} else {
+		toparse = append(toparse, basepop)
+	}
+	for _, tp := range toparse {
+		tmp := strings.Split(tp, ",")
+		yco, ery := strconv.ParseInt(tmp[0], 10, 64)
+		xco, erx := strconv.ParseInt(tmp[1], 10, 64)
+		count, erc := strconv.ParseInt(tmp[2], 10, 64)
+		if ery != nil || erx != nil || erc != nil {
+			panic(fmt.Sprintf("Invalid base population entry %s", tp))
+		}
+		popcount[yco][xco] = count
+
+	}
+
+	return popcount
 }
 
 /*

@@ -6,17 +6,27 @@ import "fmt"
 Initialize the entire environment for the simulations, i.e. the chromosomes, the piRNA clusters, the recombination rate
 (fitness? mating?)
 */
-func SetupEnvironment(gridx int64, gridy int64, materadius int64, chrSizes []int64, recRate []float64, hostsilencetrigger int64, episilence float64, selfrate float64, minFitness float64, maxInsertions float64) {
+func SetupEnvironment(gridx int64, gridy int64, materadius int64, chrSizes []int64, recRate []float64, hostsilencetrigger int64, episilence string, selfrate float64, minFitness float64, maxInsertions float64) {
 	//	env.SetupEnvironment(genome, recrate, clp.TriggerSilence, clp.EpiSilencing,clp.SelfingRate, clp.MinFitness, float64(clp.MaxInsertions))
 	genome := newGenomicLandscape(chrSizes) // setup genome
 
 	// compute the recombination windows
 	recwins := getRecombinationWindows(genome.intervals, recRate)
+	epimode := NONE
+	if episilence == "none" {
+		epimode = NONE
+	} else if episilence == "arabidopsis" {
+		epimode = ARABIDOPSIS
+	} else if episilence == "drosophila" {
+		epimode = DROSOPHILA
+	} else {
+		panic(fmt.Sprintf("nknown epigenetic mode %s", episilence))
+	}
 
 	env = Environment{
 		genome:               genome,
 		triggerThreshold:     hostsilencetrigger,
-		epiRate:              episilence,
+		epiMode:              epimode,
 		selfingRate:          selfrate,
 		minimumFitness:       minFitness,
 		maximumInsertions:    maxInsertions,
@@ -28,13 +38,5 @@ func SetupEnvironment(gridx int64, gridy int64, materadius int64, chrSizes []int
 }
 
 func SetupEpigeneticSilencing(epis string) {
-	if epis == "none" {
-		epimode = NONE
-	} else if epis == "arabidopsis" {
-		epimode = ARABIDOPSIS
-	} else if epis == "drosophila" {
-		epimode = DROSOPHILA
-	} else {
-		panic(fmt.Sprintf("nknown epigenetic mode %s", epis))
-	}
+
 }

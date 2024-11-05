@@ -11,7 +11,7 @@ type Environment struct {
 	genome               *GenomicLandscape
 	recombinationWindows []*RecombinationWindow
 	triggerThreshold     int64
-	epiRate              float64
+	epiMode              EpigeneticSilencing
 	selfingRate          float64
 	minimumFitness       float64
 	maximumInsertions    float64
