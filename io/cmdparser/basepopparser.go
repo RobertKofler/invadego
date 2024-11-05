@@ -15,9 +15,9 @@ import (
 func ParseBasePop(basepop string) *fly.Population {
 	countgrid := getPopCountGrrid(basepop)
 	ysize, xsize := env.GetYSize(), env.GetXSize()
-	pop := make([][]fly.Fly, ysize)
+	pop := make([][]*fly.Fly, ysize)
 	for i, _ := range pop {
-		pop[i] = make([]fly.Fly, xsize)
+		pop[i] = make([]*fly.Fly, xsize)
 	}
 	for y := 0; y < int(ysize); y++ {
 		for x := 0; x < int(xsize); x++ {
@@ -35,16 +35,17 @@ func ParseBasePop(basepop string) *fly.Population {
 			h1 := util.UniqueSort(hap1)
 			h2 := util.UniqueSort(hap2)
 			nf := fly.NewFly(h1, h2, false)
-			pop[y][x] = *nf
+			pop[y][x] = nf
 		}
 	}
-	return fly.newPopulation(pop)
+	return fly.NewPopulation(pop)
 }
 
 func getPopCountGrrid(basepop string) [][]int64 {
-	popcount := make([][]int64, env.GetYSize())
+	ysize, xsize := env.GetYSize(), env.GetXSize()
+	popcount := make([][]int64, ysize)
 	for i, _ := range popcount {
-		popcount[i] = make([]int64, env.GetXSize())
+		popcount[i] = make([]int64, xsize)
 	}
 
 	//Y,X,count;Y,X,count
@@ -63,6 +64,13 @@ func getPopCountGrrid(basepop string) [][]int64 {
 		if ery != nil || erx != nil || erc != nil {
 			panic(fmt.Sprintf("Invalid base population entry %s", tp))
 		}
+		if yco >= ysize {
+			panic(fmt.Sprintf("Y-coordinate of specimen in base popualtion outside of spatial grid: %d", yco))
+		}
+		if xco >= xsize {
+			panic(fmt.Sprintf("Y-coordinate of specimen in base popualtion outside of spatial grid: %d", xco))
+		}
+
 		popcount[yco][xco] = count
 
 	}
