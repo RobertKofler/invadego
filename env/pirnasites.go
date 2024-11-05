@@ -4,6 +4,31 @@ import (
 	"fmt"
 )
 
+type EpigeneticSilencing int64
+
+var epimode EpigeneticSilencing
+
+const (
+	NONE        EpigeneticSilencing = 0
+	ARABIDOPSIS EpigeneticSilencing = 1
+	DROSOPHILA  EpigeneticSilencing = 2
+)
+
+/*
+Test if the offspring of a cross between fem and male is silenced;
+depends on the epigenetic silencing mode
+*/
+func OffspringIsSilenced(fem bool, male bool) bool {
+	if epimode == NONE {
+		return false
+	} else if epimode == DROSOPHILA {
+		return fem
+	} else if epimode == ARABIDOPSIS {
+		// either is fine, that is logical or
+		return fem || male
+	}
+}
+
 type RegionCollection []GenomicInterval
 
 /*

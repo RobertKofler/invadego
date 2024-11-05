@@ -1,5 +1,7 @@
 package env
 
+import "fmt"
+
 /*
 Initialize the entire environment for the simulations, i.e. the chromosomes, the piRNA clusters, the recombination rate
 (fitness? mating?)
@@ -22,5 +24,17 @@ func SetupEnvironment(gridx int64, gridy int64, materadius int64, chrSizes []int
 		gridX:                gridx,
 		gridY:                gridy,
 		mateRadius:           materadius,
+	}
+}
+
+func SetupEpigeneticSilencing(epis string) {
+	if epis == "none" {
+		epimode = NONE
+	} else if epis == "arabidopsis" {
+		epimode = ARABIDOPSIS
+	} else if epis == "drosophila" {
+		epimode = DROSOPHILA
+	} else {
+		panic(fmt.Sprintf("nknown epigenetic mode %s", epis))
 	}
 }

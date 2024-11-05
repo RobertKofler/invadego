@@ -10,7 +10,7 @@ type CommandLineParameters struct {
 	GridX          int64
 	GridY          int64
 	BasePop        string  // coordX,coordY,tecopynumber
-	EpiSilencing   float64 // fraction of offspring that ends up with epigenetic silencing
+	EpiSilencing   string  //  epigenetic silencing mode
 	TriggerSilence int64   // TE copy number per diploid where silencing will be triggered
 	MateRadius     int64   // radius in grid where mates will be found
 	SelfingRate    float64 // selfing rate between 0 and 1.0
@@ -44,8 +44,7 @@ func ParseCommandLine() *CommandLineParameters {
 	// Mandatory parameters
 	gridx := flag.Int64("grid-x", -1, "mandatory; the spatial grid size on X")
 	gridy := flag.Int64("grid-y", -1, "mandatory; the spatial grid size on X")
-	episilence := flag.Float64("epi-inherit", -1.0, "mandatory;  fraction of offspring with epigenetic silencing")
-
+	episilence := strings.ToLower(*flag.String("epi-inherit", "", "mandatory;  either drosophila,arabidopsis,none"))
 	genome := flag.String("genome", "", "mandatory; the genomic landscape; e.g. 'MB:2,3,1,5' specifiies four chromosomes with sizes of 2,3,1,5 Mb")
 	generations := flag.Int64("gen", -1, "mandatory; run the simulations for '--gen' generations")
 	basepop := flag.String("basepop", "", "mandatory; the individual(s) with the segregating insertions in the starting population; CoordX,CoordY,N")
@@ -88,8 +87,8 @@ func ParseCommandLine() *CommandLineParameters {
 	if *selfrate < 0.0 || *selfrate > 1.0 {
 		panic("Provide a suitable selfing rate --self-rate; must be between 0.0 and 1.0")
 	}
-	if *episilence < 0.0 || *episilence > 1.0 {
-		panic("Provide a suitable epigenetic inheritance rate --epi-inherit; must be between 0.0 and 1.0")
+	if episilence != "none" && episilence != "arabidopsis" && episilence != "drosophila" {
+		panic("Provide a suitable epigenetic inheritance mode --epi-inherit; must one of none, arabidopsis, drosophila")
 	}
 	if *transrate < 0.0 {
 		panic("Provide a suitable transposition rate --u; must be larger or equal to 0.0")
@@ -123,7 +122,7 @@ func ParseCommandLine() *CommandLineParameters {
 		Genome:         *genome,
 		TriggerSilence: *triggerSilence,
 		SelfingRate:    *selfrate,
-		EpiSilencing:   *episilence,
+		EpiSilencing:   episilence,
 		MateRadius:     *mateRadius,
 
 		RecRate:         *rr,
@@ -131,7 +130,6 @@ func ParseCommandLine() *CommandLineParameters {
 		U:               *transrate,
 		UC:              *transrateResidual,
 		X:               *x,
-		T:               *t,
 		Steps:           *steps,
 		ReplicateOffset: *reploffset,
 		Seed:            *seed,

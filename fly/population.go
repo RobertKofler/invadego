@@ -2,15 +2,13 @@ package fly
 
 import (
 	"invade/env"
-	"math/rand"
 )
 
 // important testing https://go.dev/tour/flowcontrol/1
 
 type Population struct {
-	Flies [][]Fly
-	//phase  Phase
-	minFit float64
+	Flies     [][]Fly
+	linearFly []Fly
 }
 
 type Phase int64
@@ -45,10 +43,17 @@ func (p *Population) Size() int64 {
 	return int64(sum)
 }
 
-func InitializePopulation(flies [][]Fly) *Population {
+func newPopulation(flies [][]Fly) *Population {
 	p := Population{Flies: flies}
-	p.minFit = p.GetAverageFitness()
-	//p.phase = updatePhase(&p, RAPIDINVASION)
+	linear := make([]Fly, 0, p.Size())
+	ysize, xsize := env.GetYSize(), env.GetXSize()
+	for y := 0; y < int(ysize); y++ {
+		for x := 0; x < int(xsize); x++ {
+			cf := p.Flies[y][x]
+			linear = append(linear, cf)
+		}
+	}
+	p.linearFly = linear
 	return &p
 }
 
@@ -74,107 +79,16 @@ func (p *Population) GetNextGeneration() *Population {
 			// selfing considered in choice of mate pair! do not address here
 			femgam := mp.female.GetGamete()
 			malegam := mp.male.GetGamete()
-			parentSilenced := false
-			if mp.female.Silenced || mp.male.Silenced {
-				parentSilenced = true
-			}
-			if rand.Float64() > env.GetEpigeneticSilencingRate() {
-				parentSilenced = false
-			}
+			issilenced := env.OffspringIsSilenced(mp.female.Silenced, mp.male.Silenced)
 
-			newFly := NewFly(femgam, malegam, parentSilenced)
+			newFly := NewFly(femgam, malegam, issilenced)
+			nextGen[y][x] = *newFly
 		}
 	}
 
-	nextGen := make([]Fly, len(matePairs))
-	for i, mp := range matePairs {
-		femgam := mp.female.GetGamete()
-		malgam := mp.male.GetGamete()
-		sex := GetRandomSex()
-		newFly := NewFly(femgam, malgam, sex, mp.female.Matpirna) // maternal piRNAs; only the female passes them
-		nextGen[i] = *newFly
-	}
-	newPop := Population{Flies: nextGen}
-	newPhase := updatePhase(&newPop, p.phase)
-	newPop.phase = newPhase
-	newMinFit := updateFitness(&newPop, p.minFit)
-	newPop.minFit = newMinFit
-	return &newPop
-}
+	newPop := newPopulation(nextGen)
 
-func getFly(mp matePair, fc chan<- *Fly) {
-	femgam := mp.female.GetGamete()
-	malgam := mp.male.GetGamete()
-	sex := GetRandomSex()
-	newFly := NewFly(femgam, malgam, sex, mp.female.Matpirna) // maternal piRNAs; only the female passes them
-	fc <- newFly
-}
-
-/*
-func (p *Population) GetNextGenerationMultithreading() *Population {
-	// Generate flies
-	flychan := make(chan *Fly)
-	matePairs := getMatePairs(p.Flies, int64(len(p.Flies)))
-	for i := 0; i < len(p.Flies); i++ {
-		go getFly(matePairs[i], flychan)
-	}
-
-	// collect the flies
-	nextGen := make([]Fly, len(matePairs))
-	for i := 0; i < len(p.Flies); i++ {
-		f := <-flychan
-		nextGen[i] = *f
-	}
-	if len(nextGen) != len(p.Flies) {
-		panic("multithreading fuckup")
-	}
-	newPop := Population{Flies: nextGen}
-	newPhase := updatePhase(&newPop, p.phase)
-	newPop.phase = newPhase
-	return &newPop
-}
-*/
-
-/*
-Find the novel minimum Fitness;
-Does the new population have a lower average fitness than the previous one?
-*/
-func updateFitness(newPop *Population, previousMinFit float64) float64 {
-	curFit := newPop.GetAverageFitness()
-	if curFit < previousMinFit {
-		return curFit
-	} else {
-		return previousMinFit
-	}
-}
-
-/*
-update the phase of the invasion;
-RAPIDINVASION->TRIGGERED -> SHOTGUN -> INACTIVE
-*/
-func updatePhase(newPop *Population, oldPhase Phase) Phase {
-	if oldPhase == INACTIVE {
-		return INACTIVE // no escape from a fixed cluster insertion
-	}
-	mat := newPop.GetWithPirnaCount()
-	freq := float64(mat) / float64(len(newPop.Flies))
-	if oldPhase == RAPIDINVASION {
-		if mat > 0 { // condition for trigger -> at least one with piRNAs
-			return TRIGGERED
-		}
-	} else if oldPhase == TRIGGERED {
-		if freq > 0.99 { // condition for shotgun -> 99% silenced in population
-			return SHOTGUN
-		}
-	} else if oldPhase == SHOTGUN {
-		fixedIns := newPop.GetFixedInsertions()
-		fclu, _, fpara, _, _ := env.CountHaploidInsertions(fixedIns)
-		if fclu > 0 || fpara > 0 { // conditon for inactive -> at least one fixed cluster insertion; or fixed paramutable locus
-			return INACTIVE
-		}
-		// Check if the inactive phase was reached
-	}
-	return oldPhase //if nothing special happens -> oldphase
+	return newPop
 }
 
 /*
@@ -187,21 +101,15 @@ fail-sex 	only males or only females
 */
 func (p *Population) GetStatus() PopStatus {
 	fitcount := 0.0
-	femcount := 0
 	tecount := 0
-	for _, f := range p.Flies {
+	for _, f := range p.linearFly {
 		fitcount += f.Fitness
 		tecount += int(f.FlyStat.CountTotal)
-		if f.Sex == FEMALE {
-			femcount++
-		}
 	}
 	avfit := fitcount / float64(p.Size())
 	avins := p.GetAverageInsertions()
 	if tecount == 0 {
 		return FAIL0
-	} else if femcount == 0 || femcount == int(p.Size()) {
-		return FAILSEX
 	} else if avfit < env.GetMinimumFitness() {
 		return FAILW
 	} else if avins > env.GetMaximumInsertions() {
@@ -213,7 +121,7 @@ func (p *Population) GetStatus() PopStatus {
 
 func (p *Population) GetHaplotypes() [][]int64 {
 	toret := make([][]int64, 0, p.Size()*2)
-	for _, f := range p.Flies {
+	for _, f := range p.linearFly {
 		toret = append(toret, f.Hap1)
 		toret = append(toret, f.Hap2)
 	}
