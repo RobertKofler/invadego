@@ -62,9 +62,11 @@ func WriteInfo(userargs string, usedseed int64, version string) {
 	buf.WriteString("avw\t")       //  fitness
 	buf.WriteString("avtes\t")     //  TE insertions per diploid
 	buf.WriteString("avpopfreq\t") //  population frquency of a TE insertion
-	buf.WriteString("fixed\t")     // number of fixed TE insertions
-	buf.WriteString("|\t")         // |
+	buf.WriteString("fixed\t")     // number of fixed TE insertions      // |
 	buf.WriteString("fwpirna\t")   // fraction of silenced
+	buf.WriteString("|\t")
+	buf.WriteString("te_notsilenced\t") // count with te and not silenced
+	buf.WriteString("te_silenced\t")    // count with te and silenced
 	buf.WriteString("|\t")
 	buf.WriteString("sampleids")
 	fmt.Println(buf.String())
@@ -113,10 +115,11 @@ func writePopulation(p *fly.Population, replicate int64, generation int64, popst
 	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetAverageFitness()))             // w
 	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetAverageInsertions()))          // avtes
 	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetAveragePopulationFrequency())) //  popfreq all
-	buf.WriteString(fmt.Sprintf("%d\t", len(p.GetFixedInsertions())))         // fixed insertions
-	buf.WriteString("|\t")                                                    // |
+	buf.WriteString(fmt.Sprintf("%d\t", len(p.GetFixedInsertions())))         // fixed insertions                                                  // |
 	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetSilencedFrequency()))          // fw piRNAs (either cluster or para)
-	buf.WriteString("|\t")                                                    // |
+	buf.WriteString("|\t")
+	buf.WriteString(fmt.Sprintf("%d\t", p.GetWithTEAndNotSilencedCount()))
+	buf.WriteString(fmt.Sprintf("%d\t", p.GetWithTEAndSilencedCount())) // |
 
 	if len(outman.sampleparsed) > 0 {
 		buf.WriteString("|\t")

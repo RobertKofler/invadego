@@ -92,6 +92,32 @@ func (p *Population) GetWithTECount() int64 {
 }
 
 /*
+Count number of flies with a TE and silenced
+*/
+func (p *Population) GetWithTEAndSilencedCount() int64 {
+	c := int64(0)
+	for _, f := range p.linearFlies {
+		if f.FlyStat.CountTotal > 0 && f.Silenced {
+			c++
+		}
+	}
+	return c
+}
+
+/*
+Count number of flies with a TE and silenced
+*/
+func (p *Population) GetWithTEAndNotSilencedCount() int64 {
+	c := int64(0)
+	for _, f := range p.linearFlies {
+		if f.FlyStat.CountTotal > 0 && (!f.Silenced) {
+			c++
+		}
+	}
+	return c
+}
+
+/*
 	helper function for a population;
 	turns counts into a frequency
 */
