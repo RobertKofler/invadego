@@ -1,8 +1,14 @@
-Create invade so that the input could be taken from a server
-and the output written to a server; see my lissajour server.
--> input is some struct with all necessary parameters
--> output is a io.writer; also for the log is an io.writer
+- Epigenetic silencing requires at least one! insertion of the TE. otherwise the info is lost!
 
 
 
+
+2D slice convention
+
+	b := make([][]uint8, 3)
+	for i := range b {
+		b[i] = make([]uint8, 2)
+	}
+
+    gives [[0 0] [0 0] [0 0]]
 

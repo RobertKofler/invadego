@@ -1,13 +1,11 @@
 package cmdparser
 
 import (
-	"bufio"
 	"fmt"
 	"invade/env"
 	"invade/fly"
 	"invade/util"
 	"math/rand"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -34,7 +32,7 @@ func ParseBasePop(basepop string) *fly.Population {
 			}
 			h1 := util.UniqueSort(hap1)
 			h2 := util.UniqueSort(hap2)
-			nf := fly.NewFly(h1, h2, false)
+			nf := fly.NewFly(h1, h2, false) // the inital flys, per default do not receive parental silencing
 			pop[y][x] = nf
 		}
 	}
@@ -79,38 +77,11 @@ func getPopCountGrrid(basepop string) [][]int64 {
 }
 
 /*
- Load a fly population of a given popsize;
- randomly inserts 'inscount' TE insertions;
- multiple insertions at the same site are ignored
-*/
-func loadPopulation(inscount int64, popsize int64) *fly.Population {
-	fhaps := make([][]int64, 2*popsize)
-	for i := int64(0); i < 2*popsize; i++ {
-		fhaps[i] = []int64{}
-	}
-	for i := int64(0); i < inscount; i++ {
-		ri := rand.Int63n(2 * popsize)
-		genpos := env.GetRandomSite()
-		fhaps[ri] = append(fhaps[ri], genpos)
-	}
-	flies := make([]fly.Fly, popsize)
-	for i := int64(0); i < popsize; i++ {
-		hap1 := util.UniqueSort(fhaps[2*i])
-		hap2 := util.UniqueSort(fhaps[2*i+1])
-		sex := fly.GetRandomSex()
-		nf := fly.NewFly(hap1, hap2, sex, 0)
-		flies[i] = *nf
-	}
-
-	return fly.InitializePopulation(flies)
-}
-
-/*
 Example file
 500 R 0; 1 100 200 400; 0 5 5000
 250 F 0; 2 100 400;
 250 M 0;;
-*/
+
 func loadPopulationFromFile(file string, targetpopsize int64) *fly.Population {
 	flies := make([]fly.Fly, 0)
 	readFile, err := os.Open(file)
@@ -174,16 +145,4 @@ func sslice2islice(sslice []string) []int64 {
 	return toret
 
 }
-
-func getSex(s string) fly.Sex {
-	s = strings.ToUpper(s)
-	if s == "M" {
-		return fly.MALE
-	} else if s == "F" {
-		return fly.FEMALE
-	} else if s == "R" {
-		return fly.GetRandomSex()
-	} else {
-		panic("unknown sex specified")
-	}
-}
+*/

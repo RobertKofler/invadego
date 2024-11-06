@@ -2,9 +2,6 @@ package cmdparser
 
 // command line, run all tests "go test ./..." yes three points
 import (
-	"invade/env"
-	"invade/fly"
-	"invade/util"
 	"testing"
 )
 
@@ -71,6 +68,7 @@ func TestParseGenome(t *testing.T) {
 
 }
 
+/*
 func TestLoadGenome(t *testing.T) {
 	util.SetSeed(7)
 	env.SetupEnvironment([]int64{5000, 5000}, []int64{0, 0}, []int64{0, 0}, []bool{}, []bool{}, []float64{1, 1}, 0.1, 1000.0)
@@ -118,6 +116,7 @@ func TestLoadGenome(t *testing.T) {
 	}
 
 }
+*/
 
 func TestRecurrentRegion(t *testing.T) {
 	var tests = []struct {

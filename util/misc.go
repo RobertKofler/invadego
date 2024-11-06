@@ -7,7 +7,7 @@ import (
 )
 
 // declare the invade logger
-var InvadeLogger *log.Logger = log.New(os.Stdout, "Invade: ", log.Ltime)
+var InvadeLogger *log.Logger = log.New(os.Stdout, "Invade Spatial: ", log.Ltime)
 
 // no more error logger => panic
 // var InvadeLoggerError *log.Logger = log.New(os.Stderr, "Invade: ", log.Ltime)

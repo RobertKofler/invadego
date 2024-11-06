@@ -12,7 +12,7 @@ import (
 */
 func SimulateInvasions(basepop string, replicates int64, generation int64) {
 	for k := int64(0); k < replicates; k++ {
-		pop := cmdparser.ParseBasePop(basepop, popsize)
+		pop := cmdparser.ParseBasePop(basepop)
 		status := pop.GetStatus()
 		outman.RecordPopulation(pop, k, 0, status)
 		if status != fly.OK {

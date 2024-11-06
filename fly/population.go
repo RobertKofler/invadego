@@ -7,8 +7,8 @@ import (
 // important testing https://go.dev/tour/flowcontrol/1
 
 type Population struct {
-	Flies     [][]*Fly
-	linearFly []*Fly
+	Flies       [][]*Fly
+	linearFlies []*Fly
 }
 
 type Phase int64
@@ -54,7 +54,7 @@ func NewPopulation(flies [][]*Fly) *Population {
 			linear = append(linear, cf)
 		}
 	}
-	p.linearFly = linear
+	p.linearFlies = linear
 	return &p
 }
 
@@ -104,7 +104,7 @@ fail-sex 	only males or only females
 func (p *Population) GetStatus() PopStatus {
 	fitcount := 0.0
 	tecount := 0
-	for _, f := range p.linearFly {
+	for _, f := range p.linearFlies {
 		fitcount += f.Fitness
 		tecount += int(f.FlyStat.CountTotal)
 	}
@@ -123,7 +123,7 @@ func (p *Population) GetStatus() PopStatus {
 
 func (p *Population) GetHaplotypes() [][]int64 {
 	toret := make([][]int64, 0, p.Size()*2)
-	for _, f := range p.linearFly {
+	for _, f := range p.linearFlies {
 		toret = append(toret, f.Hap1)
 		toret = append(toret, f.Hap2)
 	}

@@ -26,6 +26,8 @@ func OffspringIsSilenced(fem bool, male bool) bool {
 	} else if epimode == ARABIDOPSIS {
 		// either is fine, that is logical or
 		return fem || male
+	} else {
+		panic("invalid epimode")
 	}
 }
 

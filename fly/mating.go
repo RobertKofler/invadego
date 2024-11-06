@@ -68,11 +68,11 @@ func getNeighborhoodCoordinates(ycord int64, xcord int64, radius int64) neighbor
 /*
 find the neighbors for a given coordinate
 */
-func getNeighbors(flies [][]Fly, ycord int64, xcord int64, radius int64) []Fly {
+func getNeighbors(flies [][]*Fly, ycord int64, xcord int64, radius int64) []*Fly {
 
 	ncoord := getNeighborhoodCoordinates(ycord, xcord, radius)
 	ncount := (ncoord.yend - ncoord.ystart + 1) * (ncoord.xend - ncoord.xstart + 1)
-	neighbors := make([]Fly, 0, ncount)
+	neighbors := make([]*Fly, 0, ncount)
 
 	for y := ncoord.ystart; y <= ncoord.yend; y++ {
 		for x := ncoord.xstart; x <= ncoord.xend; x++ {
@@ -87,7 +87,7 @@ func getNeighbors(flies [][]Fly, ycord int64, xcord int64, radius int64) []Fly {
  Get neighbors;
  consider selfing (in which case both parents are identical)
 */
-func getMatePairs(flies [][]Fly) [][]matePair {
+func getMatePairs(flies [][]*Fly) [][]matePair {
 
 	// initialize
 	ysize, xsize := env.GetYSize(), env.GetXSize()
@@ -125,7 +125,7 @@ func getMatePairs(flies [][]Fly) [][]matePair {
 
 }
 
-func generateCumFitness(flies []Fly) []cumFitFly {
+func generateCumFitness(flies []*Fly) []cumFitFly {
 	// Here major go confusion arose with pointers I guess
 	// Video
 	//https://www.youtube.com/watch?v=sTFJtxJXkaY
@@ -150,14 +150,14 @@ func generateCumFitness(flies []Fly) []cumFitFly {
 	var runningsum float64 = 0.0
 
 	for i, f := range flies {
-		fi := &flies[i] // Woa that solves my POINTER BUG!
+		fi := &flies[i] // Woa that solves my POINTER BUG! todo check if still true! pointer pug could have been reintroduced
 		// I Could not use &f as this was always referring to the same address
 		// BE super careful with range and pointers
 		//print(fi)
 		w := f.Fitness / fitsum // fitness scaled by the total fitness such that the Sum of all is 1.0
 		runningsum += w
 
-		c := cumFitFly{fly: fi, cumFit: runningsum}
+		c := cumFitFly{fly: *fi, cumFit: runningsum}
 		cumflies = append(cumflies, c)
 	}
 	return cumflies

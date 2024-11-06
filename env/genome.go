@@ -35,13 +35,6 @@ func GetSelfingRate() float64 {
 	return env.selfingRate
 }
 
-/*
-How many of the offspring of a silenced plant receive the silencing info
-*/
-func GetEpigeneticSilencingRate() float64 {
-	return env.epiRate
-}
-
 func GetTriggerThreshold() int64 {
 	return env.triggerThreshold
 }

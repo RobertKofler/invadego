@@ -31,14 +31,14 @@ func main_profile() {
 func main() {
 
 	// VERSION NUMBER
-	version := "0.2.3"
+	version := "0.0.1"
 
 	clp := cmdparser.ParseCommandLine()
 	if clp.Silent {
 		util.InvadeLogger.SetOutput(ioutil.Discard)
 	}
 
-	util.InvadeLogger.Println(fmt.Sprintf("Welcome to InvadeGo %s", version))
+	util.InvadeLogger.Println(fmt.Sprintf("Welcome to Invade-Spatial %s", version))
 	// Get command line arguments
 
 	usedseed := util.SetSeed(clp.Seed) // set seed of random number generator
@@ -53,41 +53,6 @@ func main() {
 		util.InvadeLogger.Printf("parsed genome definition, will use: %v", genome)
 	}
 
-	// Cluster
-	util.InvadeLogger.Printf("parsing cluster definition %s", clp.Cluster)
-	cluster := cmdparser.ParseRegions(clp.Cluster)
-	if cluster == nil {
-		util.InvadeLogger.Printf("no piRNA clusters were provided - will not simulate piRNA clusters")
-	} else {
-		util.InvadeLogger.Printf("parsed piRNA cluster definitions, will use: %v", cluster)
-	}
-
-	// Reference regions
-	util.InvadeLogger.Printf("parsing reference region definition %s", clp.RefRegion)
-	refregion := cmdparser.ParseRegions(clp.RefRegion)
-	if refregion == nil {
-		util.InvadeLogger.Printf("no reference regions were provided - will not simulate reference regions")
-	} else {
-		util.InvadeLogger.Printf("parsed reference regions, will use: %v", refregion)
-	}
-
-	// Trigger sites
-	util.InvadeLogger.Printf("parsing piRNA-trigger sites %s", clp.TriggerSites)
-	trigger := cmdparser.ParseRecurrentRegions(clp.TriggerSites)
-	if trigger == nil {
-		util.InvadeLogger.Printf("no piRNA trigger sites were provided - will not simulate trigger sites")
-	} else {
-		util.InvadeLogger.Printf("parsed piRNA-trigger-sites, will use: %v", trigger)
-	}
-	// Paramutable sites
-	util.InvadeLogger.Printf("parsing paramutable sites %s", clp.ParamutableSites)
-	paramutable := cmdparser.ParseRecurrentRegions(clp.ParamutableSites)
-	if paramutable == nil {
-		util.InvadeLogger.Printf("no paramutable sites were provided - will not simulate paramutable sites")
-	} else {
-		util.InvadeLogger.Printf("parsed paramutable sites, will use: %v", paramutable)
-	}
-
 	// Recombination rates
 	util.InvadeLogger.Printf("parsing recombination rates %s", clp.RecRate)
 	recrate := cmdparser.ParseRecombination(clp.RecRate)
@@ -97,19 +62,19 @@ func main() {
 		util.InvadeLogger.Printf("parsed recombination rate, will use: %v", recrate)
 	}
 
-	util.InvadeLogger.Printf("Setting up environment; genome, piRNA cluster, reference regions, trigger sites, paramutable sites and the recombination rate")
-	env.SetupEnvironment(genome, cluster, refregion, trigger, paramutable, recrate, clp.MinFitness, float64(clp.MaxInsertions))
+	util.InvadeLogger.Printf("Setting up environment; genome, and the recombination rate")
+	env.SetupEnvironment(clp.GridX, clp.GridY, clp.MateRadius, genome, recrate, clp.TriggerSilence, clp.EpiSilencing, clp.SelfingRate, clp.MinFitness, float64(clp.MaxInsertions))
 	util.InvadeLogger.Print("Setting up jumper")
 	env.SetJumper(clp.U, clp.UC)
 	util.InvadeLogger.Print("Setting up fitness function")
-	fly.SetupFitness(clp.X, clp.T, clp.Noxcluins, clp.Multiplicative)
+	fly.SetupFitness(clp.X)
 	util.InvadeLogger.Print("Setting up output manager")
-	outman.SetupOutputManager(clp.Steps, clp.ReplicateOffset, clp.FileMHP, clp.FileTally, clp.FileSFS, clp.FileDebug, clp.SampleID)
+	outman.SetupOutputManager(clp.Steps, clp.ReplicateOffset, clp.FileSpatial, clp.FileMHP, clp.FileTally, clp.FileSFS, clp.FileDebug, clp.SampleID)
 
 	// Simulate the thing
 	util.InvadeLogger.Print("Commencing simulations")
 	outman.WriteInfo(clp.ArgString, usedseed, version)
-	sim.SimulateInvasions(clp.BasePop, clp.Popsize, clp.Replicates, clp.Generations)
+	sim.SimulateInvasions(clp.BasePop, clp.Replicates, clp.Generations)
 	outman.Done() // let the output manager know the simulations are done
 	util.InvadeLogger.Print("Done - thank you for using InvadeGo")
 
