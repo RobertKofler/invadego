@@ -143,6 +143,22 @@ func (p *Population) GetAverageFitness() float64 {
 }
 
 /*
+Get the average number of TE insertions, but only for those having at least one insertion
+*/
+func (p *Population) GetAverageWithTE() float64 {
+	c := float64(0.0)
+	positive := 0
+	for _, f := range p.linearFlies {
+		c += float64(f.FlyStat.CountTotal)
+		if f.FlyStat.CountTotal > 0 {
+			positive++
+		}
+	}
+	toret := c / float64(positive)
+	return toret
+}
+
+/*
 Get the average number of TE insertions
 */
 func (p *Population) GetAverageInsertions() float64 {

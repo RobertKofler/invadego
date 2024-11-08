@@ -91,12 +91,12 @@ Check if the TE is silenced
 Silenced if a) count of TE is larger than threshold b) if the parent transmitted its epigenetic silencing status and the
 individum has at least one insertion
 */
-func getSilencingStatus(fstat FlyStatistic, silenced bool, fc int64) bool {
+func getSilencingStatus(fstat FlyStatistic, triggerThreshold int64, silenced bool, fc int64) bool {
 
 	// trigger 'de novo' silencing
 	if !silenced {
 		// check for new trigger events
-		if fstat.CountTotal >= env.GetTriggerThreshold() {
+		if fstat.CountTotal >= triggerThreshold {
 			return true // silenced
 		} else {
 			return false
@@ -200,10 +200,10 @@ func GetRandomSex() Sex {
 }
 
 /*
-Setup a new Fly; given the gametes, the sex, and the epigenetic silencing
+Setup a new Fly; given the gametes, the sex, and the epigenetic silencing, i.e. is the TE in the parents silenced
 Will i) merge gametes ii) compute stats iii) determine silencing status (could be lost) iv) compute fitness v) increase FLYCOUNTER
 */
-func NewFly(femgam []int64, malegam []int64, silenced bool) *Fly {
+func NewFly(femgam []int64, malegam []int64, paternalsilenced bool) *Fly {
 	// should give random numbers 0 or 1, ie male female
 	fstat := getFlyStat(femgam, malegam)
 	// multithreading lock and unlock
@@ -211,8 +211,8 @@ func NewFly(femgam []int64, malegam []int64, silenced bool) *Fly {
 	currentCounter := FLYCOUNTER
 	FLYCOUNTER++
 	//flylock.Unlock()
-
-	matpi := getSilencingStatus(fstat, silenced, currentCounter)
+	tt := env.GetTriggerThreshold()
+	matpi := getSilencingStatus(fstat, tt, paternalsilenced, currentCounter) // update the silencing status, eg if threshold is reached or if all TE insertions are lost
 	newFly := Fly{Hap1: malegam, Hap2: femgam, FlyNumber: currentCounter, Silenced: matpi, FlyStat: &fstat}
 	newFly.Fitness = GetFitness(&newFly)
 

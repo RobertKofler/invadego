@@ -69,7 +69,7 @@ func main() {
 	util.InvadeLogger.Print("Setting up fitness function")
 	fly.SetupFitness(clp.X)
 	util.InvadeLogger.Print("Setting up output manager")
-	outman.SetupOutputManager(clp.Steps, clp.ReplicateOffset, clp.FileSpatial, clp.FileMHP, clp.FileTally, clp.FileSFS, clp.FileDebug, clp.SampleID)
+	outman.SetupOutputManager(clp.Steps, clp.ReplicateOffset, clp.FileSpatial, clp.FileMHP, clp.FileDebug, clp.SampleID)
 
 	// Simulate the thing
 	util.InvadeLogger.Print("Commencing simulations")

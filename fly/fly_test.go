@@ -50,27 +50,19 @@ func TestFitnessOmxnMultiplicative(t *testing.T) {
 	var tests = []struct {
 		x    float64
 		ct   int64 // count total
-		cc   int64 // count cluster
-		cr   int64 // count reference
-		nx   bool  // noxclusterinsertion
 		want float64
 	}{
-		{x: 0.1, ct: 2, cc: 0, cr: 0, nx: false, want: 0.81},
-		{x: 0.1, ct: 10, cc: 0, cr: 0, nx: false, want: 0.3486784},
-		{x: 0.1, ct: 100, cc: 0, cr: 0, nx: false, want: 0.0000265},
-
-		{x: 0.1, ct: 10, cc: 8, cr: 0, nx: false, want: 0.3486784},
-		{x: 0.1, ct: 10, cc: 8, cr: 0, nx: true, want: 0.81},
-		{x: 0.1, ct: 10, cc: 0, cr: 8, nx: true, want: 0.81},
-		{x: 0.1, ct: 10, cc: 4, cr: 4, nx: true, want: 0.81},
+		{x: 0.1, ct: 2, want: 0.81},
+		{x: 0.1, ct: 10, want: 0.3486784},
+		{x: 0.1, ct: 100, want: 0.0000265},
 	}
 
 	for _, test := range tests {
-		iff = FitnessFunctionMultiplicative{x: test.x, noxincluins: test.nx}
+		iff = FitnessFunctionMultiplicative{x: test.x}
 		want := test.want
-		got := iff.ComputeFitness(test.ct, test.cc, test.cr)
+		got := iff.ComputeFitness(test.ct)
 		if math.Abs(want-got) > 0.0001 {
-			t.Errorf("ff.ComputeFitness(%d,%d,%d) != %f; got = %f", test.ct, test.cc, test.cr, test.want, got)
+			t.Errorf("ff.ComputeFitness(%d) != %f; got = %f", test.ct, test.want, got)
 		}
 	}
 }
@@ -81,73 +73,42 @@ cluster insertions (+reference insertions) may be considered
 */
 func TestFitnessOmxntLinear(t *testing.T) {
 	var tests = []struct {
-		x    float64
-		ct   int64 // count total
-		cc   int64 // count cluster
-		cr   int64 // count reference
-		nx   bool  // noxclusterinsertion
+		x  float64
+		ct int64 // count total
+
 		t    float64
 		want float64
 	}{
-		{x: 0.1, ct: 2, cc: 0, cr: 0, nx: false, t: 1.0, want: 0.8},
-		{x: 0.1, ct: 10, cc: 0, cr: 0, nx: false, t: 1.0, want: 0.0},
-		{x: 0.1, ct: 100, cc: 0, cr: 0, nx: false, t: 1.0, want: 0.0}, // ceck whether min w is 0.0
-		{x: 0.1, ct: 2, cc: 0, cr: 0, nx: false, t: 1.5, want: 0.7171573},
-		{x: 0.1, ct: 10, cc: 8, cr: 0, nx: false, t: 1.0, want: 0.0},
-		{x: 0.1, ct: 10, cc: 8, cr: 0, nx: true, t: 1.0, want: 0.8},
-		{x: 0.1, ct: 10, cc: 0, cr: 8, nx: true, t: 1.0, want: 0.8},
-		{x: 0.1, ct: 10, cc: 4, cr: 4, nx: true, t: 1.0, want: 0.8},
-		{x: 0.1, ct: 10, cc: 4, cr: 4, nx: true, t: 1.5, want: 0.7171573},
+		{x: 0.1, ct: 2, t: 1.0, want: 0.8},
+		{x: 0.1, ct: 10, t: 1.0, want: 0.0},
+		{x: 0.1, ct: 100, t: 1.0, want: 0.0}, // ceck whether min w is 0.0
+		{x: 0.1, ct: 2, t: 1.5, want: 0.7171573},
 	}
 
 	for _, test := range tests {
-		iff = FitnessFunctionLinear{x: test.x, t: test.t, noxincluins: test.nx}
+		iff = FitnessFunctionLinear{x: test.x, t: test.t}
 		want := test.want
-		got := iff.ComputeFitness(test.ct, test.cc, test.cr)
+		got := iff.ComputeFitness(test.ct)
 		if math.Abs(want-got) > 0.0001 {
-			t.Errorf("ff.ComputeFitness(%d,%d,%d) != %f; got = %f", test.ct, test.cc, test.cr, test.want, got)
+			t.Errorf("ff.ComputeFitness(%d) != %f; got = %f", test.ct, test.want, got)
 		}
-	}
-}
-
-func TestSeparateSexes(test *testing.T) {
-	var tests = []struct {
-		flies []Fly
-		wantf int64
-		wantm int64
-	}{
-		{flies: []Fly{Fly{Sex: MALE}}, wantf: 0, wantm: 1},
-		{flies: []Fly{Fly{Sex: FEMALE}}, wantf: 1, wantm: 0},
-		{flies: []Fly{}, wantf: 0, wantm: 0},
-		{flies: []Fly{Fly{Sex: FEMALE}, Fly{Sex: FEMALE}, Fly{Sex: FEMALE}}, wantf: 3, wantm: 0},
-		{flies: []Fly{Fly{Sex: FEMALE}, Fly{Sex: FEMALE}, Fly{Sex: FEMALE}, Fly{Sex: MALE}, Fly{Sex: MALE}}, wantf: 3, wantm: 2},
-	}
-	for _, t := range tests {
-		ma, fe := SeparateSexes(t.flies)
-		if len(ma) != int(t.wantm) {
-			test.Errorf("Incorrect number of males; want %d, got %d", t.wantm, len(ma))
-		}
-		if len(fe) != int(t.wantf) {
-			test.Errorf("Incorrect number of males; want %d, got %d", t.wantf, len(ma))
-		}
-
 	}
 }
 
 func TestGenerateCumFitness(test *testing.T) {
 	var tests = []struct {
-		flies []Fly
+		flies []*Fly
 		want  []float64
 	}{
-		{flies: []Fly{Fly{Fitness: 1.0}}, want: []float64{1.0}},
-		{flies: []Fly{Fly{Fitness: 10.0}}, want: []float64{1.0}},
-		{flies: []Fly{Fly{Fitness: 10.0}, Fly{Fitness: 10.0}}, want: []float64{0.5, 1.0}},
-		{flies: []Fly{Fly{Fitness: 5.0}, Fly{Fitness: 15.0}}, want: []float64{0.75, 1.0}},
-		{flies: []Fly{Fly{Fitness: 15.0}, Fly{Fitness: 5.0}}, want: []float64{0.75, 1.0}},
-		{flies: []Fly{Fly{Fitness: 1.0}, Fly{Fitness: 2.0}, Fly{Fitness: 3.0}, Fly{Fitness: 4.0}}, want: []float64{0.4, 0.7, 0.9, 1.0}},
-		{flies: []Fly{Fly{Fitness: 4.0}, Fly{Fitness: 2.0}, Fly{Fitness: 1.0}, Fly{Fitness: 3.0}}, want: []float64{0.4, 0.7, 0.9, 1.0}},
-		{flies: []Fly{Fly{Fitness: 0.4}, Fly{Fitness: 0.2}, Fly{Fitness: 0.1}, Fly{Fitness: 0.3}}, want: []float64{0.4, 0.7, 0.9, 1.0}},
-		{flies: []Fly{Fly{Fitness: 0.04}, Fly{Fitness: 0.02}, Fly{Fitness: 0.01}, Fly{Fitness: 0.03}}, want: []float64{0.4, 0.7, 0.9, 1.0}},
+		{flies: []*Fly{&Fly{Fitness: 1.0}}, want: []float64{1.0}},
+		{flies: []*Fly{&Fly{Fitness: 10.0}}, want: []float64{1.0}},
+		{flies: []*Fly{&Fly{Fitness: 10.0}, &Fly{Fitness: 10.0}}, want: []float64{0.5, 1.0}},
+		{flies: []*Fly{&Fly{Fitness: 5.0}, &Fly{Fitness: 15.0}}, want: []float64{0.75, 1.0}},
+		{flies: []*Fly{&Fly{Fitness: 15.0}, &Fly{Fitness: 5.0}}, want: []float64{0.75, 1.0}},
+		{flies: []*Fly{&Fly{Fitness: 1.0}, &Fly{Fitness: 2.0}, &Fly{Fitness: 3.0}, &Fly{Fitness: 4.0}}, want: []float64{0.4, 0.7, 0.9, 1.0}},
+		{flies: []*Fly{&Fly{Fitness: 4.0}, &Fly{Fitness: 2.0}, &Fly{Fitness: 1.0}, &Fly{Fitness: 3.0}}, want: []float64{0.4, 0.7, 0.9, 1.0}},
+		{flies: []*Fly{&Fly{Fitness: 0.4}, &Fly{Fitness: 0.2}, &Fly{Fitness: 0.1}, &Fly{Fitness: 0.3}}, want: []float64{0.4, 0.7, 0.9, 1.0}},
+		{flies: []*Fly{&Fly{Fitness: 0.04}, &Fly{Fitness: 0.02}, &Fly{Fitness: 0.01}, &Fly{Fitness: 0.03}}, want: []float64{0.4, 0.7, 0.9, 1.0}},
 	}
 	for _, t := range tests {
 		cf := generateCumFitness(t.flies)
@@ -195,10 +156,10 @@ shity range pointer problem
 cumFit
 */
 func TestGetFlyForRandomNumberLargePop(test *testing.T) {
-	fems := make([]Fly, 0, 100)
+	fems := make([]*Fly, 0, 100)
 	for i := 0; i < 100; i++ {
 
-		fems = append(fems, *NewFly([]int64{}, []int64{}, FEMALE, 0))
+		fems = append(fems, NewFly([]int64{}, []int64{}, false))
 	}
 	var tests = []struct {
 		index float64
@@ -226,27 +187,21 @@ func TestGetFlyForRandomNumberLargePop(test *testing.T) {
 }
 
 func TestGetMaternalPirnaStatus(test *testing.T) {
+	tt := int64(40)
 	var tests = []struct {
-		fs    FlyStatistic
-		matpi int64
-		fc    int64 // fly counter
-		want  int64
+		fs       FlyStatistic
+		silenced bool
+		want     bool
 	}{
-		{fs: FlyStatistic{}, matpi: 0, fc: 133, want: 0},
-		{fs: FlyStatistic{CountCluster: 1}, matpi: 0, fc: 133, want: 133},
-		{fs: FlyStatistic{CountCluster: 0, CountPara: 1}, matpi: 0, fc: 133, want: 0},
-		{fs: FlyStatistic{CountCluster: 0, CountPara: 1, CountTrigger: 1}, matpi: 0, fc: 133, want: 133},    // GAIN
-		{fs: FlyStatistic{CountCluster: 1, CountPara: 1, CountTrigger: 1}, matpi: 0, fc: 133, want: 133},    // GAIN
-		{fs: FlyStatistic{CountCluster: 0, CountPara: 10, CountTrigger: 10}, matpi: 0, fc: 133, want: 133},  // GAIN
-		{fs: FlyStatistic{CountCluster: 10, CountPara: 10, CountTrigger: 10}, matpi: 0, fc: 133, want: 133}, // GAIN
-		{fs: FlyStatistic{CountCluster: 0, CountPara: 0, CountTrigger: 0}, matpi: 211, fc: 133, want: 0},    // LOSS
-		{fs: FlyStatistic{CountCluster: 1, CountPara: 0, CountTrigger: 0}, matpi: 211, fc: 133, want: 211},  // RETAIN
-		{fs: FlyStatistic{CountCluster: 0, CountPara: 1, CountTrigger: 0}, matpi: 211, fc: 133, want: 211},  // RETAIN
-		{fs: FlyStatistic{CountCluster: 0, CountPara: 0, CountTrigger: 1}, matpi: 211, fc: 133, want: 0},    // LOSS
+		{fs: FlyStatistic{}, silenced: false, want: false},               // sanity
+		{fs: FlyStatistic{CountTotal: 39}, silenced: false, want: false}, // NOTHING
+		{fs: FlyStatistic{CountTotal: 41}, silenced: false, want: true},  //GAIN
+		{fs: FlyStatistic{CountTotal: 1}, silenced: true, want: true},    // RETAIN
+		{fs: FlyStatistic{CountTotal: 0}, silenced: true, want: false},   // LOSS
 	}
 
 	for _, t := range tests {
-		got := getMaternalPirnaStatus(t.fs, t.matpi, t.fc)
+		got := getSilencingStatus(t.fs, tt, t.silenced, 1)
 
 		if got != t.want {
 			test.Errorf("Incorrect getMaternalPirnaStatus(); got %d, want %d", got, t.want)
@@ -278,31 +233,4 @@ func TestStochasticGetRandomSex(test *testing.T) {
 		test.Errorf("Problematic number of males %d", cfem)
 	}
 
-}
-
-/*
-With equal fitness, all flies (males and females) should participate in a similar number of matings;
-ie around 200 matings in the following scenario
-*/
-func TestStochasticGetMatePairs(test *testing.T) {
-	util.SetSeed(5)
-	flies := make([]Fly, 0, 100)
-	for i := 0; i < 50; i++ {
-
-		flies = append(flies, *NewFly([]int64{}, []int64{}, FEMALE, 0))
-		flies = append(flies, *NewFly([]int64{}, []int64{}, MALE, 0))
-	}
-
-	matep := getMatePairs(flies, 10000)
-	var flycounter = make(map[int64]int64)
-	for _, mp := range matep {
-		flycounter[mp.female.FlyNumber]++
-		flycounter[mp.male.FlyNumber]++
-	}
-
-	for _, val := range flycounter {
-		if val < 160 || val > 240 {
-			test.Errorf("Problematic number of matings %d", val)
-		}
-	}
 }

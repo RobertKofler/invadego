@@ -149,7 +149,7 @@ func generateCumFitness(flies []*Fly) []cumFitFly {
 	cumflies := make([]cumFitFly, 0, len(flies))
 	var runningsum float64 = 0.0
 
-	for i, f := range flies {
+	for i, f := range flies { // maybe use for loop if bug persists
 		fi := &flies[i] // Woa that solves my POINTER BUG! todo check if still true! pointer pug could have been reintroduced
 		// I Could not use &f as this was always referring to the same address
 		// BE super careful with range and pointers
