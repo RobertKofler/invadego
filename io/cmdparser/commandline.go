@@ -12,7 +12,7 @@ type CommandLineParameters struct {
 	BasePop        string  // coordX,coordY,tecopynumber
 	EpiSilencing   string  //  epigenetic silencing mode
 	TriggerSilence int64   // TE copy number per diploid where silencing will be triggered
-	MateRadius     int64   // radius in grid where mates will be found
+	MateRadius     string  // radius in grid where mates will be found
 	SelfingRate    float64 // selfing rate between 0 and 1.0
 	FileSpatial    string
 
@@ -51,7 +51,7 @@ func ParseCommandLine() *CommandLineParameters {
 
 	// Optional parameters
 	triggerSilence := flag.Int64("trigger-defense", -1, "at which threshold value should the host defense been triggerd")
-	mateRadius := flag.Int64("mate-radius", 2, "at which spatial distance in grid should mates be found")
+	mateRadius := flag.String("mate-radius", "2", "at which spatial distance in grid should mates be found; either integer eg 2 or 'pan' for panmictici")
 	transrate := flag.Float64("u", 0.0, "the transposition rate")
 	selfrate := flag.Float64("selfing-rate", 0.0, "the selfing rate")
 	sampleid := flag.String("sampleid", "", "the ID of the sample; will be a help in R to group samples like with facete_grid()")

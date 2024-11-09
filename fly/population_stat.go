@@ -2,6 +2,7 @@ package fly
 
 import (
 	"fmt"
+	"invade/env"
 	"sort"
 )
 
@@ -76,6 +77,24 @@ func (p *Population) GetFixedInsertions() []int64 {
 	}
 	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
 	return keys
+}
+
+/*
+Get a 2D Matrix with the counts of TE insertions
+*/
+func (p *Population) getPopCountGrid() [][]int64 {
+	ysize, xsize := env.GetYSize(), env.GetXSize()
+	popcount := make([][]int64, ysize)
+	for i, _ := range popcount {
+		popcount[i] = make([]int64, xsize)
+	}
+
+	for y := int64(0); y < ysize; y++ {
+		for x := int64(0); x < xsize; x++ {
+			popcount[y][x] = p.Flies[y][x].FlyStat.CountTotal
+		}
+	}
+	return popcount
 }
 
 /*

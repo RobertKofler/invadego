@@ -63,11 +63,13 @@ func main() {
 	}
 
 	util.InvadeLogger.Printf("Setting up environment; genome, and the recombination rate")
-	env.SetupEnvironment(clp.GridX, clp.GridY, clp.MateRadius, genome, recrate, clp.TriggerSilence, clp.EpiSilencing, clp.SelfingRate, clp.MinFitness, float64(clp.MaxInsertions))
+	env.SetupEnvironment(clp.GridX, clp.GridY, genome, recrate, clp.TriggerSilence, clp.EpiSilencing, clp.MinFitness, float64(clp.MaxInsertions))
 	util.InvadeLogger.Print("Setting up jumper")
 	env.SetJumper(clp.U, clp.UC)
 	util.InvadeLogger.Print("Setting up fitness function")
 	fly.SetupFitness(clp.X)
+	util.InvadeLogger.Print("Setting up mating function")
+	fly.SetupMater(clp.SelfingRate, clp.MateRadius)
 	util.InvadeLogger.Print("Setting up output manager")
 	outman.SetupOutputManager(clp.Steps, clp.ReplicateOffset, clp.FileSpatial, clp.FileMHP, clp.FileDebug, clp.SampleID)
 

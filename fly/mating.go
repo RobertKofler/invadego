@@ -5,7 +5,24 @@ import (
 	"invade/env"
 	"math/rand"
 	"sort"
+	"strconv"
+	"strings"
 )
+
+type MaterPanmictic struct {
+	selfingRate float64
+}
+
+type MaterNeighborhood struct {
+	selfingRate      float64
+	neighborDistance int64
+}
+
+type IMater interface {
+	GetMatePairs([][]*Fly) [][]matePair
+}
+
+var mater IMater
 
 type matePair struct {
 	female *Fly
@@ -26,6 +43,85 @@ type cumFitFly struct {
 	fly    *Fly
 	cumFit float64 //cumulative fitness up to this fly
 
+}
+
+func (m MaterPanmictic) GetMatePairs(flies [][]*Fly) [][]matePair {
+	// initialize
+	ysize, xsize := env.GetYSize(), env.GetXSize()
+	merryCouples := make([][]matePair, ysize)
+	for i, _ := range merryCouples {
+		//make x
+		merryCouples[i] = make([]matePair, xsize)
+	}
+	// linearize
+	neighbors := make([]*Fly, 0)
+	for y := 0; y < int(ysize); y++ {
+		for x := 0; x < int(xsize); x++ {
+			cf := flies[y][x]
+			neighbors = append(neighbors, cf)
+		}
+	}
+	neigcum := generateCumFitness(neighbors)
+	for y := 0; y < int(ysize); y++ {
+		for x := 0; x < int(xsize); x++ {
+
+			fem := getFlyForRandomNumber(neigcum, rand.Float64())
+			if rand.Float64() < m.selfingRate { // eg selfing rate 0.9 and number 0.0 - 0.89999 will result in selfing
+				// here goes selfing
+				merryCouples[y][x] = matePair{female: fem.fly, male: fem.fly} // for selfing, male and female is the same
+			} else {
+				// here goes non selfing
+				male := getFlyForRandomNumber(neigcum, rand.Float64())
+				// avoid selfing by mistake!!
+				counter := 0
+				for male.fly.FlyNumber == fem.fly.FlyNumber {
+					male = getFlyForRandomNumber(neigcum, rand.Float64())
+					counter++
+					if counter > 5 { // prevent being stuck in an endless loop
+						break
+					}
+				}
+				merryCouples[y][x] = matePair{female: fem.fly, male: male.fly} // non-selfing: male and female are different
+			}
+		}
+	}
+	return merryCouples
+}
+
+func (m MaterNeighborhood) GetMatePairs(flies [][]*Fly) [][]matePair {
+	// initialize
+	ysize, xsize := env.GetYSize(), env.GetXSize()
+	merryCouples := make([][]matePair, ysize)
+	for i, _ := range merryCouples {
+		//make x
+		merryCouples[i] = make([]matePair, xsize)
+	}
+
+	for y := 0; y < int(ysize); y++ {
+		for x := 0; x < int(xsize); x++ {
+			neighbors := getNeighbors(flies, int64(y), int64(x), m.neighborDistance)
+			neigcum := generateCumFitness(neighbors)
+			fem := getFlyForRandomNumber(neigcum, rand.Float64())
+			if rand.Float64() < m.selfingRate { // eg selfing rate 0.9 and number 0.0 - 0.89999 will result in selfing
+				// here goes selfing
+				merryCouples[y][x] = matePair{female: fem.fly, male: fem.fly} // for selfing, male and female is the same
+			} else {
+				// here goes non selfing
+				male := getFlyForRandomNumber(neigcum, rand.Float64())
+				// avoid selfing by mistake!!
+				counter := 0
+				for male.fly.FlyNumber == fem.fly.FlyNumber {
+					male = getFlyForRandomNumber(neigcum, rand.Float64())
+					counter++
+					if counter > 5 { // prevent being stuck in an endless loop
+						break
+					}
+				}
+				merryCouples[y][x] = matePair{female: fem.fly, male: male.fly} // non-selfing: male and female are different
+			}
+		}
+	}
+	return merryCouples
 }
 
 /*
@@ -80,49 +176,6 @@ func getNeighbors(flies [][]*Fly, ycord int64, xcord int64, radius int64) []*Fly
 		}
 	}
 	return neighbors
-}
-
-/*
- Get mate pairs;
- Get neighbors;
- consider selfing (in which case both parents are identical)
-*/
-func getMatePairs(flies [][]*Fly) [][]matePair {
-
-	// initialize
-	ysize, xsize := env.GetYSize(), env.GetXSize()
-	merryCouples := make([][]matePair, ysize)
-	for i, _ := range merryCouples {
-		//make x
-		merryCouples[i] = make([]matePair, xsize)
-	}
-
-	for y := 0; y < int(ysize); y++ {
-		for x := 0; x < int(xsize); x++ {
-			neighbors := getNeighbors(flies, int64(y), int64(x), env.GetMateRadius())
-			neigcum := generateCumFitness(neighbors)
-			fem := getFlyForRandomNumber(neigcum, rand.Float64())
-			if rand.Float64() < env.GetSelfingRate() { // eg selfing rate 0.9 and number 0.0 - 0.89999 will result in selfing
-				// here goes selfing
-				merryCouples[y][x] = matePair{female: fem.fly, male: fem.fly} // for selfing, male and female is the same
-			} else {
-				// here goes non selfing
-				male := getFlyForRandomNumber(neigcum, rand.Float64())
-				// avoid selfing by mistake!!
-				counter := 0
-				for male.fly.FlyNumber == fem.fly.FlyNumber {
-					male = getFlyForRandomNumber(neigcum, rand.Float64())
-					counter++
-					if counter > 5 { // prevent being stuck in an endless loop
-						break
-					}
-				}
-				merryCouples[y][x] = matePair{female: fem.fly, male: male.fly} // non-selfing: male and female are different
-			}
-		}
-	}
-	return merryCouples
-
 }
 
 func generateCumFitness(flies []*Fly) []cumFitFly {
@@ -187,4 +240,24 @@ func getFlyForRandomNumber(cf []cumFitFly, randomIndex float64) *cumFitFly {
 	}
 	toret := &cf[lo]
 	return toret
+}
+
+func SetupMater(selfingrate float64, mateRadius string) {
+	if strings.ToLower(mateRadius) == "pan" {
+		mater = MaterPanmictic{selfingRate: selfingrate}
+	} else {
+		md, er := strconv.ParseInt(mateRadius, 10, 64)
+
+		if er != nil {
+			panic(fmt.Sprintf("Invalid entry for mate radius %s", mateRadius))
+		}
+		if md < 1 {
+			panic(fmt.Sprintf("Mate radius too small  %d", md))
+		}
+		mater = MaterNeighborhood{
+			selfingRate:      selfingrate,
+			neighborDistance: md}
+
+	}
+
 }

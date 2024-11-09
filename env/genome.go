@@ -12,12 +12,10 @@ type Environment struct {
 	recombinationWindows []*RecombinationWindow
 	triggerThreshold     int64
 	epiMode              EpigeneticSilencing
-	selfingRate          float64
 	minimumFitness       float64
 	maximumInsertions    float64
 	gridX                int64
 	gridY                int64
-	mateRadius           int64
 }
 
 func GetMinimumFitness() float64 {
@@ -26,13 +24,6 @@ func GetMinimumFitness() float64 {
 
 func GetMaximumInsertions() float64 {
 	return env.maximumInsertions
-}
-
-/*
-Rate of selfing
-*/
-func GetSelfingRate() float64 {
-	return env.selfingRate
 }
 
 func GetTriggerThreshold() int64 {
@@ -45,10 +36,6 @@ func GetYSize() int64 {
 
 func GetXSize() int64 {
 	return env.gridX
-}
-
-func GetMateRadius() int64 {
-	return env.mateRadius
 }
 
 var env Environment
