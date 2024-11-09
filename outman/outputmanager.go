@@ -1,7 +1,6 @@
 package outman
 
 import (
-	"bytes"
 	"fmt"
 	"invade/fly"
 	"invade/io/writer"
@@ -10,7 +9,7 @@ import (
 
 var outman OutputManager
 
-func SetupOutputManager(steps int64, replicateOffset int64,
+func SetupOutputManager(consoleFormat string, steps int64, replicateOffset int64,
 	fileSpatial string, fileMHP string, fileDebug string, sampleid string) {
 
 	sampleparsed := []string{}
@@ -25,6 +24,18 @@ func SetupOutputManager(steps int64, replicateOffset int64,
 	}
 	if fileDebug != "" {
 		writer.SetupDebugWriter(fileDebug)
+	}
+	cf := strings.ToLower(consoleFormat)
+	if cf == "summary" {
+		formater = FormaterSummary{}
+
+	} else if cf == "gridoverview" {
+		formater = FormaterGridOverview{}
+
+	} else if cf == "gridcount" {
+		formater = FormaterGridCount{}
+	} else {
+		panic(fmt.Sprintf("Unknown console mode %s", cf))
 	}
 
 	outman = OutputManager{
@@ -49,36 +60,15 @@ type OutputManager struct {
 	sampleparsed    []string
 }
 
-func WriteInfo(userargs string, usedseed int64, version string) {
+func WriteInfo(userargs string, seed int64, version string) {
 	fmt.Println(fmt.Sprintf("# args: %s", userargs))
-	fmt.Println(fmt.Sprintf("# version %s, seed: %d", version, usedseed))
-	// General info about the columns
-	buf := new(bytes.Buffer)
-	buf.WriteString("# ")
-	buf.WriteString("rep\t")       // replicate
-	buf.WriteString("gen\t")       // generation
-	buf.WriteString("|\t")         // |
-	buf.WriteString("cte\t")       // count with TE
-	buf.WriteString("cte_notsi\t") // count with te and not silenced
-	buf.WriteString("cte_sit")     // count with te and silenced
-	buf.WriteString("avtes_wte")   // average count for those having the TE
-	buf.WriteString("|\t")
-	buf.WriteString("fwte\t")      // fraction of individuals with at leats one TE insertion
-	buf.WriteString("avw\t")       //  fitness
-	buf.WriteString("avtes\t")     //  TE insertions per diploid
-	buf.WriteString("avpopfreq\t") //  population frquency of a TE insertion
-	buf.WriteString("fixed\t")     // number of fixed TE insertions      // |
-	buf.WriteString("fsilenced\t") // fraction of silenced
-
-	buf.WriteString("|\t")
-	buf.WriteString("sampleids")
-	fmt.Println(buf.String())
-
+	fmt.Println(fmt.Sprintf("# version %s, seed: %d", version, seed))
+	fmt.Println(formater.FormatInfo())
 }
 
 // Let the output manager know the job is done
 // eg close open file handles
-func Done() {
+func End() {
 	writer.CloseMHPWriter()
 	writer.CloseDebugWriter()
 
@@ -107,32 +97,10 @@ func writePopulation(p *fly.Population, replicate int64, generation int64, popst
 	}
 
 	// INVADE
-	// #replicate	generation	| fwt	w	tes	popfreq	fixed	| fwcli	cluins	cluins_popfreq	cluins_fixed	phase	| novel	sites	clusites	tes_stdev	cluins_stdev	fw0	w_min	popsize
-
-	buf := new(bytes.Buffer)
-	buf.WriteString(fmt.Sprintf("%d\t", replicate+outman.replicateOffset)) // replicate
-	buf.WriteString(fmt.Sprintf("%d\t", generation))                       // generation
-	buf.WriteString(fmt.Sprintf("%s\t", getStatusString(popstat)))         // status
-	buf.WriteString("|\t")
-	buf.WriteString(fmt.Sprintf("%d\t", p.GetWithTECount()))                  // count with TE
-	buf.WriteString(fmt.Sprintf("%d\t", p.GetWithTEAndNotSilencedCount()))    // count with TE and not silenced
-	buf.WriteString(fmt.Sprintf("%d\t", p.GetWithTEAndSilencedCount()))       //  count with TE and silenced
-	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetAverageWithTE()))              //  average count for individuals having the TE
-	buf.WriteString("|\t")                                                    // |
-	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetWithTEFrequency()))            // fwte
-	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetAverageFitness()))             // w
-	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetAverageInsertions()))          // avtes
-	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetAveragePopulationFrequency())) //  popfreq all
-	buf.WriteString(fmt.Sprintf("%d\t", len(p.GetFixedInsertions())))         // fixed insertions                                                  // |
-	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetSilencedFrequency()))          // fw piRNAs (either cluster or para)
-
-	if len(outman.sampleparsed) > 0 {
-		buf.WriteString("|\t")
-		for _, sid := range outman.sampleparsed {
-			buf.WriteString(fmt.Sprintf("%s\t", sid))
-		}
-	}
-	fmt.Println(buf.String())
+	stats := getStatusString(popstat)
+	reos := replicate + outman.replicateOffset
+	towrite := formater.FormatPopulation(p, reos, generation, stats, outman.sampleid)
+	fmt.Println(towrite)
 }
 
 func getStatusString(popstat fly.PopStatus) string {

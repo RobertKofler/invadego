@@ -71,13 +71,13 @@ func main() {
 	util.InvadeLogger.Print("Setting up mating function")
 	fly.SetupMater(clp.SelfingRate, clp.MateRadius)
 	util.InvadeLogger.Print("Setting up output manager")
-	outman.SetupOutputManager(clp.Steps, clp.ReplicateOffset, clp.FileSpatial, clp.FileMHP, clp.FileDebug, clp.SampleID)
+	outman.SetupOutputManager(clp.ConsoleFormat, clp.Steps, clp.ReplicateOffset, clp.FileSpatial, clp.FileMHP, clp.FileDebug, clp.SampleID)
 
 	// Simulate the thing
 	util.InvadeLogger.Print("Commencing simulations")
 	outman.WriteInfo(clp.ArgString, usedseed, version)
 	sim.SimulateInvasions(clp.BasePop, clp.Replicates, clp.Generations)
-	outman.Done() // let the output manager know the simulations are done
+	outman.End() // let the output manager know the simulations are done
 	util.InvadeLogger.Print("Done - thank you for using InvadeGo")
 
 }

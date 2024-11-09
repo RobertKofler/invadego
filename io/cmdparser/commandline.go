@@ -14,8 +14,8 @@ type CommandLineParameters struct {
 	TriggerSilence int64   // TE copy number per diploid where silencing will be triggered
 	MateRadius     string  // radius in grid where mates will be found
 	SelfingRate    float64 // selfing rate between 0 and 1.0
-	FileSpatial    string
 
+	ConsoleFormat   string
 	ArgString       string
 	Silent          bool
 	Genome          string
@@ -33,9 +33,8 @@ type CommandLineParameters struct {
 	MinFitness      float64
 	MaxInsertions   int64
 	FileMHP         string
-	FileTally       string
 	FileDebug       string
-	FileSFS         string
+	FileSpatial     string
 }
 
 func ParseCommandLine() *CommandLineParameters {
@@ -65,8 +64,8 @@ func ParseCommandLine() *CommandLineParameters {
 	fileSpatial := flag.String("file-spatial", "", "optional output file: info about individual specimens including coordinates")
 	fileMHP := flag.String("file-mhp", "", "optional output file: position and population frequency of each insertion")
 	fileDebug := flag.String("file-debug", "", "optional output file for debugging various aspects")
-	fileSFS := flag.String("file-sfs", "", "optional output file: site frequency spectra of TE insertions")
-	fileTally := flag.String("file-tally", "", "optional output file: count of insertions per individual")
+	consoleFormat := flag.String("console-format", "summary", "formating of console output, default summary: summary|gridoverview|gridcount")
+
 	maxins := flag.Int64("max-insertions", 10000, "the maximum number of insertions")
 	minw := flag.Float64("min-w", 0.1, "the minimum frequency of an average individual in the population")
 	seed := flag.Int64("seed", -1, "seed for the random number generator")
@@ -121,6 +120,7 @@ func ParseCommandLine() *CommandLineParameters {
 		SelfingRate:    *selfrate,
 		EpiSilencing:   episilence,
 		MateRadius:     *mateRadius,
+		ConsoleFormat:  *consoleFormat,
 
 		RecRate:         *rr,
 		BasePop:         *basepop,
@@ -137,8 +137,6 @@ func ParseCommandLine() *CommandLineParameters {
 		FileSpatial:     *fileSpatial,
 		FileMHP:         *fileMHP,
 		FileDebug:       *fileDebug,
-		FileTally:       *fileTally,
-		FileSFS:         *fileSFS,
 		Generations:     *generations,
 		SampleID:        *sampleid} //TODO implement as output
 }

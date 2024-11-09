@@ -81,7 +81,7 @@ func (p *Population) GetFixedInsertions() []int64 {
 /*
 Get a 2D Matrix with the counts of TE insertions
 */
-func (p *Population) getPopCountGrid() [][]int64 {
+func (p *Population) GetCountGrid() [][]int64 {
 	//ysize, xsize := env.GetYSize(), env.GetXSize()
 	popcount := make([][]int64, len(p.Flies))
 	for i, _ := range popcount {
