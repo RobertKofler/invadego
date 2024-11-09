@@ -4,28 +4,24 @@ import (
 	"fmt"
 )
 
-type EpigeneticSilencing int64
-
-var epimode EpigeneticSilencing
-
-const (
-	NONE        EpigeneticSilencing = 0
-	ARABIDOPSIS EpigeneticSilencing = 1
-	DROSOPHILA  EpigeneticSilencing = 2
-)
-
 /*
 Test if the offspring of a cross between fem and male is silenced;
 depends on the epigenetic silencing mode
 */
 func OffspringIsSilenced(fem bool, male bool) bool {
-	if epimode == NONE {
+	if env.epiMode == "none" {
+		//fmt.Println("none")
 		return false
-	} else if epimode == DROSOPHILA {
+
+	} else if env.epiMode == "dros" {
+		//fmt.Println("droso")
 		return fem
-	} else if epimode == ARABIDOPSIS {
+
+	} else if env.epiMode == "ara" {
 		// either is fine, that is logical or
+		//	fmt.Println("ara")
 		return fem || male
+
 	} else {
 		panic("invalid epimode")
 	}

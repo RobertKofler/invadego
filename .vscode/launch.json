@@ -15,18 +15,18 @@
 			"--u","0.1",
 			"--genome","MB:2,2,2,2",
 			"--rr","4,4,4,4",
-			"--grid-x","20",
+			"--grid-x","50",
 			"--grid-y","20",
 			"--epi-inherit","dros",
-			"--console-format","gridoverview",
+			"--console-format","gridcount",
 			"--basepop","10,0,10",
 			"--rep","1",
 			"--steps","5",
 			"--trigger-defense","40",
 			"--mate-radius","1",
-			"--selfing-rate","0.0",
+			"--selfing-rate","0.8",
 			"--sampleid","test,test2",
-			"--gen","100"]
+			"--gen","200"]
 	},
 	{
 		"name": "max-insertions",

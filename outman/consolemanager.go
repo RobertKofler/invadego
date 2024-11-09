@@ -107,5 +107,30 @@ func (fo FormaterGridCount) FormatInfo() string {
 	return ""
 }
 func (fo FormaterGridCount) FormatPopulation(p *fly.Population, reincos int64, generation int64, statstr string, sampleid string) string {
-	return ""
+	buf := new(bytes.Buffer)
+	buf.WriteString(">")
+	buf.WriteString(fmt.Sprintf("%d\t", reincos))    // replicate
+	buf.WriteString(fmt.Sprintf("%d\t", generation)) // generation
+	buf.WriteString(fmt.Sprintf("%s\t", statstr))    // status
+	if len(outman.sampleparsed) > 0 {
+		buf.WriteString("|\t")
+		for _, sid := range outman.sampleparsed {
+			buf.WriteString(fmt.Sprintf("%s\t", sid))
+		}
+	}
+	buf.WriteString("\n")
+	sg := p.GetSilencedGrid()
+	for yc, t := range p.GetCountGrid() {
+		for xc, x := range t {
+			buf.WriteString(fmt.Sprint(x))
+			if sg[yc][xc] {
+				buf.WriteString("'")
+			}
+			buf.WriteString(" ")
+
+		}
+		buf.WriteString("\n")
+	}
+	buf.WriteString(">\n")
+	return buf.String()
 }

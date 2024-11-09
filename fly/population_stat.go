@@ -96,6 +96,21 @@ func (p *Population) GetCountGrid() [][]int64 {
 	return popcount
 }
 
+func (p *Population) GetSilencedGrid() [][]bool {
+	//ysize, xsize := env.GetYSize(), env.GetXSize()
+	popcount := make([][]bool, len(p.Flies))
+	for i, _ := range popcount {
+		popcount[i] = make([]bool, 0)
+	}
+
+	for y, temp := range p.Flies {
+		for x := range temp {
+			popcount[y] = append(popcount[y], p.Flies[y][x].Silenced)
+		}
+	}
+	return popcount
+}
+
 /*
 Count number of flies with a TE
 */
