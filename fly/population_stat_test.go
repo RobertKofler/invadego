@@ -22,19 +22,20 @@ func testhelper_setdefaultenv() {
 		100,
 		[]int64{100, 100}, // two chromosomes of size 100
 		[]float64{0, 0},
-		40, "droso",
+		40, "dros",
 		0.1, 1000.0)
+	SetupFitness(0.0)
 
 }
 
 func testhelper_hapmerger(haps [][]int64) *Population {
 	flies := make([][]*Fly, 0)
+	flies = append(flies, make([]*Fly, 0))
 	for i := 0; i < len(haps); i += 2 {
-		flies = append(flies, make([]*Fly, 0))
 		femgam := haps[i]
 		malegam := haps[i+1]
 		f := NewFly(femgam, malegam, false)
-		flies[i] = append(flies[i], f)
+		flies[0] = append(flies[0], f)
 	}
 	return NewPopulation(flies)
 

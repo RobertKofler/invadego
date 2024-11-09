@@ -9,6 +9,7 @@ import (
 type Population struct {
 	Flies       [][]*Fly
 	linearFlies []*Fly
+	size        int64
 }
 
 type Phase int64
@@ -37,24 +38,21 @@ const (
 	total number of individuals in 2D grid
 */
 func (p *Population) Size() int64 {
-	sum := 0
-	for _, i := range p.Flies {
-		sum += len(i)
-	}
-	return int64(sum)
+	return p.size
 }
 
 func NewPopulation(flies [][]*Fly) *Population {
 	p := Population{Flies: flies}
 	linear := make([]*Fly, 0, p.Size())
-	ysize, xsize := env.GetYSize(), env.GetXSize()
-	for y := 0; y < int(ysize); y++ {
-		for x := 0; x < int(xsize); x++ {
-			cf := flies[y][x]
-			linear = append(linear, cf)
-		}
+	s := int64(0)
+
+	for _, y := range flies {
+		linear = append(linear, y...) // cool append entire vector
+		s += int64(len(y))
+
 	}
 	p.linearFlies = linear
+	p.size = s
 	return &p
 }
 

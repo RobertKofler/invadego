@@ -2,7 +2,6 @@ package fly
 
 import (
 	"fmt"
-	"invade/env"
 	"sort"
 )
 
@@ -83,15 +82,15 @@ func (p *Population) GetFixedInsertions() []int64 {
 Get a 2D Matrix with the counts of TE insertions
 */
 func (p *Population) getPopCountGrid() [][]int64 {
-	ysize, xsize := env.GetYSize(), env.GetXSize()
-	popcount := make([][]int64, ysize)
+	//ysize, xsize := env.GetYSize(), env.GetXSize()
+	popcount := make([][]int64, len(p.Flies))
 	for i, _ := range popcount {
-		popcount[i] = make([]int64, xsize)
+		popcount[i] = make([]int64, 0)
 	}
 
-	for y := int64(0); y < ysize; y++ {
-		for x := int64(0); x < xsize; x++ {
-			popcount[y][x] = p.Flies[y][x].FlyStat.CountTotal
+	for y, temp := range p.Flies {
+		for x := range temp {
+			popcount[y] = append(popcount[y], p.Flies[y][x].FlyStat.CountTotal)
 		}
 	}
 	return popcount
@@ -205,7 +204,7 @@ func (p *Population) GetMHPPopulationFrequency() map[int64]float64 {
 
 	insfreq := make(map[int64]float64)
 	for pos, val := range insertionsites {
-		valfreq := float64(val) / float64(2*len(p.Flies)) // 2 times -> diploids
+		valfreq := float64(val) / float64(2*p.Size()) // 2 times -> diploids
 		insfreq[pos] = valfreq
 
 	}
