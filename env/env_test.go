@@ -208,7 +208,7 @@ func TestStochasticRandomAssortmentAndRecombination(test *testing.T) {
 
 func TestTranslateCoordinates(test *testing.T) {
 	SetupEnvironment(50, 50, []int64{100, 200, 300, 400}, // two chromosomes of size 1000
-		[]float64{4, 4, 4, 4}, 20, "droso", 0.1, 1000.0)
+		[]float64{4, 4, 4, 4}, 20, "dros", 0.1, 1000.0)
 	var tests = []struct {
 		pos     int64
 		wantchr int64

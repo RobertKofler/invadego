@@ -257,7 +257,6 @@ func SetupMater(selfingrate float64, mateRadius string) {
 		mater = MaterNeighborhood{
 			selfingRate:      selfingrate,
 			neighborDistance: md}
-
 	}
 
 }

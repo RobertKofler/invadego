@@ -65,7 +65,7 @@ v) compute fitness and statistics
 func (p *Population) GetNextGeneration() *Population {
 
 	// get the merry couples; selfing is considered, in which case male and female are identical
-	matePairs := getMatePairs(p.Flies)
+	matePairs := mater.GetMatePairs(p.Flies)
 
 	// initialize the grid for the next generation
 	ysize, xsize := env.GetYSize(), env.GetXSize()

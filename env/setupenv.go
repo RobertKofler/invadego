@@ -15,9 +15,9 @@ func SetupEnvironment(gridx int64, gridy int64, chrSizes []int64, recRate []floa
 	epimode := NONE
 	if episilence == "none" {
 		epimode = NONE
-	} else if episilence == "arabidopsis" {
+	} else if episilence == "ara" {
 		epimode = ARABIDOPSIS
-	} else if episilence == "drosophila" {
+	} else if episilence == "dros" {
 		epimode = DROSOPHILA
 	} else {
 		panic(fmt.Sprintf("nknown epigenetic mode %s", episilence))

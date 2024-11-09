@@ -157,6 +157,7 @@ cumFit
 */
 func TestGetFlyForRandomNumberLargePop(test *testing.T) {
 	fems := make([]*Fly, 0, 100)
+	iff = FitnessFunctionMultiplicative{}
 	for i := 0; i < 100; i++ {
 
 		fems = append(fems, NewFly([]int64{}, []int64{}, false))
@@ -186,7 +187,7 @@ func TestGetFlyForRandomNumberLargePop(test *testing.T) {
 
 }
 
-func TestGetMaternalPirnaStatus(test *testing.T) {
+func TestGetSilencingStatus(test *testing.T) {
 	tt := int64(40)
 	var tests = []struct {
 		fs       FlyStatistic
@@ -204,7 +205,7 @@ func TestGetMaternalPirnaStatus(test *testing.T) {
 		got := getSilencingStatus(t.fs, tt, t.silenced, 1)
 
 		if got != t.want {
-			test.Errorf("Incorrect getMaternalPirnaStatus(); got %d, want %d", got, t.want)
+			test.Errorf("Incorrect getMaternalPirnaStatus(); got %v, want %v", got, t.want)
 
 		}
 

@@ -44,7 +44,7 @@ func ParseCommandLine() *CommandLineParameters {
 	// Mandatory parameters
 	gridx := flag.Int64("grid-x", -1, "mandatory; the spatial grid size on X")
 	gridy := flag.Int64("grid-y", -1, "mandatory; the spatial grid size on X")
-	episilence := strings.ToLower(*flag.String("epi-inherit", "", "mandatory;  either drosophila,arabidopsis,none"))
+	episilence := strings.ToLower(*flag.String("epi-inherit", "", "mandatory;  either dros, ara, none"))
 	genome := flag.String("genome", "", "mandatory; the genomic landscape; e.g. 'MB:2,3,1,5' specifiies four chromosomes with sizes of 2,3,1,5 Mb")
 	generations := flag.Int64("gen", -1, "mandatory; run the simulations for '--gen' generations")
 	basepop := flag.String("basepop", "", "mandatory; the individual(s) with the segregating insertions in the starting population; CoordY,CoordX,N")
@@ -80,9 +80,6 @@ func ParseCommandLine() *CommandLineParameters {
 	}
 	if *gridy < 2 {
 		panic("Provide a suitable grid size --grid-y; must be larger than 1")
-	}
-	if *mateRadius < 1 {
-		panic("Proivde a suitable mate radius --mate-radius; must be larger than 0")
 	}
 	if *selfrate < 0.0 || *selfrate > 1.0 {
 		panic("Provide a suitable selfing rate --self-rate; must be between 0.0 and 1.0")
