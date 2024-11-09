@@ -91,12 +91,12 @@ Check if the TE is silenced
 Silenced if a) count of TE is larger than threshold b) if the parent transmitted its epigenetic silencing status and the
 individum has at least one insertion
 */
-func getSilencingStatus(fstat FlyStatistic, triggerThreshold int64, silenced bool, fc int64) bool {
+func getSilencingStatus(totalCount int64, silenced bool, fc int64) bool {
 
 	// trigger 'de novo' silencing
 	if !silenced {
 		// check for new trigger events
-		if fstat.CountTotal >= triggerThreshold {
+		if env.IsTriggered(totalCount) {
 			return true // silenced
 		} else {
 			return false
@@ -105,7 +105,7 @@ func getSilencingStatus(fstat FlyStatistic, triggerThreshold int64, silenced boo
 		// ok there is epigenetic silencing inherited wuhu
 		// if there is a TE insertion it can be preserved,
 		// otherwise the epigenetic silencing is lost
-		if fstat.CountTotal > 0 {
+		if totalCount > 0 {
 			return true // silenced (id of old fly that triggered it)
 		} else {
 			return false // no te insertion -> epigenetic silencing is lost
@@ -211,8 +211,7 @@ func NewFly(femgam []int64, malegam []int64, paternalsilenced bool) *Fly {
 	currentCounter := FLYCOUNTER
 	FLYCOUNTER++
 	//flylock.Unlock()
-	tt := env.GetTriggerThreshold()
-	matpi := getSilencingStatus(fstat, tt, paternalsilenced, currentCounter) // update the silencing status, eg if threshold is reached or if all TE insertions are lost
+	matpi := getSilencingStatus(fstat.CountTotal, paternalsilenced, currentCounter) // update the silencing status, eg if threshold is reached or if all TE insertions are lost
 	newFly := Fly{Hap1: malegam, Hap2: femgam, FlyNumber: currentCounter, Silenced: matpi, FlyStat: &fstat}
 	newFly.Fitness = GetFitness(&newFly)
 

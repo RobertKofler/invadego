@@ -43,7 +43,7 @@ func ParseCommandLine() *CommandLineParameters {
 	// Mandatory parameters
 	gridx := flag.Int64("grid-x", -1, "mandatory; the spatial grid size on X")
 	gridy := flag.Int64("grid-y", -1, "mandatory; the spatial grid size on X")
-	episilence := strings.ToLower(*flag.String("epi-inherit", "", "mandatory;  either dros, ara, none"))
+	episilence := flag.String("epi-inherit", "", "mandatory;  either dros, ara, none")
 	genome := flag.String("genome", "", "mandatory; the genomic landscape; e.g. 'MB:2,3,1,5' specifiies four chromosomes with sizes of 2,3,1,5 Mb")
 	generations := flag.Int64("gen", -1, "mandatory; run the simulations for '--gen' generations")
 	basepop := flag.String("basepop", "", "mandatory; the individual(s) with the segregating insertions in the starting population; CoordY,CoordX,N")
@@ -83,8 +83,13 @@ func ParseCommandLine() *CommandLineParameters {
 	if *selfrate < 0.0 || *selfrate > 1.0 {
 		panic("Provide a suitable selfing rate --self-rate; must be between 0.0 and 1.0")
 	}
-	if episilence != "none" && episilence != "arabidopsis" && episilence != "drosophila" {
-		panic("Provide a suitable epigenetic inheritance mode --epi-inherit; must one of none, arabidopsis, drosophila")
+	lepisilence := strings.ToLower(*episilence)
+	if lepisilence != "none" && lepisilence != "ara" && lepisilence != "dros" {
+		panic("Provide a suitable epigenetic inheritance mode --epi-inherit; must one of none, ara, dros")
+	}
+	lconsoleFormat := strings.ToLower(*consoleFormat)
+	if lconsoleFormat != "summary" && lconsoleFormat != "gridoverview" && lconsoleFormat != "gridcount" {
+		panic("Provide a suitable console format: summary, gridoverview, gridcount")
 	}
 	if *transrate < 0.0 {
 		panic("Provide a suitable transposition rate --u; must be larger or equal to 0.0")
@@ -118,9 +123,9 @@ func ParseCommandLine() *CommandLineParameters {
 		Genome:         *genome,
 		TriggerSilence: *triggerSilence,
 		SelfingRate:    *selfrate,
-		EpiSilencing:   episilence,
+		EpiSilencing:   lepisilence,
 		MateRadius:     *mateRadius,
-		ConsoleFormat:  *consoleFormat,
+		ConsoleFormat:  lconsoleFormat,
 
 		RecRate:         *rr,
 		BasePop:         *basepop,

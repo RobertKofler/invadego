@@ -34,7 +34,3 @@ func SetupEnvironment(gridx int64, gridy int64, chrSizes []int64, recRate []floa
 		gridY:                gridy,
 	}
 }
-
-func SetupEpigeneticSilencing(epis string) {
-
-}

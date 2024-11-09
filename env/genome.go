@@ -26,8 +26,14 @@ func GetMaximumInsertions() float64 {
 	return env.maximumInsertions
 }
 
-func GetTriggerThreshold() int64 {
-	return env.triggerThreshold
+func IsTriggered(diploidcount int64) bool {
+	if env.triggerThreshold < 0 {
+		return false // if smaller zero; it cannot be triggered
+	} else if diploidcount >= env.triggerThreshold {
+		return true // if above threshold triggered
+	} else {
+		return false // if below threshold not triggered
+	}
 }
 
 func GetYSize() int64 {

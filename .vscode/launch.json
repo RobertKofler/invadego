@@ -6,22 +6,27 @@
 	"configurations": [
 
 	{
-		"name": "Cluster",
+		"name": "spatial-simple",
 		"type": "go",
 		"request": "launch",
 		"mode": "debug",
 		"program": "main.go",
-		"args": ["--N", "1000",
-			"--u","0.01",
-			"--genome","MB:2,2,3,1",
-			"--cluster","kb:1000,1000,1000,900",
-			"--ref-region","kb:100,100,100,100",
-			"--basepop","1000",
+		"args": [
+			"--u","0.1",
+			"--genome","MB:2,2,2,2",
 			"--rr","4,4,4,4",
-			"--rep","3",
-			"--steps","100",
-			"--sampleid","para,100,20",
-			"--gen","300"]
+			"--grid-x","20",
+			"--grid-y","20",
+			"--epi-inherit","dros",
+			"--console-format","gridoverview",
+			"--basepop","10,0,10",
+			"--rep","1",
+			"--steps","5",
+			"--trigger-defense","40",
+			"--mate-radius","1",
+			"--selfing-rate","0.0",
+			"--sampleid","test,test2",
+			"--gen","100"]
 	},
 	{
 		"name": "max-insertions",

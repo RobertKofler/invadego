@@ -1,6 +1,7 @@
 package fly
 
 import (
+	"invade/env"
 	"invade/util"
 	"math"
 	"testing"
@@ -188,7 +189,7 @@ func TestGetFlyForRandomNumberLargePop(test *testing.T) {
 }
 
 func TestGetSilencingStatus(test *testing.T) {
-	tt := int64(40)
+	env.SetupEnvironment(10, 10, []int64{}, []float64{}, 40, "dros", 0.1, 1000)
 	var tests = []struct {
 		fs       FlyStatistic
 		silenced bool
@@ -202,7 +203,7 @@ func TestGetSilencingStatus(test *testing.T) {
 	}
 
 	for _, t := range tests {
-		got := getSilencingStatus(t.fs, tt, t.silenced, 1)
+		got := getSilencingStatus(t.fs.CountTotal, t.silenced, 1)
 
 		if got != t.want {
 			test.Errorf("Incorrect getMaternalPirnaStatus(); got %v, want %v", got, t.want)
