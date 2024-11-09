@@ -188,6 +188,44 @@ func TestGetFlyForRandomNumberLargePop(test *testing.T) {
 
 }
 
+func TestGetNeighborhood(test *testing.T) {
+	env.SetupEnvironment(100, 100, []int64{}, []float64{}, 40, "dros", 0.1, 1000)
+	var tests = []struct {
+		x        int64
+		y        int64
+		radius   int64
+		w_xstart int64
+		w_xend   int64
+		w_ystart int64
+		w_yend   int64
+	}{
+		{x: 10, y: 10, radius: 2, w_xstart: 8, w_ystart: 8, w_xend: 12, w_yend: 12},
+		{x: 10, y: 10, radius: 1, w_xstart: 9, w_ystart: 9, w_xend: 11, w_yend: 11}, // sanity
+		{x: 10, y: 10, radius: 5, w_xstart: 5, w_ystart: 5, w_xend: 15, w_yend: 15},
+		{x: 0, y: 0, radius: 2, w_xstart: 0, w_ystart: 0, w_xend: 2, w_yend: 2},
+		{x: 0, y: 99, radius: 2, w_xstart: 0, w_ystart: 97, w_xend: 2, w_yend: 99},
+		{x: 99, y: 0, radius: 2, w_xstart: 97, w_ystart: 0, w_xend: 99, w_yend: 2},
+		{x: 99, y: 99, radius: 2, w_xstart: 97, w_ystart: 97, w_xend: 99, w_yend: 99},
+		// NOTHING
+	}
+	for _, t := range tests {
+		got := getNeighborhoodCoordinates(t.y, t.x, t.radius)
+
+		if got.xend != t.w_xend {
+			test.Errorf("Incorrect x end(); got %d, want %d", got.xend, t.w_xend)
+		}
+		if got.xstart != t.w_xstart {
+			test.Errorf("Incorrect x start; got %d, want %d", got.xstart, t.w_xstart)
+		}
+		if got.yend != t.w_yend {
+			test.Errorf("Incorrect y end; got %d, want %d", got.yend, t.w_yend)
+		}
+		if got.ystart != t.w_ystart {
+			test.Errorf("Incorrect y start; got %d, want %d", got.ystart, t.w_yend)
+		}
+	}
+}
+
 func TestGetSilencingStatus(test *testing.T) {
 	env.SetupEnvironment(10, 10, []int64{}, []float64{}, 40, "dros", 0.1, 1000)
 	var tests = []struct {
