@@ -41,6 +41,29 @@ func TestThreshold(t *testing.T) {
 	}
 }
 
+func TestSetGrid(t *testing.T) {
+
+	var tests = []struct {
+		gridx int64
+		gridy int64
+	}{
+		{gridx: 40, gridy: 50},
+		{gridx: 100, gridy: 100},
+		{gridx: 10, gridy: 10},
+	}
+
+	for _, test := range tests {
+		SetupEnvironment(test.gridx, test.gridy, []int64{}, []float64{}, 40, "dros", 0.1, 1000)
+		gotx, goty := GetXSize(), GetYSize()
+		if gotx != test.gridx {
+			t.Errorf("GetXSize(); got %d wanted %d", gotx, test.gridx)
+		}
+		if goty != test.gridy {
+			t.Errorf("GetYSize(); got %d wanted %d", goty, test.gridy)
+		}
+	}
+}
+
 func TestOffspringSilenced(t *testing.T) {
 
 	var tests = []struct {

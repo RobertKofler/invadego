@@ -31,7 +31,6 @@ type Position struct {
 
 type Fly struct {
 	FlyNumber int64 // each fly has a number; starting at 1
-	Pos       Position
 	Hap1      []int64
 	Hap2      []int64
 	Silenced  bool

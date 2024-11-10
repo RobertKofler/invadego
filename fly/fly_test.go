@@ -7,6 +7,37 @@ import (
 	"testing"
 )
 
+/*
+Check if candidates contains totest
+*/
+func contains(totest int64, candidates []*Fly) bool {
+	for _, c := range candidates {
+		if totest == c.FlyNumber {
+			return true
+		}
+	}
+	return false
+
+}
+
+/* helper get single fly
+ */
+func hGetstandardFly() *Fly {
+	return NewFly([]int64{}, []int64{}, false)
+}
+
+func hGetStandardPopulation(size int64) [][]*Fly {
+	env.SetupEnvironment(size, size, []int64{}, []float64{}, 40, "dros", 0.1, 1000)
+	tr := make([][]*Fly, size)
+	for i := int64(0); i < size; i++ {
+		tr[i] = make([]*Fly, 0)
+		for k := int64(0); k < size; k++ {
+			tr[i] = append(tr[i], hGetstandardFly())
+		}
+	}
+	return tr
+}
+
 func TestRecombine(t *testing.T) {
 	var tests = []struct {
 		hap1 []int64
@@ -157,6 +188,7 @@ shity range pointer problem
 cumFit
 */
 func TestGetFlyForRandomNumberLargePop(test *testing.T) {
+
 	fems := make([]*Fly, 0, 100)
 	iff = FitnessFunctionMultiplicative{}
 	for i := 0; i < 100; i++ {
@@ -244,7 +276,7 @@ func TestGetSilencingStatus(test *testing.T) {
 		got := getSilencingStatus(t.fs.CountTotal, t.silenced, 1)
 
 		if got != t.want {
-			test.Errorf("Incorrect getMaternalPirnaStatus(); got %v, want %v", got, t.want)
+			test.Errorf("Incorrect getSilencingStatus(); got %v, want %v", got, t.want)
 
 		}
 
@@ -274,3 +306,38 @@ func TestStochasticGetRandomSex(test *testing.T) {
 	}
 
 }
+
+func TestGetNeighbors(test *testing.T) {
+
+	FLYCOUNTER = 1
+	iff = FitnessFunctionMultiplicative{}
+	//  1  2  3  4
+	//  5  6  7  8
+	//  9 10 11 12
+	// 13 14 15 16
+	p := hGetStandardPopulation(4)
+	var tests = []struct {
+		x    int64
+		y    int64
+		r    int64
+		want []int64
+	}{
+		{x: 0, y: 0, r: 1, want: []int64{1, 2, 5, 6}},
+		{x: 3, y: 0, r: 1, want: []int64{3, 4, 7, 8}},
+		{x: 0, y: 3, r: 1, want: []int64{9, 10, 13, 14}},
+		{x: 3, y: 3, r: 1, want: []int64{11, 12, 15, 16}},
+		{x: 1, y: 1, r: 1, want: []int64{1, 2, 3, 5, 6, 7, 9, 10, 11}},
+	}
+
+	for _, t := range tests {
+		got := getNeighbors(p, t.y, t.x, t.r)
+		for _, f := range t.want {
+			if !contains(f, got) {
+				test.Errorf("getNeighbors(%d,%d,%d) does not contain fly %d but should %v", t.y, t.x, t.r, f, t.want)
+			}
+		}
+
+	}
+}
+
+//getNeighbors(flies [][]*Fly, ycord int64, xcord int64, radius int64) []*Fly
