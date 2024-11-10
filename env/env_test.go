@@ -17,6 +17,61 @@ func TestGenomicInterval(t *testing.T) {
 		t.Error("End wrong")
 	}
 }
+
+func TestThreshold(t *testing.T) {
+
+	var tests = []struct {
+		threshold int64
+		tecount   int64
+		want      bool
+	}{
+		{threshold: 40, tecount: 39, want: false},
+		{threshold: 40, tecount: 40, want: true},
+		{threshold: 40, tecount: 1000, want: true},
+		{threshold: 0, tecount: 1000, want: true},
+		{threshold: -1, tecount: 1000, want: false},
+	}
+
+	for _, test := range tests {
+		SetupEnvironment(100, 100, []int64{}, []float64{}, test.threshold, "dros", 0.1, 1000)
+		got := IsTriggered(test.tecount)
+		if got != test.want {
+			t.Errorf("IsTriggeredt(); got %v wanted %v", got, test.want)
+		}
+	}
+}
+
+func TestOffspringSilenced(t *testing.T) {
+
+	var tests = []struct {
+		epimode string
+		fem     bool
+		male    bool
+		want    bool
+	}{
+		{epimode: "none", fem: true, male: true, want: false},
+		{epimode: "none", fem: true, male: false, want: false},
+		{epimode: "none", fem: false, male: false, want: false},
+		{epimode: "none", fem: false, male: true, want: false},
+		{epimode: "dros", fem: true, male: true, want: true},
+		{epimode: "dros", fem: true, male: false, want: true},
+		{epimode: "dros", fem: false, male: true, want: false},
+		{epimode: "dros", fem: false, male: false, want: false},
+		{epimode: "ara", fem: true, male: true, want: true},
+		{epimode: "ara", fem: true, male: false, want: true},
+		{epimode: "ara", fem: false, male: true, want: true},
+		{epimode: "ara", fem: false, male: false, want: false},
+	}
+
+	for _, test := range tests {
+		SetupEnvironment(100, 100, []int64{}, []float64{}, 40, test.epimode, 0.1, 1000)
+		got := OffspringIsSilenced(test.fem, test.male)
+		if got != test.want {
+			t.Errorf("OffspringIsSilenced(%v,%v); got %v wanted %v", test.fem, test.male, got, test.want)
+		}
+	}
+}
+
 func TestGenomicLandscape(t *testing.T) {
 	cl := newGenomicLandscape([]int64{100, 200, 300, 400})
 	if len(cl.intervals) != 4 || len(cl.chrmSizes) != 4 || len(cl.offsets) != 4 {
