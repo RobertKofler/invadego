@@ -26,13 +26,13 @@ func (fo FormaterSummary) FormatInfo() string {
 	// General info about the columns
 	buf := new(bytes.Buffer)
 	buf.WriteString("# ")
-	buf.WriteString("rep\t")       // replicate
-	buf.WriteString("gen\t")       // generation
-	buf.WriteString("|\t")         // |
-	buf.WriteString("cte\t")       // count with TE
-	buf.WriteString("cte_notsi\t") // count with te and not silenced
-	buf.WriteString("cte_sit")     // count with te and silenced
-	buf.WriteString("avtes_wte")   // average count for those having the TE
+	buf.WriteString("rep\t")     // replicate
+	buf.WriteString("gen\t")     // generation
+	buf.WriteString("|\t")       // |
+	buf.WriteString("cte\t")     // count with TE
+	buf.WriteString("ctens\t")   // count with te and not silenced
+	buf.WriteString("ctes\t")    // count with te and silenced
+	buf.WriteString("avt_wte\t") // average count for those having the TE
 	buf.WriteString("|\t")
 	buf.WriteString("fwte\t")      // fraction of individuals with at leats one TE insertion
 	buf.WriteString("avw\t")       //  fitness
