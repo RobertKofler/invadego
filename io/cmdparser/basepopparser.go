@@ -48,8 +48,8 @@ func getPopCountGrrid(basepop string) [][]int64 {
 
 	//Y,X,count;Y,X,count
 	toparse := make([]string, 0)
-	if strings.Contains(basepop, ";") {
-		toparse = strings.Split(basepop, ";")
+	if strings.Contains(basepop, ":") {
+		toparse = strings.Split(basepop, ":")
 
 	} else {
 		toparse = append(toparse, basepop)

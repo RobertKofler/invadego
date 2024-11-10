@@ -31,7 +31,7 @@ func main_profile() {
 func main() {
 
 	// VERSION NUMBER
-	version := "0.0.1"
+	version := "0.1.1"
 
 	clp := cmdparser.ParseCommandLine()
 	if clp.Silent {
@@ -78,6 +78,6 @@ func main() {
 	outman.WriteInfo(clp.ArgString, usedseed, version)
 	sim.SimulateInvasions(clp.BasePop, clp.Replicates, clp.Generations)
 	outman.End() // let the output manager know the simulations are done
-	util.InvadeLogger.Print("Done - thank you for using InvadeGo")
+	util.InvadeLogger.Print("Done - thank you for using Invade-Spatial")
 
 }
