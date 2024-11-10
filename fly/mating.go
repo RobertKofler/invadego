@@ -87,6 +87,30 @@ func (m MaterPanmictic) GetMatePairs(flies [][]*Fly) [][]matePair {
 	}
 	return merryCouples
 }
+func (m MaterNeighborhood) getMatePairCoord(flies [][]*Fly, yc int64, xc int64) matePair {
+	neighbors := getNeighbors(flies, int64(yc), int64(xc), m.neighborDistance)
+	neigcum := generateCumFitness(neighbors)
+	fem := getFlyForRandomNumber(neigcum, rand.Float64())
+	if rand.Float64() < m.selfingRate { // eg selfing rate 0.9 and number 0.0 - 0.89999 will result in selfing
+		// here goes selfing
+		return matePair{female: fem.fly, male: fem.fly} // for selfing, male and female is the same
+	} else {
+		// here goes non selfing
+		male := getFlyForRandomNumber(neigcum, rand.Float64())
+		// avoid selfing by mistake!!
+		counter := 0
+		for male.fly.FlyNumber == fem.fly.FlyNumber {
+			male = getFlyForRandomNumber(neigcum, rand.Float64())
+			counter++
+			if counter > 5 { // prevent being stuck in an endless loop
+				break
+			}
+
+		}
+		return matePair{female: fem.fly, male: male.fly}
+
+	}
+}
 
 func (m MaterNeighborhood) GetMatePairs(flies [][]*Fly) [][]matePair {
 	// initialize
@@ -97,30 +121,14 @@ func (m MaterNeighborhood) GetMatePairs(flies [][]*Fly) [][]matePair {
 		merryCouples[i] = make([]matePair, xsize)
 	}
 
-	for y := 0; y < int(ysize); y++ {
-		for x := 0; x < int(xsize); x++ {
-			neighbors := getNeighbors(flies, int64(y), int64(x), m.neighborDistance)
-			neigcum := generateCumFitness(neighbors)
-			fem := getFlyForRandomNumber(neigcum, rand.Float64())
-			if rand.Float64() < m.selfingRate { // eg selfing rate 0.9 and number 0.0 - 0.89999 will result in selfing
-				// here goes selfing
-				merryCouples[y][x] = matePair{female: fem.fly, male: fem.fly} // for selfing, male and female is the same
-			} else {
-				// here goes non selfing
-				male := getFlyForRandomNumber(neigcum, rand.Float64())
-				// avoid selfing by mistake!!
-				counter := 0
-				for male.fly.FlyNumber == fem.fly.FlyNumber {
-					male = getFlyForRandomNumber(neigcum, rand.Float64())
-					counter++
-					if counter > 5 { // prevent being stuck in an endless loop
-						break
-					}
-				}
-				merryCouples[y][x] = matePair{female: fem.fly, male: male.fly} // non-selfing: male and female are different
-			}
+	for y := int64(0); y < ysize; y++ {
+		for x := int64(0); x < xsize; x++ {
+
+			mp := m.getMatePairCoord(flies, y, x)
+			merryCouples[y][x] = mp // non-selfing: male and female are different
 		}
 	}
+
 	return merryCouples
 }
 

@@ -335,9 +335,130 @@ func TestGetNeighbors(test *testing.T) {
 			if !contains(f, got) {
 				test.Errorf("getNeighbors(%d,%d,%d) does not contain fly %d but should %v", t.y, t.x, t.r, f, t.want)
 			}
+			if len(got) != len(t.want) {
+				test.Errorf("getNeighbors(%d,%d,%d)", t.y, t.x, t.r)
+			}
 		}
 
 	}
+}
+func TestStochasticMaterNeighborhood(test *testing.T) {
+
+	//  1  2  3  4  5
+	//  6  7  8  9 10
+	// 11 12 13 14 15
+	counter := make([]int64, 26)
+	expect := map[int64]bool{1: true, 2: true, 3: true, 6: true, 7: true, 8: true, 11: true, 12: true, 13: true}
+	FLYCOUNTER = 1
+	iff = FitnessFunctionMultiplicative{}
+	m := MaterNeighborhood{selfingRate: 0.0, neighborDistance: 1}
+	p := hGetStandardPopulation(5)
+	for i := 0; i < 4500; i++ {
+		mp := m.getMatePairCoord(p, 1, 1)
+		counter[mp.female.FlyNumber]++
+		counter[mp.male.FlyNumber]++
+	}
+
+	for fid, counts := range counter {
+		_, pres := expect[int64(fid)]
+		if pres {
+
+			if counts > 1100 || counts < 900 {
+				test.Errorf("Error in stochasit random neighborhood, expected 1000; got %d for fly %d", counts, fid)
+			}
+		} else {
+			if counts > 0 {
+				test.Errorf("Error in stochasit random neighborhood, expected 0; got %d for fly %d", counts, fid)
+			}
+		}
+	}
+
+}
+
+func TestStochasticMaterNeighborhoodSelfing(test *testing.T) {
+
+	FLYCOUNTER = 1
+	iff = FitnessFunctionMultiplicative{}
+	m := MaterNeighborhood{selfingRate: 0.95, neighborDistance: 1}
+	p := hGetStandardPopulation(10)
+	self, nonself := 0, 0
+	for i := 0; i < 100; i++ {
+		mpss := m.GetMatePairs(p)
+		for _, mps := range mpss {
+			for _, mp := range mps {
+				if mp.female.FlyNumber == mp.male.FlyNumber {
+					self++
+				} else {
+					nonself++
+				}
+
+			}
+		}
+
+	}
+
+	if self > 9700 || self < 9300 {
+		test.Errorf("Error in selfing of stochastic random neighborhood, expected around 9500; got %d", self)
+	}
+
+}
+
+func TestStochasticMaterPanmictic(test *testing.T) {
+
+	//  1  2  3  4  5
+	//  6  7  8  9 10
+	// 11 12 13 14 15
+	counter := make([]int64, 25)
+	FLYCOUNTER = 1
+	iff = FitnessFunctionMultiplicative{}
+	m := MaterPanmictic{selfingRate: 0.0}
+	p := hGetStandardPopulation(5)
+	for i := 0; i < 500; i++ {
+		mpss := m.GetMatePairs(p)
+		for _, mps := range mpss {
+			for _, mp := range mps {
+				counter[mp.female.FlyNumber-1]++
+				counter[mp.male.FlyNumber-1]++
+			}
+		}
+
+	}
+
+	for fid, counts := range counter {
+
+		if counts > 1100 || counts < 900 {
+			test.Errorf("Error in stochasit random neighborhood, expected 1000; got %d for fly %d", counts, fid+1)
+		}
+	}
+
+}
+
+func TestStochasticMaterPanmicticSelfing(test *testing.T) {
+
+	FLYCOUNTER = 1
+	iff = FitnessFunctionMultiplicative{}
+	m := MaterPanmictic{selfingRate: 0.95}
+	p := hGetStandardPopulation(10)
+	self, nonself := 0, 0
+	for i := 0; i < 100; i++ {
+		mpss := m.GetMatePairs(p)
+		for _, mps := range mpss {
+			for _, mp := range mps {
+				if mp.female.FlyNumber == mp.male.FlyNumber {
+					self++
+				} else {
+					nonself++
+				}
+
+			}
+		}
+
+	}
+
+	if self > 9700 || self < 9300 {
+		test.Errorf("Error in selfing of stochastic random neighborhood, expected around 9500; got %d", self)
+	}
+
 }
 
 //getNeighbors(flies [][]*Fly, ycord int64, xcord int64, radius int64) []*Fly
