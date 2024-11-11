@@ -155,7 +155,7 @@ func (p *Population) GetWithTEAndNotSilencedCount() int64 {
 	turns counts into a frequency
 */
 func (p *Population) Count2Freq(count int64) float64 {
-	toret := float64(count) / float64(len(p.linearFlies))
+	toret := float64(count) / float64(p.Size())
 	if toret < 0 || toret > 1.0 {
 		panic(fmt.Sprintf("Invalid frequency %f", toret))
 	}
@@ -171,7 +171,7 @@ func (p *Population) GetAverageFitness() float64 {
 	for _, f := range p.linearFlies {
 		c += f.Fitness
 	}
-	toret := c / float64(len(p.Flies))
+	toret := c / float64(p.Size())
 	return toret
 }
 
@@ -199,7 +199,8 @@ func (p *Population) GetAverageInsertions() float64 {
 	for _, f := range p.linearFlies {
 		c += float64(f.FlyStat.CountTotal)
 	}
-	toret := c / float64(len(p.Flies))
+	toret := c / float64(p.Size())
+
 	return toret
 }
 

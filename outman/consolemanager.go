@@ -40,6 +40,7 @@ func (fo FormaterSummary) FormatInfo() string {
 	buf.WriteString("avpopfreq\t") //  population frquency of a TE insertion
 	buf.WriteString("fixed\t")     // number of fixed TE insertions      // |
 	buf.WriteString("fsilenced\t") // fraction of silenced
+	buf.WriteString("sites\t")     // fraction of silenced
 
 	buf.WriteString("|\t")
 	buf.WriteString("sampleids")
@@ -62,7 +63,8 @@ func (fo FormaterSummary) FormatPopulation(p *fly.Population, reincos int64, gen
 	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetAverageInsertions()))          // avtes
 	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetAveragePopulationFrequency())) //  popfreq all
 	buf.WriteString(fmt.Sprintf("%d\t", len(p.GetFixedInsertions())))         // fixed insertions                                                  // |
-	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetSilencedFrequency()))          // fw piRNAs (either cluster or para)
+	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetSilencedFrequency()))          // fw piRNAs (either cluster or para)#
+	buf.WriteString(fmt.Sprintf("%d\t", len(p.GetInsertionSites())))          // sites
 
 	if len(outman.sampleparsed) > 0 {
 		buf.WriteString("|\t")
@@ -70,7 +72,8 @@ func (fo FormaterSummary) FormatPopulation(p *fly.Population, reincos int64, gen
 			buf.WriteString(fmt.Sprintf("%s\t", sid))
 		}
 	}
-	return buf.String()
+	tr := buf.String()
+	return tr
 }
 
 func (fo FormaterGridOverview) FormatInfo() string {

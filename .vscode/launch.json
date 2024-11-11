@@ -18,7 +18,7 @@
 			"--grid-x","50",
 			"--grid-y","20",
 			"--epi-inherit","dros",
-			"--console-format","gridcount",
+			"--console-format","summary",
 			"--basepop","10,0,10",
 			"--rep","1",
 			"--steps","5",
