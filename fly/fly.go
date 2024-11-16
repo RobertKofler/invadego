@@ -28,6 +28,12 @@ type Position struct {
 	X int64
 	Y int64
 }
+type FlySummary struct {
+	CountTE  int64
+	Silenced bool
+	Ycoord   int64
+	Xcoord   int64
+}
 
 type Fly struct {
 	FlyNumber int64 // each fly has a number; starting at 1

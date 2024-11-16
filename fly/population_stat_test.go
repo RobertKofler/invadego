@@ -14,7 +14,7 @@ func testhelper_generatetotalcount(clustercount []int64) *Population {
 		f := &Fly{FlyStat: &FlyStatistic{CountTotal: cc}}
 		flies[i] = append(flies[i], f)
 	}
-	return NewPopulation(flies)
+	return NewPopulation(flies, INVASION)
 }
 
 func testhelper_setdefaultenv() {
@@ -37,7 +37,7 @@ func testhelper_hapmerger(haps [][]int64) *Population {
 		f := NewFly(femgam, malegam, false)
 		flies[0] = append(flies[0], f)
 	}
-	return NewPopulation(flies)
+	return NewPopulation(flies, INVASION)
 
 }
 

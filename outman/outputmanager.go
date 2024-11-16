@@ -25,6 +25,9 @@ func SetupOutputManager(consoleFormat string, steps int64, replicateOffset int64
 	if fileDebug != "" {
 		writer.SetupDebugWriter(fileDebug)
 	}
+	if fileSpatial != "" {
+		writer.SetupSpatialWriter(fileSpatial)
+	}
 	cf := strings.ToLower(consoleFormat)
 	if cf == "summary" {
 		formater = FormaterSummary{}
@@ -71,6 +74,7 @@ func WriteInfo(userargs string, seed int64, version string) {
 func End() {
 	writer.CloseMHPWriter()
 	writer.CloseDebugWriter()
+	writer.CloseSpatialWriter()
 
 }
 
@@ -93,7 +97,7 @@ func writePopulation(p *fly.Population, replicate int64, generation int64, popst
 		writer.WriteDebugEntry(p, replicate+outman.replicateOffset, generation)
 	}
 	if outman.fileSpatial != "" {
-
+		writer.WriteSpatialEntry(p, replicate+outman.replicateOffset, generation)
 	}
 
 	// INVADE

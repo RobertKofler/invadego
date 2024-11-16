@@ -96,6 +96,26 @@ func (p *Population) GetCountGrid() [][]int64 {
 	return popcount
 }
 
+/*
+Get a summary for all the flies including coordinates, te count and silencing status
+*/
+func (p *Population) GetFlySummaries() []FlySummary {
+	//ysize, xsize := env.GetYSize(), env.GetXSize()
+	fsums := make([]FlySummary, 0, p.Size())
+
+	for y, temp := range p.Flies {
+		for x := range temp {
+			cf := p.Flies[y][x]
+			fs := FlySummary{CountTE: cf.FlyStat.CountTotal,
+				Silenced: cf.Silenced,
+				Ycoord:   int64(y),
+				Xcoord:   int64(x)}
+			fsums = append(fsums, fs)
+		}
+	}
+	return fsums
+}
+
 func (p *Population) GetSilencedGrid() [][]bool {
 	//ysize, xsize := env.GetYSize(), env.GetXSize()
 	popcount := make([][]bool, len(p.Flies))

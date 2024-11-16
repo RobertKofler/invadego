@@ -36,7 +36,7 @@ func ParseBasePop(basepop string) *fly.Population {
 			pop[y][x] = nf
 		}
 	}
-	return fly.NewPopulation(pop)
+	return fly.NewPopulation(pop, fly.INVASION)
 }
 
 func getPopCountGrrid(basepop string) [][]int64 {

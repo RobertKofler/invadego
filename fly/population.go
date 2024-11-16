@@ -1,6 +1,7 @@
 package fly
 
 import (
+	"fmt"
 	"invade/env"
 )
 
@@ -10,17 +11,16 @@ type Population struct {
 	Flies       [][]*Fly
 	linearFlies []*Fly
 	size        int64
+	activePhase Phase
 }
 
 type Phase int64
 
-// geographic phases...
+// phases
 const (
-	RAPIDINVASION Phase = 0
-	SGPATCHY      Phase = 2
-	SGPANDEMIC    Phase = 3
-	IAPATCHY      Phase = 4
-	IAPANDEMIC    Phase = 5
+	INVASION Phase = 0
+	DECLINE  Phase = 1
+	INACTIVE Phase = 2
 )
 
 type PopStatus int64
@@ -40,8 +40,11 @@ const (
 func (p *Population) Size() int64 {
 	return p.size
 }
+func (p *Population) Phase() Phase {
+	return p.activePhase
+}
 
-func NewPopulation(flies [][]*Fly) *Population {
+func NewPopulation(flies [][]*Fly, prevPhase Phase) *Population {
 	p := Population{Flies: flies}
 	linear := make([]*Fly, 0, p.Size())
 	s := int64(0)
@@ -53,7 +56,34 @@ func NewPopulation(flies [][]*Fly) *Population {
 	}
 	p.linearFlies = linear
 	p.size = s
+
+	p.activePhase = p.updatePhase(prevPhase)
 	return &p
+}
+
+func (p *Population) updatePhase(prevPhase Phase) Phase {
+	cns := p.GetWithTEAndNotSilencedCount()
+	cs := p.GetWithTEAndSilencedCount()
+
+	if prevPhase == INACTIVE {
+		return INACTIVE
+	} else if prevPhase == INVASION {
+		if cs > 0 && cns == 0 {
+			return INACTIVE // everyone silenced?
+		} else if cs > 0 {
+			return DECLINE
+		} else {
+			return INVASION
+		}
+	} else if prevPhase == DECLINE {
+		if cs > 0 && cns == 0 {
+			return INACTIVE
+		} else {
+			return DECLINE
+		}
+	} else {
+		panic(fmt.Sprintf("invalid phase %d", prevPhase))
+	}
 }
 
 /*
@@ -85,7 +115,7 @@ func (p *Population) GetNextGeneration() *Population {
 		}
 	}
 
-	newPop := NewPopulation(nextGen)
+	newPop := NewPopulation(nextGen, p.activePhase)
 	// update phase would go here
 
 	return newPop

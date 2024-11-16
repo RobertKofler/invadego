@@ -28,6 +28,8 @@ func (fo FormaterSummary) FormatInfo() string {
 	buf.WriteString("# ")
 	buf.WriteString("rep\t")     // replicate
 	buf.WriteString("gen\t")     // generation
+	buf.WriteString("status\t")  // status
+	buf.WriteString("phase\t")   // phase
 	buf.WriteString("|\t")       // |
 	buf.WriteString("cte\t")     // count with TE
 	buf.WriteString("ctens\t")   // count with te and not silenced
@@ -49,9 +51,10 @@ func (fo FormaterSummary) FormatInfo() string {
 
 func (fo FormaterSummary) FormatPopulation(p *fly.Population, reincos int64, generation int64, statstr string, sampleid string) string {
 	buf := new(bytes.Buffer)
-	buf.WriteString(fmt.Sprintf("%d\t", reincos))    // replicate
-	buf.WriteString(fmt.Sprintf("%d\t", generation)) // generation
-	buf.WriteString(fmt.Sprintf("%s\t", statstr))    // status
+	buf.WriteString(fmt.Sprintf("%d\t", reincos))                   // replicate
+	buf.WriteString(fmt.Sprintf("%d\t", generation))                // generation
+	buf.WriteString(fmt.Sprintf("%s\t", statstr))                   // status
+	buf.WriteString(fmt.Sprintf("%s\t", getPhaseString(p.Phase()))) // phase
 	buf.WriteString("|\t")
 	buf.WriteString(fmt.Sprintf("%d\t", p.GetWithTECount()))                  // count with TE
 	buf.WriteString(fmt.Sprintf("%d\t", p.GetWithTEAndNotSilencedCount()))    // count with TE and not silenced
@@ -82,9 +85,10 @@ func (fo FormaterGridOverview) FormatInfo() string {
 func (fo FormaterGridOverview) FormatPopulation(p *fly.Population, reincos int64, generation int64, statstr string, sampleid string) string {
 	buf := new(bytes.Buffer)
 	buf.WriteString(">")
-	buf.WriteString(fmt.Sprintf("%d\t", reincos))    // replicate
-	buf.WriteString(fmt.Sprintf("%d\t", generation)) // generation
-	buf.WriteString(fmt.Sprintf("%s\t", statstr))    // status
+	buf.WriteString(fmt.Sprintf("%d\t", reincos))                   // replicate
+	buf.WriteString(fmt.Sprintf("%d\t", generation))                // generation
+	buf.WriteString(fmt.Sprintf("%s\t", statstr))                   // status
+	buf.WriteString(fmt.Sprintf("%s\t", getPhaseString(p.Phase()))) // phase
 	if len(outman.sampleparsed) > 0 {
 		buf.WriteString("|\t")
 		for _, sid := range outman.sampleparsed {
@@ -102,7 +106,7 @@ func (fo FormaterGridOverview) FormatPopulation(p *fly.Population, reincos int64
 		}
 		buf.WriteString("\n")
 	}
-	buf.WriteString(">\n")
+	buf.WriteString("<\n")
 	return buf.String()
 }
 
@@ -112,9 +116,10 @@ func (fo FormaterGridCount) FormatInfo() string {
 func (fo FormaterGridCount) FormatPopulation(p *fly.Population, reincos int64, generation int64, statstr string, sampleid string) string {
 	buf := new(bytes.Buffer)
 	buf.WriteString(">")
-	buf.WriteString(fmt.Sprintf("%d\t", reincos))    // replicate
-	buf.WriteString(fmt.Sprintf("%d\t", generation)) // generation
-	buf.WriteString(fmt.Sprintf("%s\t", statstr))    // status
+	buf.WriteString(fmt.Sprintf("%d\t", reincos))                   // replicate
+	buf.WriteString(fmt.Sprintf("%d\t", generation))                // generation
+	buf.WriteString(fmt.Sprintf("%s\t", statstr))                   // status
+	buf.WriteString(fmt.Sprintf("%s\t", getPhaseString(p.Phase()))) // phase
 	if len(outman.sampleparsed) > 0 {
 		buf.WriteString("|\t")
 		for _, sid := range outman.sampleparsed {
@@ -134,6 +139,18 @@ func (fo FormaterGridCount) FormatPopulation(p *fly.Population, reincos int64, g
 		}
 		buf.WriteString("\n")
 	}
-	buf.WriteString(">\n")
+	buf.WriteString("<\n")
 	return buf.String()
+}
+
+func getPhaseString(status fly.Phase) string {
+	if status == fly.INVASION {
+		return "inv"
+	} else if status == fly.DECLINE {
+		return "dec"
+	} else if status == fly.INACTIVE {
+		return "sil"
+	} else {
+		panic(fmt.Sprintf("unknown population status %d ", status))
+	}
 }
