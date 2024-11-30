@@ -52,10 +52,11 @@ func (om *OutputManagerCondInvasionDecorator) FinaliseReplicate(popstat fly.PopS
 		for _, k := range om.candidateRecord {
 			om.omi.RecordPopulation(k.population, k.generation, k.popstat)
 		}
-		om.candidateRecord = make([]popentry, 0)
+
 		om.successfullReplicates++
 	}
 	// in any case increase the count of invasions
+	om.candidateRecord = make([]popentry, 0)
 	om.omi.currentReplicate = om.omi.currentReplicate + 1
 }
 
