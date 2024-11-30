@@ -47,7 +47,7 @@ func ParseCommandLine() *CommandLineParameters {
 	episilence := flag.String("epi-inherit", "", "mandatory;  either dros, ara, none")
 	genome := flag.String("genome", "", "mandatory; the genomic landscape; e.g. 'MB:2,3,1,5' specifiies four chromosomes with sizes of 2,3,1,5 Mb")
 	generations := flag.Int64("gen", -1, "mandatory; run the simulations for '--gen' generations")
-	basepop := flag.String("basepop", "", "mandatory; the individual(s) with the segregating insertions in the starting population; CoordY,CoordX,N:CoordY,CoordX,N")
+	basepop := flag.String("basepop", "", "mandatory; the individual(s) with the segregating insertions in the starting population; CoordY,CoordX,N:CoordY,CoordX,N; where 10' menas 10 silenced insertions")
 
 	// Optional parameters
 	triggerSilence := flag.Int64("trigger-defense", -1, "at which threshold value should the host defense been triggerd")
@@ -72,7 +72,7 @@ func ParseCommandLine() *CommandLineParameters {
 	seed := flag.Int64("seed", -1, "seed for the random number generator")
 	threads := flag.Int64("threads", 1, "number of threads")
 	silent := flag.Bool("silent", false, "suppress output")
-	conditionalInvasion := flag.Bool("conditional-invasion", false, "only show replicates where at least one TE copy was present until the final generation")
+	conditionalInvasion := flag.Bool("condinv", false, "only show replicates where at least one TE copy was present until the final generation")
 	flag.Parse()
 
 	// basic checks if parameters are suitable

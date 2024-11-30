@@ -20,14 +20,16 @@
 			"--epi-inherit","dros",
 			"--console-format","summary",
 			"--file-spatial","/Users/robertkofler/gh/invadego/debug/spatial-example.txt",
-			"--basepop","10,0,10:10,1,10:10,2,10:10,3,10",
-			"--rep","1",
-			"--steps","5",
+			"--basepop","10,0,10", // "10,0,10:10,1,10:10,2,10:10,3,10",
+			"--rep","5",
+			"--replicate-offset","1",
+			"--steps","10",
 			"--trigger-defense","40",
 			"--mate-radius","1",
-			"--selfing-rate","0.0",
+			"--selfing-rate","0.9",
 			"--sampleid","test,test2",
-			"--gen","200"]
+			"--condinv",
+			"--gen","500"]
 	},
 	{
 		"name": "max-insertions",

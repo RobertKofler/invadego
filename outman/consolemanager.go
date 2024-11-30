@@ -17,7 +17,7 @@ type FormaterSummary struct {
 
 type IConsoleFormater interface {
 	FormatInfo() string
-	FormatPopulation(p *fly.Population, reincos int64, generation int64, statstr string, sampleid string) string
+	FormatPopulation(p *fly.Population, reincos int64, generation int64, statstr string, sampleparsed []string) string
 }
 
 var formater IConsoleFormater
@@ -49,7 +49,7 @@ func (fo FormaterSummary) FormatInfo() string {
 	return buf.String()
 }
 
-func (fo FormaterSummary) FormatPopulation(p *fly.Population, reincos int64, generation int64, statstr string, sampleid string) string {
+func (fo FormaterSummary) FormatPopulation(p *fly.Population, reincos int64, generation int64, statstr string, sampleparsed []string) string {
 	buf := new(bytes.Buffer)
 	buf.WriteString(fmt.Sprintf("%d\t", reincos))                   // replicate
 	buf.WriteString(fmt.Sprintf("%d\t", generation))                // generation
@@ -69,9 +69,9 @@ func (fo FormaterSummary) FormatPopulation(p *fly.Population, reincos int64, gen
 	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetSilencedFrequency()))          // fw piRNAs (either cluster or para)#
 	buf.WriteString(fmt.Sprintf("%d\t", len(p.GetInsertionSites())))          // sites
 
-	if len(outman.sampleparsed) > 0 {
+	if len(sampleparsed) > 0 {
 		buf.WriteString("|\t")
-		for _, sid := range outman.sampleparsed {
+		for _, sid := range sampleparsed {
 			buf.WriteString(fmt.Sprintf("%s\t", sid))
 		}
 	}
@@ -82,16 +82,16 @@ func (fo FormaterSummary) FormatPopulation(p *fly.Population, reincos int64, gen
 func (fo FormaterGridOverview) FormatInfo() string {
 	return ""
 }
-func (fo FormaterGridOverview) FormatPopulation(p *fly.Population, reincos int64, generation int64, statstr string, sampleid string) string {
+func (fo FormaterGridOverview) FormatPopulation(p *fly.Population, reincos int64, generation int64, statstr string, sampleparsed []string) string {
 	buf := new(bytes.Buffer)
 	buf.WriteString(">")
 	buf.WriteString(fmt.Sprintf("%d\t", reincos))                   // replicate
 	buf.WriteString(fmt.Sprintf("%d\t", generation))                // generation
 	buf.WriteString(fmt.Sprintf("%s\t", statstr))                   // status
 	buf.WriteString(fmt.Sprintf("%s\t", getPhaseString(p.Phase()))) // phase
-	if len(outman.sampleparsed) > 0 {
+	if len(sampleparsed) > 0 {
 		buf.WriteString("|\t")
-		for _, sid := range outman.sampleparsed {
+		for _, sid := range sampleparsed {
 			buf.WriteString(fmt.Sprintf("%s\t", sid))
 		}
 	}
@@ -113,16 +113,16 @@ func (fo FormaterGridOverview) FormatPopulation(p *fly.Population, reincos int64
 func (fo FormaterGridCount) FormatInfo() string {
 	return ""
 }
-func (fo FormaterGridCount) FormatPopulation(p *fly.Population, reincos int64, generation int64, statstr string, sampleid string) string {
+func (fo FormaterGridCount) FormatPopulation(p *fly.Population, reincos int64, generation int64, statstr string, sampleparsed []string) string {
 	buf := new(bytes.Buffer)
 	buf.WriteString(">")
 	buf.WriteString(fmt.Sprintf("%d\t", reincos))                   // replicate
 	buf.WriteString(fmt.Sprintf("%d\t", generation))                // generation
 	buf.WriteString(fmt.Sprintf("%s\t", statstr))                   // status
 	buf.WriteString(fmt.Sprintf("%s\t", getPhaseString(p.Phase()))) // phase
-	if len(outman.sampleparsed) > 0 {
+	if len(sampleparsed) > 0 {
 		buf.WriteString("|\t")
-		for _, sid := range outman.sampleparsed {
+		for _, sid := range sampleparsed {
 			buf.WriteString(fmt.Sprintf("%s\t", sid))
 		}
 	}

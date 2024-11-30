@@ -7,10 +7,8 @@ import (
 	"strings"
 )
 
-var outman OutputManager
-
 func SetupOutputManager(consoleFormat string, steps int64, replicateOffset int64,
-	fileSpatial string, fileMHP string, fileDebug string, sampleid string) {
+	fileSpatial string, fileMHP string, fileDebug string, repsNeeded int64, sampleid string) *OutputManager {
 
 	sampleparsed := []string{}
 	if strings.Contains(sampleid, ",") {
@@ -41,69 +39,88 @@ func SetupOutputManager(consoleFormat string, steps int64, replicateOffset int64
 		panic(fmt.Sprintf("Unknown console mode %s", cf))
 	}
 
-	outman = OutputManager{
-		steps:           steps,
-		replicateOffset: replicateOffset,
-		fileMHP:         fileMHP,
-		fileDebug:       fileDebug,
-		fileSpatial:     fileSpatial,
-		sampleid:        sampleid,
-		sampleparsed:    sampleparsed,
+	return &OutputManager{
+		steps:            steps,
+		replicateOffset:  replicateOffset,
+		fileMHP:          fileMHP,
+		fileDebug:        fileDebug,
+		fileSpatial:      fileSpatial,
+		sampleid:         sampleid,
+		currentReplicate: 1,
+		replicatesNeeded: repsNeeded,
+		sampleparsed:     sampleparsed,
 	}
 
 }
 
 type OutputManager struct {
-	steps           int64
-	replicateOffset int64
-	fileMHP         string
-	fileSpatial     string
-	fileDebug       string
-	sampleid        string
-	sampleparsed    []string
+	steps            int64
+	replicateOffset  int64
+	fileMHP          string
+	fileSpatial      string
+	fileDebug        string
+	sampleid         string
+	replicatesNeeded int64
+	currentReplicate int64
+	sampleparsed     []string
 }
 
-func WriteInfo(userargs string, seed int64, version string) {
+func (om *OutputManager) WriteInfo(userargs string, seed int64, version string) {
 	fmt.Println(fmt.Sprintf("# args: %s", userargs))
 	fmt.Println(fmt.Sprintf("# version %s, seed: %d", version, seed))
 	fmt.Println(formater.FormatInfo())
 }
+func (om *OutputManager) FinaliseReplicate(popstat fly.PopStatus) {
+	om.currentReplicate = om.currentReplicate + 1
+}
+
+func (om *OutputManager) NeedMoreReplicates() bool {
+	if om.currentReplicate <= om.replicatesNeeded {
+		return true
+	} else {
+		return false
+	}
+}
 
 // Let the output manager know the job is done
 // eg close open file handles
-func End() {
+func (om *OutputManager) End() {
 	writer.CloseMHPWriter()
 	writer.CloseDebugWriter()
 	writer.CloseSpatialWriter()
 
 }
 
-func RecordPopulation(p *fly.Population, replicate int64, generation int64, popstat fly.PopStatus) {
+func (om *OutputManager) RecordPopulation(p *fly.Population, generation int64, popstat fly.PopStatus) {
 	// Write populations if it is failure (including base population!)
 	// or else if the generation has the required step (modulo == 0, hence including base population)
 	if popstat == fly.FAIL0 || popstat == fly.FAILW || popstat == fly.FAILMAX {
-		writePopulation(p, replicate, generation, popstat)
-	} else if popstat == fly.OK && generation%outman.steps == 0 {
-		writePopulation(p, replicate, generation, popstat)
+		om.writePopulation(p, generation, popstat)
+
+	} else if popstat == fly.OK && generation%om.steps == 0 {
+		om.writePopulation(p, generation, popstat)
+
 	}
 	// Ignore if neither an unusual status or the requested recording generation
 }
 
-func writePopulation(p *fly.Population, replicate int64, generation int64, popstat fly.PopStatus) {
-	if outman.fileMHP != "" {
-		writer.WriteMHPEntry(p, replicate+outman.replicateOffset, generation)
-	}
-	if outman.fileDebug != "" {
-		writer.WriteDebugEntry(p, replicate+outman.replicateOffset, generation)
-	}
-	if outman.fileSpatial != "" {
-		writer.WriteSpatialEntry(p, replicate+outman.replicateOffset, generation)
-	}
+func (om *OutputManager) writePopulation(p *fly.Population, generation int64, popstat fly.PopStatus) {
 
+	replicatetoprint := om.currentReplicate + om.replicateOffset - 1
+
+	if om.fileMHP != "" {
+
+		writer.WriteMHPEntry(p, replicatetoprint, generation)
+	}
+	if om.fileDebug != "" {
+		writer.WriteDebugEntry(p, replicatetoprint, generation)
+	}
+	if om.fileSpatial != "" {
+		writer.WriteSpatialEntry(p, replicatetoprint, generation)
+	}
 	// INVADE
 	stats := getStatusString(popstat)
-	reos := replicate + outman.replicateOffset
-	towrite := formater.FormatPopulation(p, reos, generation, stats, outman.sampleid)
+	towrite := formater.FormatPopulation(p, replicatetoprint, generation, stats, om.sampleparsed)
 	fmt.Println(towrite)
 }
 

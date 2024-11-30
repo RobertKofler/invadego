@@ -10,23 +10,28 @@ import (
  perform the simulations;
  multiple replicates and generations
 */
-func SimulateInvasions(basepop string, replicates int64, generation int64) {
-	for k := int64(0); k < replicates; k++ {
+func SimulateInvasions(basepop string, generation int64, om outman.IOutputManager) {
+	for om.NeedMoreReplicates() {
 		pop := cmdparser.ParseBasePop(basepop)
 		status := pop.GetStatus()
-		outman.RecordPopulation(pop, k, 0, status)
+		om.RecordPopulation(pop, 0, status)
 		if status != fly.OK {
+			om.FinaliseReplicate(status)
 			continue // skip simulation for invalid base populations
 		}
 
 		for i := int64(1); i <= generation; i++ { // needs to start 1; 0 is the base population
-			pop = pop.GetNextGeneration() // Fuck multithreading! we loose reproducibitilty with the seeds!
+			pop = pop.GetNextGeneration()
 			status := pop.GetStatus()
-			outman.RecordPopulation(pop, k, i, status)
+
+			om.RecordPopulation(pop, i, status)
 
 			// if the status is not ok abort!
 			if status != fly.OK {
+				om.FinaliseReplicate(status)
 				break
+			} else if i == generation {
+				om.FinaliseReplicate(status)
 			}
 		}
 	}

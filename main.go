@@ -56,11 +56,6 @@ func main() {
 	// Recombination rates
 	util.InvadeLogger.Printf("parsing recombination rates %s", clp.RecRate)
 	recrate := cmdparser.ParseRecombination(clp.RecRate)
-	if recrate == nil {
-		util.InvadeLogger.Printf("no recombination rate provided - will not simulate recombination")
-	} else {
-		util.InvadeLogger.Printf("parsed recombination rate, will use: %v", recrate)
-	}
 
 	util.InvadeLogger.Printf("Setting up environment; genome, and the recombination rate")
 	env.SetupEnvironment(clp.GridX, clp.GridY, genome, recrate, clp.TriggerSilence, clp.EpiSilencing, clp.MinFitness, float64(clp.MaxInsertions))
@@ -70,14 +65,21 @@ func main() {
 	fly.SetupFitness(clp.X)
 	util.InvadeLogger.Print("Setting up mating function")
 	fly.SetupMater(clp.SelfingRate, clp.MateRadius)
+
 	util.InvadeLogger.Print("Setting up output manager")
-	outman.SetupOutputManager(clp.ConsoleFormat, clp.Steps, clp.ReplicateOffset, clp.FileSpatial, clp.FileMHP, clp.FileDebug, clp.SampleID)
+	om := outman.SetupOutputManager(clp.ConsoleFormat, clp.Steps, clp.ReplicateOffset, clp.FileSpatial, clp.FileMHP, clp.FileDebug, clp.Replicates, clp.SampleID)
+	var omint outman.IOutputManager
+	if clp.CondInvasion {
+		omint = outman.SetupOutputConditionalDecorator(om)
+	} else {
+		omint = om
+	}
 
 	// Simulate the thing
 	util.InvadeLogger.Print("Commencing simulations")
-	outman.WriteInfo(clp.ArgString, usedseed, version)
-	sim.SimulateInvasions(clp.BasePop, clp.Replicates, clp.Generations)
-	outman.End() // let the output manager know the simulations are done
+	omint.WriteInfo(clp.ArgString, usedseed, version)
+	sim.SimulateInvasions(clp.BasePop, clp.Generations, omint)
+	omint.End() // let the output manager know the simulations are done
 	util.InvadeLogger.Print("Done - thank you for using Invade-Spatial")
 
 }
