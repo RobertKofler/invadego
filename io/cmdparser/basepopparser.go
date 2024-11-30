@@ -10,6 +10,11 @@ import (
 	"strings"
 )
 
+type countTuple struct {
+	count  int64
+	silent bool
+}
+
 func ParseBasePop(basepop string) *fly.Population {
 	countgrid := getPopCountGrrid(basepop)
 	ysize, xsize := env.GetYSize(), env.GetXSize()
@@ -22,7 +27,7 @@ func ParseBasePop(basepop string) *fly.Population {
 			targetinsertions := countgrid[y][x]
 			hap1 := make([]int64, 0)
 			hap2 := make([]int64, 0)
-			for i := 0; i < int(targetinsertions); i++ {
+			for i := 0; i < int(targetinsertions.count); i++ {
 				genpos := env.GetRandomSite()
 				if rand.Intn(2) == 1 {
 					hap1 = append(hap1, genpos)
@@ -32,18 +37,18 @@ func ParseBasePop(basepop string) *fly.Population {
 			}
 			h1 := util.UniqueSort(hap1)
 			h2 := util.UniqueSort(hap2)
-			nf := fly.NewFly(h1, h2, false) // the inital flys, per default do not receive parental silencing
+			nf := fly.NewFly(h1, h2, targetinsertions.silent) // the inital flys, per default do not receive parental silencing
 			pop[y][x] = nf
 		}
 	}
 	return fly.NewPopulation(pop, fly.INVASION)
 }
 
-func getPopCountGrrid(basepop string) [][]int64 {
+func getPopCountGrrid(basepop string) [][]countTuple {
 	ysize, xsize := env.GetYSize(), env.GetXSize()
-	popcount := make([][]int64, ysize)
+	popcount := make([][]countTuple, ysize)
 	for i, _ := range popcount {
-		popcount[i] = make([]int64, xsize)
+		popcount[i] = make([]countTuple, xsize)
 	}
 
 	//Y,X,count;Y,X,count
@@ -55,10 +60,17 @@ func getPopCountGrrid(basepop string) [][]int64 {
 		toparse = append(toparse, basepop)
 	}
 	for _, tp := range toparse {
+		silentb := false
 		tmp := strings.Split(tp, ",")
 		yco, ery := strconv.ParseInt(tmp[0], 10, 64)
 		xco, erx := strconv.ParseInt(tmp[1], 10, 64)
-		count, erc := strconv.ParseInt(tmp[2], 10, 64)
+		cstring := tmp[2]
+
+		if strings.HasSuffix(cstring, "'") {
+			silentb = true
+			cstring = cstring[:len(cstring)-1]
+		}
+		countint, erc := strconv.ParseInt(cstring, 10, 64)
 		if ery != nil || erx != nil || erc != nil {
 			panic(fmt.Sprintf("Invalid base population entry %s", tp))
 		}
@@ -69,7 +81,7 @@ func getPopCountGrrid(basepop string) [][]int64 {
 			panic(fmt.Sprintf("Y-coordinate of specimen in base popualtion outside of spatial grid: %d", xco))
 		}
 
-		popcount[yco][xco] = count
+		popcount[yco][xco] = countTuple{count: countint, silent: silentb}
 
 	}
 

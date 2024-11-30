@@ -18,6 +18,7 @@ type CommandLineParameters struct {
 	ConsoleFormat   string
 	ArgString       string
 	Silent          bool
+	CondInvasion    bool
 	Genome          string
 	RecRate         string
 	U               float64 // transposition rate
@@ -71,6 +72,7 @@ func ParseCommandLine() *CommandLineParameters {
 	seed := flag.Int64("seed", -1, "seed for the random number generator")
 	threads := flag.Int64("threads", 1, "number of threads")
 	silent := flag.Bool("silent", false, "suppress output")
+	conditionalInvasion := flag.Bool("conditional-invasion", false, "only show replicates where at least one TE copy was present until the final generation")
 	flag.Parse()
 
 	// basic checks if parameters are suitable
@@ -126,6 +128,7 @@ func ParseCommandLine() *CommandLineParameters {
 		EpiSilencing:   lepisilence,
 		MateRadius:     *mateRadius,
 		ConsoleFormat:  lconsoleFormat,
+		CondInvasion:   *conditionalInvasion,
 
 		RecRate:         *rr,
 		BasePop:         *basepop,
