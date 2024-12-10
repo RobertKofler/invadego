@@ -16,7 +16,13 @@ type countTuple struct {
 }
 
 func ParseBasePop(basepop string) *fly.Population {
-	countgrid := getPopCountGrrid(basepop)
+	var countgrid [][]countTuple
+	if strings.HasPrefix(basepop, "all") {
+		countgrid = getAllCountGrrid(basepop)
+	} else {
+		countgrid = getPopCountGrrid(basepop)
+	}
+
 	ysize, xsize := env.GetYSize(), env.GetXSize()
 	pop := make([][]*fly.Fly, ysize)
 	for i, _ := range pop {
@@ -83,6 +89,39 @@ func getPopCountGrrid(basepop string) [][]countTuple {
 
 		popcount[yco][xco] = countTuple{count: countint, silent: silentb}
 
+	}
+
+	return popcount
+}
+
+func getAllCountGrrid(basepop string) [][]countTuple {
+	// default
+	ysize, xsize := env.GetYSize(), env.GetXSize()
+	popcount := make([][]countTuple, ysize)
+	for i, _ := range popcount {
+		popcount[i] = make([]countTuple, xsize)
+	}
+
+	// parse basepop and check validity
+	tmp := strings.Split(basepop, ":")
+	if len(tmp) != 2 || tmp[0] != "all" {
+		panic(fmt.Sprintf("Invalid base population %s", basepop))
+	}
+	toparse := tmp[1]
+	defsilent := false
+	if strings.HasSuffix(toparse, "'") {
+		defsilent = true
+		toparse = toparse[:len(toparse)-1]
+	}
+	defcount, er := strconv.ParseInt(toparse, 10, 64)
+	if er != nil {
+		panic(fmt.Sprintf("Invalid base population count entry %d", defcount))
+	}
+	for y := 0; y < int(ysize); y++ {
+		for x := 0; x < int(xsize); x++ {
+
+			popcount[y][x] = countTuple{count: defcount, silent: defsilent}
+		}
 	}
 
 	return popcount
