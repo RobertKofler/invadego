@@ -116,10 +116,12 @@ func (fo FormaterGridCount) FormatInfo() string {
 func (fo FormaterGridCount) FormatPopulation(p *fly.Population, reincos int64, generation int64, statstr string, sampleparsed []string) string {
 	buf := new(bytes.Buffer)
 	buf.WriteString(">")
-	buf.WriteString(fmt.Sprintf("%d\t", reincos))                   // replicate
-	buf.WriteString(fmt.Sprintf("%d\t", generation))                // generation
-	buf.WriteString(fmt.Sprintf("%s\t", statstr))                   // status
-	buf.WriteString(fmt.Sprintf("%s\t", getPhaseString(p.Phase()))) // phase
+	buf.WriteString(fmt.Sprintf("%d\t", reincos))                          // replicate
+	buf.WriteString(fmt.Sprintf("%d\t", generation))                       // generation
+	buf.WriteString(fmt.Sprintf("%s\t", statstr))                          // status
+	buf.WriteString(fmt.Sprintf("%d\t", p.GetWithTEAndNotSilencedCount())) // with TE and NOT silenced
+	buf.WriteString(fmt.Sprintf("%d\t", p.GetWithTEAndSilencedCount()))    // with TE and silenced
+	buf.WriteString(fmt.Sprintf("%s\t", getPhaseString(p.Phase())))        // phase
 	if len(sampleparsed) > 0 {
 		buf.WriteString("|\t")
 		for _, sid := range sampleparsed {
