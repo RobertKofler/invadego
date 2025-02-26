@@ -23,7 +23,8 @@ type CommandLineParameters struct {
 	RecRate         string
 	U               float64 // transposition rate
 	UC              float64 // transposition rate in the presence of host defence
-	X               float64 // deleterious effect of a TE insertion
+	S               float64 // deleterious effect of a TE insertion
+	H               float64 // heterozygous effect of a TE insertion
 	Steps           int64   // report output each Steps generations
 	Generations     int64
 	SampleID        string
@@ -56,7 +57,8 @@ func ParseCommandLine() *CommandLineParameters {
 	selfrate := flag.Float64("selfing-rate", 0.0, "the selfing rate")
 	sampleid := flag.String("sampleid", "", "the ID of the sample; will be a help in R to group samples like with facete_grid()")
 	rr := flag.String("rr", "", "the recombination rate per chromosome in cm/Mb; e.g. '3,4,4,5' ")
-	x := flag.Float64("x", 0.0, "the deleterious effect of a single TE insertions")
+	s := flag.Float64("s", 0.0, "the deleterious effect of a single homozygous TE insertion")
+	h := flag.Float64("h", 0.0, "the heterozygous effect of a TE insertion")
 	//t := flag.Float64("t", 1.0, "the synergistic effect of TE insertions")
 	transrateResidual := flag.Float64("uc", 0.0, "the transposition rate in the presence of piRNAs")
 	steps := flag.Int64("steps", 20, "report the output at each '--steps' generations")
@@ -99,8 +101,11 @@ func ParseCommandLine() *CommandLineParameters {
 	if *transrateResidual < 0.0 {
 		panic("Provide a suitable residual transposition rate --uc; must be larger or equal to 0.0")
 	}
-	if *x < 0.0 {
-		panic("Provide a suitable deleterious effect of TEs --x; must be larger or equal to 0.0")
+	if *s < 0.0 || *s > 1.0 {
+		panic("Provide a suitable deleterious effect of TEs --s; must be between 0.0 and 1.0")
+	}
+	if *h < 0.0 || *h > 1.0 {
+		panic("Provide a suitable heterozygous effect of TEs --h; must be between 0.0 and 1.0")
 	}
 	//if *t < 1.0 {
 	//	panic("Provide a suitable epistatic effect of TEs --t; must be larger or equal to 1.0")
@@ -134,7 +139,8 @@ func ParseCommandLine() *CommandLineParameters {
 		BasePop:         *basepop,
 		U:               *transrate,
 		UC:              *transrateResidual,
-		X:               *x,
+		S:               *s,
+		H:               *h,
 		Steps:           *steps,
 		ReplicateOffset: *reploffset,
 		Seed:            *seed,

@@ -62,7 +62,7 @@ func main() {
 	util.InvadeLogger.Print("Setting up jumper")
 	env.SetJumper(clp.U, clp.UC)
 	util.InvadeLogger.Print("Setting up fitness function")
-	fly.SetupFitness(clp.X)
+	fly.SetupFitness(clp.S, clp.H)
 	util.InvadeLogger.Print("Setting up mating function")
 	fly.SetupMater(clp.SelfingRate, clp.MateRadius)
 

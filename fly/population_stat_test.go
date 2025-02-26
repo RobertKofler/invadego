@@ -24,7 +24,7 @@ func testhelper_setdefaultenv() {
 		[]float64{0, 0},
 		40, "dros",
 		0.1, 1000.0)
-	SetupFitness(0.0)
+	SetupFitness(0.0, 0.0)
 
 }
 

@@ -52,6 +52,33 @@ func (f *Fly) CountTotalInsertions() int64 {
 }
 
 /*
+Return the number of homozygous, heterozygous insertions
+*/
+func (f *Fly) CountHomozygousHeterozygous() (int64, int64) {
+	var insertionsites = make(map[int64]int64)
+
+	homo, hetero := int64(0), int64(0)
+	for _, is := range f.Hap1 {
+		insertionsites[is]++
+	}
+	for _, is := range f.Hap2 {
+		insertionsites[is]++
+	}
+
+	for _, val := range insertionsites {
+		if val == 1 {
+			hetero++
+		} else if val == 2 {
+			homo++
+		} else {
+			panic("invalid count of homozygote or heterozygote")
+		}
+
+	}
+	return homo, hetero
+}
+
+/*
 Get a gamete from the Fly;
 First recombination among the two haplotypes will take place;
 Second the number of new insertions will be computed based on

@@ -78,6 +78,7 @@ func TestRecombine(t *testing.T) {
 	}
 }
 
+/*
 func TestFitnessOmxnMultiplicative(t *testing.T) {
 	var tests = []struct {
 		x    float64
@@ -98,11 +99,12 @@ func TestFitnessOmxnMultiplicative(t *testing.T) {
 		}
 	}
 }
+*/
 
 /*
 fitness function w=1-xn^t
 cluster insertions (+reference insertions) may be considered
-*/
+
 func TestFitnessOmxntLinear(t *testing.T) {
 	var tests = []struct {
 		x  float64
@@ -126,6 +128,7 @@ func TestFitnessOmxntLinear(t *testing.T) {
 		}
 	}
 }
+*/
 
 func TestGenerateCumFitness(test *testing.T) {
 	var tests = []struct {

@@ -12,6 +12,7 @@ type Population struct {
 	linearFlies []*Fly
 	size        int64
 	activePhase Phase
+	triggered   int64
 }
 
 type Phase int64
