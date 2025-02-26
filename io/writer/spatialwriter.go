@@ -20,7 +20,18 @@ func SetupSpatialWriter(file string) {
 func WriteSpatialEntry(p *fly.Population, replicate int64, generation int64) {
 	fsums := p.GetFlySummaries()
 	for _, fs := range fsums {
-		printline := fmt.Sprintf("%d\t%d\t%d\t%d\t%d\t%v", replicate, generation, fs.Ycoord, fs.Xcoord, fs.CountTE, fs.Silenced)
+		var status string
+		if fs.CountTE > 0 {
+			if fs.Silenced {
+				status = "silenced"
+			} else {
+				status = "active"
+			}
+
+		} else {
+			status = "absent"
+		}
+		printline := fmt.Sprintf("%d\t%d\t%d\t%d\t%d\t%v", replicate, generation, fs.Ycoord, fs.Xcoord, fs.CountTE, status)
 		spatialwriter.WriteString(printline + "\n")
 	}
 
