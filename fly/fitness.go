@@ -38,6 +38,7 @@ func (f FitnessFunctionMultiplicative) ComputeFitness(fly *Fly) float64 {
 }
 
 func (f FitnessFunctionHeterozygote) ComputeFitness(fly *Fly) float64 {
+	// novel
 	homo, hetero := fly.CountHomozygousHeterozygous()
 	fit := 1.0
 	for i := int64(0); i < homo; i++ {

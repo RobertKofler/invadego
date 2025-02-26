@@ -52,9 +52,10 @@ func (f *Fly) CountTotalInsertions() int64 {
 }
 
 /*
-Return the number of homozygous, heterozygous insertions
+Return the number of homozygous, heterozygous insertions yes
 */
 func (f *Fly) CountHomozygousHeterozygous() (int64, int64) {
+	// novel
 	var insertionsites = make(map[int64]int64)
 
 	homo, hetero := int64(0), int64(0)

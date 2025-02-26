@@ -102,6 +102,7 @@ func TestFitnessOmxnMultiplicative(t *testing.T) {
 */
 
 /*
+test
 fitness function w=1-xn^t
 cluster insertions (+reference insertions) may be considered
 
