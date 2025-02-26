@@ -24,7 +24,7 @@ type CommandLineParameters struct {
 	U               float64 // transposition rate
 	UC              float64 // transposition rate in the presence of host defence
 	S               float64 // deleterious effect of a TE insertion
-	H               float64 // heterozygous effect of a TE insertion
+	H               float64 // heterozygous effect of a TE insertion, new
 	Steps           int64   // report output each Steps generations
 	Generations     int64
 	SampleID        string
