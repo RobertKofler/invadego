@@ -1,0 +1,42 @@
+## loops over 2D population
+### convention inner loop is X outer is stack of Y
+
+```
+	// make y
+	pop := make([][]uint8, 3)
+	for i,_ := range pop {
+	
+		//make x
+		pop[i] = make([]uint8, 2)
+		fmt.Println(t)
+	}
+
+	// parse y,x with range
+	for y_cord, xslice := range pop {
+		for x_cord, _ := range xslice {
+			fmt.Println(fmt.Sprintf("%d,%d:%d", y_cord, x_cord, pop[y_cord][x_cord]))
+		}
+	}
+
+
+// parse with for loop
+	for y := 0; y < len(pop); y++ {
+		for x := 0; x < len(pop[y]); x++ {
+			fmt.Println(fmt.Sprintf("%d,%d:%d", y, x, pop[y][x]))
+		}
+	}
+```
+
+## population structure 
+
+
+// with xsize 10 the coordinates 0...9 are used (0-based coordinates)
+// 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+//
+// now lets assume a mate barrier at site 5 (1-based) this translates to 4 (0-based) 
+//            pos 5
+// 0, 1, 2, 3, 4 || 5, 6, 7, 8, 9
+// valid mate barriers would be 1 and 9 in 1-based coordinates ()
+//    1							9
+// 0 || 1, 2, 3, 4, 5, 6, 7, 8 || 9
+```

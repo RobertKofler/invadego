@@ -124,3 +124,45 @@ func ParseRecombination(s string) []float64 {
 	return toret
 
 }
+
+/*
+popuation structure parsing;
+importantly user provides 1-based coordinates
+invadego operates with 0-based coordinates
+
+*/
+func ParsePopulationStructureX(s string, xsize int64) []int64 {
+	// with xsize 10 the coordinates 0...9 are used (0-based coordinates)
+	// 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+	// now lets assume a mate barrier at site 5 (1-based) this translates to 4 (0-based)
+	//            pos 5
+	// 0, 1, 2, 3, 4 || 5, 6, 7, 8, 9
+	// valid mate barriers would be 1 and 9 in 1-based coordinates ()
+	//    1							9
+	// 0 || 1, 2, 3, 4, 5, 6, 7, 8 || 9
+	if s == "" {
+		util.InvadeLogger.Printf("no population structure provided")
+		return nil
+	}
+	var tmp []string
+	if strings.Contains(s, ",") {
+		tmp = strings.Split(s, ",")
+
+	} else {
+		tmp = append(tmp, s)
+	}
+	toret := make([]int64, len(tmp))
+
+	for idx, i := range tmp {
+		xbar, _ := strconv.ParseInt(i, 10, 64)
+		if xbar < 1 {
+			panic(fmt.Sprintf("Invalid mate barrier; must be 1 or larger; got %d;", xbar))
+		} else if xbar >= xsize {
+			panic(fmt.Sprintf("Invalid mate barrier; must be smaller than x-grid size; got %d;", xbar))
+		}
+		toret[idx] = xbar
+	}
+	util.InvadeLogger.Printf("Parsed mate barriers; will proceed with  %v", toret)
+	return toret
+
+}

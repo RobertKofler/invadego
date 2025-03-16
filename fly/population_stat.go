@@ -2,6 +2,7 @@ package fly
 
 import (
 	"fmt"
+	"invade/env"
 	"sort"
 )
 
@@ -304,4 +305,16 @@ func (p *Population) GetD(locus1 int64, locus2 int64) float64 {
 	d := fx11 - fp1*fp2
 	return d
 
+}
+
+func (p *Population) GetXTransectAvCount() []float64 {
+	//ysize, xsize := env.GetYSize(), env.GetXSize()
+	transect := make([]float64, env.GetXSize())
+	for x := int64(0); x < env.GetXSize(); x++ {
+		for y := int64(0); y < env.GetYSize(); y++ {
+			transect[x] += float64(p.Flies[y][x].FlyStat.CountTotal)
+		}
+		transect[x] = transect[x] / float64(env.GetYSize())
+	}
+	return transect
 }

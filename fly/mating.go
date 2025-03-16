@@ -180,7 +180,16 @@ func getNeighbors(flies [][]*Fly, ycord int64, xcord int64, radius int64) []*Fly
 
 	for y := ncoord.ystart; y <= ncoord.yend; y++ {
 		for x := ncoord.xstart; x <= ncoord.xend; x++ {
-			neighbors = append(neighbors, flies[y][x])
+
+			// consider migration barriers; between coordinates of focal-fly (xcord) and potential mate in neighborhood (x)
+			pex := env.GetExclusionProbabilty(xcord, x)
+			if rand.Float64() < pex {
+				// exclusion nothing happens
+			} else {
+				// inclusion
+				neighbors = append(neighbors, flies[y][x])
+			}
+
 		}
 	}
 	return neighbors

@@ -35,6 +35,8 @@ func SetupOutputManager(consoleFormat string, steps int64, replicateOffset int64
 
 	} else if cf == "gridcount" {
 		formater = FormaterGridCount{}
+	} else if cf == "transectx" {
+		formater = FormaterTransect{}
 	} else {
 		panic(fmt.Sprintf("Unknown console mode %s", cf))
 	}

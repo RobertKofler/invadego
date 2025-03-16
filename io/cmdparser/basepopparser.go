@@ -15,13 +15,18 @@ type countTuple struct {
 	silent bool
 }
 
+type rangeTuple struct {
+	ystart int64
+	yend   int64
+	xstart int64
+	xend   int64
+	count  int64
+	silent bool
+}
+
 func ParseBasePop(basepop string) *fly.Population {
-	var countgrid [][]countTuple
-	if strings.HasPrefix(basepop, "all") {
-		countgrid = getAllCountGrrid(basepop)
-	} else {
-		countgrid = getPopCountGrrid(basepop)
-	}
+
+	countgrid := getPopCountGrrid(basepop)
 
 	ysize, xsize := env.GetYSize(), env.GetXSize()
 	pop := make([][]*fly.Fly, ysize)
@@ -50,14 +55,7 @@ func ParseBasePop(basepop string) *fly.Population {
 	return fly.NewPopulation(pop, fly.INVASION)
 }
 
-func getPopCountGrrid(basepop string) [][]countTuple {
-	ysize, xsize := env.GetYSize(), env.GetXSize()
-	popcount := make([][]countTuple, ysize)
-	for i, _ := range popcount {
-		popcount[i] = make([]countTuple, xsize)
-	}
-
-	//Y,X,count;Y,X,count
+func getRangeTuples(basepop string) []rangeTuple {
 	toparse := make([]string, 0)
 	if strings.Contains(basepop, ":") {
 		toparse = strings.Split(basepop, ":")
@@ -65,135 +63,116 @@ func getPopCountGrrid(basepop string) [][]countTuple {
 	} else {
 		toparse = append(toparse, basepop)
 	}
+	toret := make([]rangeTuple, 0)
+
 	for _, tp := range toparse {
 		silentb := false
 		tmp := strings.Split(tp, ",")
-		yco, ery := strconv.ParseInt(tmp[0], 10, 64)
-		xco, erx := strconv.ParseInt(tmp[1], 10, 64)
-		cstring := tmp[2]
+		if len(tmp) != 3 {
+			panic(fmt.Sprintf("invalid base population entry; must have three info: %s", tp))
+		}
+		yparse, xparse, nparse := tmp[0], tmp[1], tmp[2]
 
-		if strings.HasSuffix(cstring, "'") {
+		var ystart, yend, xstart, xend int64
+
+		// yrange
+		if strings.Contains(yparse, "-") {
+			ytmp := strings.Split(yparse, "-")
+			yst, era := strconv.ParseInt(ytmp[0], 10, 64)
+			yet, erb := strconv.ParseInt(ytmp[1], 10, 64)
+			if era != nil || erb != nil {
+				panic(fmt.Sprintf("Invalid base population entry %s in %s", yparse, tp))
+			}
+			if yet < yst {
+				yst, yet = yet, yst
+			}
+			ystart = yst
+			yend = yet
+		} else {
+			ybt, erc := strconv.ParseInt(yparse, 10, 64)
+			if erc != nil {
+				panic(fmt.Sprintf("Invalid base population entry %s in %s", yparse, tp))
+			}
+			ystart = ybt
+			yend = ybt
+		}
+
+		// xrange
+		if strings.Contains(xparse, "-") {
+			xtmp := strings.Split(xparse, "-")
+			xst, era := strconv.ParseInt(xtmp[0], 10, 64)
+			xet, erb := strconv.ParseInt(xtmp[1], 10, 64)
+			if era != nil || erb != nil {
+				panic(fmt.Sprintf("Invalid base population entry %s in %s", xparse, tp))
+			}
+			if xet < xst {
+				xst, xet = xet, xst
+			}
+			xstart = xst
+			xend = xet
+		} else {
+			xbt, erc := strconv.ParseInt(xparse, 10, 64)
+			if erc != nil {
+				panic(fmt.Sprintf("Invalid base population entry %s in %s", xparse, tp))
+			}
+			xstart = xbt
+			xend = xbt
+		}
+
+		// count and silencing status
+		if strings.HasSuffix(nparse, "'") {
 			silentb = true
-			cstring = cstring[:len(cstring)-1]
+			nparse = nparse[:len(nparse)-1]
 		}
-		countint, erc := strconv.ParseInt(cstring, 10, 64)
-		if ery != nil || erx != nil || erc != nil {
-			panic(fmt.Sprintf("Invalid base population entry %s", tp))
-		}
-		if yco >= ysize {
-			panic(fmt.Sprintf("Y-coordinate of specimen in base popualtion outside of spatial grid: %d", yco))
-		}
-		if xco >= xsize {
-			panic(fmt.Sprintf("Y-coordinate of specimen in base popualtion outside of spatial grid: %d", xco))
+		countint, erc := strconv.ParseInt(nparse, 10, 64)
+		if erc != nil {
+			panic(fmt.Sprintf("Invalid base population entry %s in %s", nparse, tp))
 		}
 
-		popcount[yco][xco] = countTuple{count: countint, silent: silentb}
+		rt := rangeTuple{
+			ystart: ystart,
+			yend:   yend,
+			xstart: xstart,
+			xend:   xend,
+			count:  countint,
+			silent: silentb,
+		}
+		toret = append(toret, rt)
 
 	}
-
-	return popcount
+	return toret
 }
 
-func getAllCountGrrid(basepop string) [][]countTuple {
-	// default
+func getPopCountGrrid(basepop string) [][]countTuple {
+
 	ysize, xsize := env.GetYSize(), env.GetXSize()
+	rtuples := getRangeTuples(basepop)
+
 	popcount := make([][]countTuple, ysize)
 	for i, _ := range popcount {
 		popcount[i] = make([]countTuple, xsize)
 	}
 
-	// parse basepop and check validity
-	tmp := strings.Split(basepop, ":")
-	if len(tmp) != 2 || tmp[0] != "all" {
-		panic(fmt.Sprintf("Invalid base population %s", basepop))
-	}
-	toparse := tmp[1]
-	defsilent := false
-	if strings.HasSuffix(toparse, "'") {
-		defsilent = true
-		toparse = toparse[:len(toparse)-1]
-	}
-	defcount, er := strconv.ParseInt(toparse, 10, 64)
-	if er != nil {
-		panic(fmt.Sprintf("Invalid base population count entry %d", defcount))
-	}
-	for y := 0; y < int(ysize); y++ {
-		for x := 0; x < int(xsize); x++ {
+	for _, rt := range rtuples {
+		if rt.ystart < 1 {
+			panic(fmt.Sprintf("y start must not be smaller than 1; got %d", rt.ystart))
 
-			popcount[y][x] = countTuple{count: defcount, silent: defsilent}
+		}
+		if rt.xstart < 1 {
+			panic(fmt.Sprintf("x start must not be smaller than 1; got %d", rt.xstart))
+		}
+		if rt.yend > ysize {
+			panic(fmt.Sprintf("y end must not be larger than ysize; got %d; size %d", rt.yend, ysize))
+		}
+		if rt.xend > xsize {
+			panic(fmt.Sprintf("y end must not be larger than xsize; got %d; size %d", rt.xend, xsize))
+
+		}
+		for y := rt.ystart; y <= rt.yend; y++ {
+			for x := rt.xstart; x <= rt.xend; x++ {
+				popcount[y-1][x-1] = countTuple{count: rt.count, silent: rt.silent}
+			}
 		}
 	}
-
 	return popcount
 }
-
-/*
-Example file
-500 R 0; 1 100 200 400; 0 5 5000
-250 F 0; 2 100 400;
-250 M 0;;
-
-func loadPopulationFromFile(file string, targetpopsize int64) *fly.Population {
-	flies := make([]fly.Fly, 0)
-	readFile, err := os.Open(file)
-	if err != nil {
-		panic(err)
-	}
-	fileScanner := bufio.NewScanner(readFile)
-	fileScanner.Split(bufio.ScanLines)
-	for fileScanner.Scan() {
-		line := fileScanner.Text()
-		tmp := strings.Split(line, ";")
-		if len(tmp) != 3 {
-			panic(fmt.Sprintf("Invalid base population entry %s", line))
-		}
-		tempsplit := strings.Split(tmp[0], " ")
-		if len(tempsplit) != 3 {
-			panic(fmt.Sprintf("Invalid base population entry %s", line))
-		}
-		femhap := []int64{}
-		malehap := []int64{}
-		if tmp[1] != "" {
-			femsplit := strings.Split(strings.TrimSpace(tmp[1]), " ")
-			femsslice := sslice2islice(femsplit)
-			femhap = util.UniqueSort(femsslice)
-		}
-		if tmp[2] != "" {
-			malesplit := strings.Split(strings.TrimSpace(tmp[2]), " ")
-			malesslice := sslice2islice(malesplit)
-			malehap = util.UniqueSort(malesslice)
-		}
-
-		count, errcount := strconv.ParseInt(tempsplit[0], 10, 64)
-		matpi, errmatpi := strconv.ParseInt(tempsplit[2], 10, 64)
-		if errcount != nil || errmatpi != nil {
-			panic(fmt.Sprintf("Invalid base population entry %s", line))
-		}
-		for i := int64(0); i < count; i++ {
-			sex := getSex(tempsplit[1])
-			f := fly.NewFly(femhap, malehap, sex, matpi)
-			flies = append(flies, *f)
-		}
-
-	}
-	readFile.Close()
-
-	if len(flies) != int(targetpopsize) {
-		panic("Invalid base population; population size does not match user specificiations")
-	}
-	return fly.InitializePopulation(flies)
-}
-
-func sslice2islice(sslice []string) []int64 {
-	toret := make([]int64, 0)
-	for _, s := range sslice {
-		si, err := strconv.ParseInt(s, 10, 64)
-		if err != nil {
-			panic(fmt.Sprintf("Invalid base population character %s", s))
-		}
-		toret = append(toret, si)
-	}
-	return toret
-
-}
-*/

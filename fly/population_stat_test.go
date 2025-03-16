@@ -22,7 +22,8 @@ func testhelper_setdefaultenv() {
 		100,
 		[]int64{100, 100}, // two chromosomes of size 100
 		[]float64{0, 0},
-		40, "dros",
+		[]int64{}, 0.0,
+		40, "dros", 0.0,
 		0.1, 1000.0)
 	SetupFitness(0.0, 0.0)
 

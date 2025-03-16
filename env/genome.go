@@ -4,26 +4,102 @@ package env
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 )
 
+/*
+Population Structure;
+migration barriers
+*/
+type popStruct struct {
+	xBarriers   []int64
+	barStrength float64
+}
+
 type Environment struct {
 	genome               *GenomicLandscape
+	popStruct            *popStruct
 	recombinationWindows []*RecombinationWindow
 	triggerThreshold     int64
 	epiMode              string
+	psilencingLoss       float64 // propability that silencing can be lost
 	minimumFitness       float64
 	maximumInsertions    float64
-	gridX                int64
-	gridY                int64
+	gridX                int64 // size of X-grid
+	gridY                int64 // size of Y-grid
 }
 
 func GetMinimumFitness() float64 {
 	return env.minimumFitness
 }
 
+/*
+Propability that silencing can be lost
+*/
+func GetSilencingLossProbability() float64 {
+	return env.psilencingLoss
+}
+
+/*
+probabilty that a potential mate will be excluded from mating due to populatin structure
+*/
+func GetExclusionProbabilty(xfirst int64, xsecond int64) float64 {
+	return env.popStruct.ExclusionProbability(xfirst, xsecond)
+}
+
 func GetMaximumInsertions() float64 {
 	return env.maximumInsertions
+}
+
+func (p *popStruct) ExclusionProbability(xfirst int64, xsecond int64) float64 {
+	bc := p.barrierscrossed(xfirst, xsecond)
+	// 1.0 total barrier,
+	// 0.0 no effect
+	// 0.1 weak barrier
+	// two weak barriers each with 0.1 than we should have 0.19 (1-(1-b)(1-b))
+	// similarly with two very strong barriers 0.9 we should have 0.99
+	pone := 1.0 - p.barStrength
+
+	effect := math.Pow(pone, float64(bc))
+	toret := 1.0 - effect
+	return toret
+}
+
+/*
+calculate the numbers of barriers crossed by two potential mating partners, given the x coordinates
+*/
+func (p *popStruct) barrierscrossed(xfirst int64, xsecond int64) int64 {
+
+	// cut the crap if no barriers or identical x-coordinates
+	if len(p.xBarriers) == 0 || xfirst == xsecond {
+		return 0.0
+	}
+
+	// sort by x-coordinate
+	xleft, xright := xfirst, xsecond
+	if xleft > xright {
+		xleft, xright = xright, xleft
+	}
+
+	// how many barriers have we crossed?
+	// with xsize 10 the coordinates 0...9 are used (0-based coordinates)
+	// 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+	//
+	// now lets assume a mate barrier at site 5 (1-based) this translates to 4 (0-based)
+	//            pos 5
+	// 0, 1, 2, 3, 4 || 5, 6, 7, 8, 9
+	// valid mate barriers would be 1 and 9 in 1-based coordinates ()
+	//    1							9
+	// 0 || 1, 2, 3, 4, 5, 6, 7, 8 || 9
+	toret := int64(0)
+	for _, xbar := range p.xBarriers {
+		if xbar > xleft && xbar <= xright {
+			toret++
+		}
+	}
+
+	return toret
 }
 
 func IsTriggered(diploidcount int64) bool {

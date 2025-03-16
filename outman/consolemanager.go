@@ -15,6 +15,9 @@ type FormaterGridCount struct {
 type FormaterSummary struct {
 }
 
+type FormaterTransect struct {
+}
+
 type IConsoleFormater interface {
 	FormatInfo() string
 	FormatPopulation(p *fly.Population, reincos int64, generation int64, statstr string, sampleparsed []string) string
@@ -155,4 +158,22 @@ func getPhaseString(status fly.Phase) string {
 	} else {
 		panic(fmt.Sprintf("unknown population status %d ", status))
 	}
+}
+
+func (fo FormaterTransect) FormatInfo() string {
+	return ""
+}
+func (fo FormaterTransect) FormatPopulation(p *fly.Population, reincos int64, generation int64, statstr string, sampleparsed []string) string {
+
+	buf := new(bytes.Buffer)
+	buf.WriteString(fmt.Sprintf("%d\t", reincos))                   // replicate
+	buf.WriteString(fmt.Sprintf("%d\t", generation))                // generation
+	buf.WriteString(fmt.Sprintf("%s\t", statstr))                   // status
+	buf.WriteString(fmt.Sprintf("%s\t", getPhaseString(p.Phase()))) // phase
+	transect := p.GetXTransectAvCount()
+	for _, ts := range transect {
+		buf.WriteString(fmt.Sprintf("%.2f\t", ts))
+		buf.WriteString(" ")
+	}
+	return buf.String()
 }

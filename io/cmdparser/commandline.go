@@ -26,6 +26,9 @@ type CommandLineParameters struct {
 	S               float64 // deleterious effect of a TE insertion
 	H               float64 // heterozygous effect of a TE insertion, new
 	Steps           int64   // report output each Steps generations
+	MateBarriers    string  // Mating Barriers; population structure
+	BarrierStrength float64 // Barrier effect size; 1.0 no effect; 0.0 complete isolation
+	PSiLoss         float64 // probabiltiy for loosing epigenetic silencing
 	Generations     int64
 	SampleID        string
 	ReplicateOffset int64
@@ -48,10 +51,11 @@ func ParseCommandLine() *CommandLineParameters {
 	episilence := flag.String("epi-inherit", "", "mandatory;  either dros, ara, none")
 	genome := flag.String("genome", "", "mandatory; the genomic landscape; e.g. 'MB:2,3,1,5' specifiies four chromosomes with sizes of 2,3,1,5 Mb")
 	generations := flag.Int64("gen", -1, "mandatory; run the simulations for '--gen' generations")
-	basepop := flag.String("basepop", "", "mandatory; the individual(s) with the segregating insertions in the starting population; CoordY,CoordX,N:CoordY,CoordX,N; where 10' menas 10 silenced insertions; can also be of the form all:10' where all receive the same initiatl TEs ")
+	basepop := flag.String("basepop", "", "mandatory; coordinates of the individual(s) with the TE insertions in the first generation ; 1-based coordinates!; entries need to be in form Y,X,N:Y,X,N; where N' is feasible and means N silenced insertions; can also be in form  Ystart-Yend,Xstart-Xend,N")
 
 	// Optional parameters
 	triggerSilence := flag.Int64("trigger-defense", -1, "at which threshold value should the host defense been triggerd")
+	psiloss := flag.Float64("p-sil-loss", 0.0, "probabiltiy that epigenetic silencing can be lost")
 	mateRadius := flag.String("mate-radius", "2", "at which spatial distance in grid should mates be found; either integer eg 2 or 'pan' for panmictici")
 	transrate := flag.Float64("u", 0.0, "the transposition rate")
 	selfrate := flag.Float64("selfing-rate", 0.0, "the selfing rate")
@@ -63,11 +67,14 @@ func ParseCommandLine() *CommandLineParameters {
 	transrateResidual := flag.Float64("uc", 0.0, "the transposition rate in the presence of piRNAs")
 	steps := flag.Int64("steps", 20, "report the output at each '--steps' generations")
 	replicates := flag.Int64("rep", 1, "the number of replicates")
+	mateBarriers := flag.String("mate-barrier", "", "a comma separated list about x-coordiantes where mating barriers will be introduced eg. '50,100' will introduce mate barriers at x-coordinates 50 and 100")
+	barStrength := flag.Float64("barrier-strength", 0.0, "the strength of mate barrier between 0.0 and 1.0; 1.0= total exclusion effect and 0.0= no effect")
+
 	reploffset := flag.Int64("replicate-offset", 1, "starting index of the replicates; may be used for pseudo-parallelization)")
 	fileSpatial := flag.String("file-spatial", "", "optional output file: info about individual specimens including coordinates")
 	fileMHP := flag.String("file-mhp", "", "optional output file: position and population frequency of each insertion")
 	fileDebug := flag.String("file-debug", "", "optional output file for debugging various aspects")
-	consoleFormat := flag.String("console-format", "summary", "formating of console output, default summary: summary|gridoverview|gridcount")
+	consoleFormat := flag.String("console-format", "summary", "formating of console output, default summary: summary|gridoverview|gridcount|transectx")
 
 	maxins := flag.Int64("max-insertions", 10000, "the maximum number of insertions")
 	minw := flag.Float64("min-w", 0.1, "the minimum frequency of an average individual in the population")
@@ -87,13 +94,19 @@ func ParseCommandLine() *CommandLineParameters {
 	if *selfrate < 0.0 || *selfrate > 1.0 {
 		panic("Provide a suitable selfing rate --self-rate; must be between 0.0 and 1.0")
 	}
+	if *psiloss < 0.0 || *psiloss > 1.0 {
+		panic("Provide a suitable probability --p-sil-loss; must be between 0.0 and 1.0")
+	}
+	if *barStrength < 0.0 || *barStrength > 1.0 {
+		panic("Provide a suitable barrier effect --barrier-effect; must be between 0.0 and 1.0")
+	}
 	lepisilence := strings.ToLower(*episilence)
 	if lepisilence != "none" && lepisilence != "ara" && lepisilence != "dros" {
 		panic("Provide a suitable epigenetic inheritance mode --epi-inherit; must one of none, ara, dros")
 	}
 	lconsoleFormat := strings.ToLower(*consoleFormat)
-	if lconsoleFormat != "summary" && lconsoleFormat != "gridoverview" && lconsoleFormat != "gridcount" {
-		panic("Provide a suitable console format: summary, gridoverview, gridcount")
+	if lconsoleFormat != "summary" && lconsoleFormat != "gridoverview" && lconsoleFormat != "gridcount" && lconsoleFormat != "transectx" {
+		panic("Provide a suitable console format: summary, gridoverview, gridcount, transect")
 	}
 	if *transrate < 0.0 {
 		panic("Provide a suitable transposition rate --u; must be larger or equal to 0.0")
@@ -136,6 +149,9 @@ func ParseCommandLine() *CommandLineParameters {
 		CondInvasion:   *conditionalInvasion,
 
 		RecRate:         *rr,
+		PSiLoss:         *psiloss,
+		MateBarriers:    *mateBarriers,
+		BarrierStrength: *barStrength,
 		BasePop:         *basepop,
 		U:               *transrate,
 		UC:              *transrateResidual,

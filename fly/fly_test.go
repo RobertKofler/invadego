@@ -27,7 +27,7 @@ func hGetstandardFly() *Fly {
 }
 
 func hGetStandardPopulation(size int64) [][]*Fly {
-	env.SetupEnvironment(size, size, []int64{}, []float64{}, 40, "dros", 0.1, 1000)
+	env.SetupEnvironment(size, size, []int64{}, []float64{}, []int64{}, 0.0, 40, "dros", 0.0, 0.1, 1000)
 	tr := make([][]*Fly, size)
 	for i := int64(0); i < size; i++ {
 		tr[i] = make([]*Fly, 0)
@@ -225,7 +225,7 @@ func TestGetFlyForRandomNumberLargePop(test *testing.T) {
 }
 
 func TestGetNeighborhood(test *testing.T) {
-	env.SetupEnvironment(100, 100, []int64{}, []float64{}, 40, "dros", 0.1, 1000)
+	env.SetupEnvironment(100, 100, []int64{}, []float64{}, []int64{}, 0.0, 40, "dros", 0.0, 0.1, 1000)
 	var tests = []struct {
 		x        int64
 		y        int64
@@ -263,7 +263,7 @@ func TestGetNeighborhood(test *testing.T) {
 }
 
 func TestGetSilencingStatus(test *testing.T) {
-	env.SetupEnvironment(10, 10, []int64{}, []float64{}, 40, "dros", 0.1, 1000)
+	env.SetupEnvironment(10, 10, []int64{}, []float64{}, []int64{}, 0.0, 40, "dros", 0.0, 0.1, 1000)
 	var tests = []struct {
 		fs       FlyStatistic
 		silenced bool

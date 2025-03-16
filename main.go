@@ -31,7 +31,7 @@ func main_profile() {
 func main() {
 
 	// VERSION NUMBER
-	version := "0.1.5.1"
+	version := "0.1.6 - postruct"
 
 	clp := cmdparser.ParseCommandLine()
 	if clp.Silent {
@@ -57,8 +57,12 @@ func main() {
 	util.InvadeLogger.Printf("parsing recombination rates %s", clp.RecRate)
 	recrate := cmdparser.ParseRecombination(clp.RecRate)
 
+	// Population Structure
+	util.InvadeLogger.Printf("parsing population structure %s", clp.MateBarriers)
+	popstruct := cmdparser.ParsePopulationStructureX(clp.MateBarriers, clp.GridX)
+
 	util.InvadeLogger.Printf("Setting up environment; genome, and the recombination rate")
-	env.SetupEnvironment(clp.GridX, clp.GridY, genome, recrate, clp.TriggerSilence, clp.EpiSilencing, clp.MinFitness, float64(clp.MaxInsertions))
+	env.SetupEnvironment(clp.GridX, clp.GridY, genome, recrate, popstruct, clp.BarrierStrength, clp.TriggerSilence, clp.EpiSilencing, clp.PSiLoss, clp.MinFitness, float64(clp.MaxInsertions))
 	util.InvadeLogger.Print("Setting up jumper")
 	env.SetJumper(clp.U, clp.UC)
 	util.InvadeLogger.Print("Setting up fitness function")
