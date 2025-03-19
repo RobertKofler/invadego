@@ -155,3 +155,40 @@ func TestGetHaplotypes(test *testing.T) {
 
 	}
 }
+
+func TestXTransect(test *testing.T) {
+	testhelper_setdefaultenv()
+	ysize, xsize := env.GetYSize(), env.GetXSize()
+	pop := make([][]*Fly, ysize)
+	for i, _ := range pop {
+		pop[i] = make([]*Fly, xsize)
+	}
+	for y := 0; y < int(ysize); y++ {
+		for x := 0; x < int(xsize); x++ {
+			counter := float64(x) / 2.0
+			pop[y][x] = &Fly{FlyStat: &FlyStatistic{CountTotal: int64(counter)}}
+		}
+	}
+	newpop := NewPopulation(pop, INACTIVE)
+	transect := newpop.GetXTransectAvCount()
+
+	var tests = []struct {
+		x    int64
+		want float64
+	}{
+		{x: 1, want: 0.0},
+		{x: 0, want: 0.0},
+		{x: 50, want: 25.0},
+		{x: 98, want: 49.0},
+		{x: 99, want: 49.0},
+	}
+
+	for _, t := range tests {
+
+		got := transect[t.x]
+		if math.Abs(got-t.want) > 0.001 {
+			test.Errorf("Incorrect x-transect at position %d; got %f, want %f", t.x, got, t.want)
+		}
+
+	}
+}
