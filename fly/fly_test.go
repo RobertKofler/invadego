@@ -78,6 +78,61 @@ func TestRecombine(t *testing.T) {
 	}
 }
 
+func TestFitness(test *testing.T) {
+	var tests = []struct {
+		hap1    []int64
+		hap2    []int64
+		s       float64
+		h       float64
+		exp_fit float64
+	}{
+		{hap1: []int64{}, hap2: []int64{}, s: 1.0, h: 0.0, exp_fit: 1.0}, // no insertions
+		{hap1: []int64{}, hap2: []int64{}, s: 1.0, h: 0.5, exp_fit: 1.0}, // no insertions
+		{hap1: []int64{}, hap2: []int64{}, s: 1.0, h: 1.0, exp_fit: 1.0}, // no insertions
+
+		{hap1: []int64{1}, hap2: []int64{1}, s: 0.0, h: 0.0, exp_fit: 1.0}, // a single homoz insertion; no effect
+		{hap1: []int64{1}, hap2: []int64{1}, s: 0.0, h: 0.5, exp_fit: 1.0}, // a single homoz insertion; no effect
+		{hap1: []int64{1}, hap2: []int64{1}, s: 0.0, h: 1.0, exp_fit: 1.0}, // a single homoz insertion; no effect
+
+		{hap1: []int64{1}, hap2: []int64{1}, s: 0.1, h: 0.5, exp_fit: 0.9}, // a single homoz insertion; minor effect
+		{hap1: []int64{1}, hap2: []int64{1}, s: 0.1, h: 0.0, exp_fit: 0.9}, // a single homoz insertion; minor effect
+		{hap1: []int64{1}, hap2: []int64{1}, s: 0.1, h: 1.0, exp_fit: 0.9}, // a single homoz insertion; minor effect
+
+		{hap1: []int64{1}, hap2: []int64{}, s: 0.1, h: 0.5, exp_fit: 0.95}, // a single het insertion; addititive
+		{hap1: []int64{1}, hap2: []int64{}, s: 0.1, h: 0.0, exp_fit: 1.0},  // a single het insertion; recessive
+		{hap1: []int64{1}, hap2: []int64{}, s: 0.1, h: 1.0, exp_fit: 0.9},  // a single het insertion; dominant
+
+		{hap1: []int64{1}, hap2: []int64{}, s: 0.2, h: 0.5, exp_fit: 0.9}, // a single het insertion; addititive
+		{hap1: []int64{1}, hap2: []int64{}, s: 0.2, h: 0.0, exp_fit: 1.0}, // a single het insertion; recessive
+		{hap1: []int64{1}, hap2: []int64{}, s: 0.2, h: 1.0, exp_fit: 0.8}, // a single het insertion; dominant
+
+		{hap1: []int64{1}, hap2: []int64{2}, s: 0.1, h: 0.5, exp_fit: 0.9025}, // two  het insertion; addititive
+		{hap1: []int64{1}, hap2: []int64{2}, s: 0.1, h: 0.0, exp_fit: 1.0},    // two  het insertion; recessive
+		{hap1: []int64{1}, hap2: []int64{2}, s: 0.1, h: 1.0, exp_fit: 0.81},   // two  het insertion; dominant
+
+		{hap1: []int64{1}, hap2: []int64{1, 2}, s: 0.1, h: 0.5, exp_fit: 0.855}, // het + homo
+		{hap1: []int64{1}, hap2: []int64{1, 2}, s: 0.1, h: 0.0, exp_fit: 0.9},   // het + homo
+		{hap1: []int64{1}, hap2: []int64{1, 2}, s: 0.1, h: 1.0, exp_fit: 0.81},  // het + homo
+
+		{hap1: []int64{1, 4}, hap2: []int64{2, 3}, s: 0.1, h: 0.5, exp_fit: 0.8145062}, // four
+		{hap1: []int64{1, 4}, hap2: []int64{2, 3}, s: 0.1, h: 0.0, exp_fit: 1.0},       // four
+		{hap1: []int64{1, 4}, hap2: []int64{2, 3}, s: 0.1, h: 1.0, exp_fit: 0.6561},    // four
+
+	}
+
+	for _, t := range tests {
+		f := Fly{
+			Hap1: t.hap1,
+			Hap2: t.hap2}
+		SetupFitness(t.s, t.h)
+		got_fit := GetFitness(&f)
+
+		if math.Abs(got_fit-t.exp_fit) > 0.0001 {
+			test.Errorf("Incorrect fitness; got %f, want %f", got_fit, t.exp_fit)
+		}
+	}
+}
+
 /*
 func TestFitnessOmxnMultiplicative(t *testing.T) {
 	var tests = []struct {
@@ -461,6 +516,25 @@ func TestStochasticMaterPanmicticSelfing(test *testing.T) {
 
 	if self > 9700 || self < 9300 {
 		test.Errorf("Error in selfing of stochastic random neighborhood, expected around 9500; got %d", self)
+	}
+
+}
+
+func TestStochasticLossOfSilencing(test *testing.T) {
+	env.SetupEnvironment(100, 100, []int64{}, []float64{}, []int64{10, 20}, 0.2, 40, "dros", 0.1, 0.0, 1000)
+	SetupFitness(0.0, 0.0)
+	FLYCOUNTER = 1
+	lost := 0
+	for i := 0; i < 10000; i++ {
+		nf := NewFly([]int64{1}, []int64{1}, true)
+		if nf.Silenced == false {
+			lost++
+		}
+
+	}
+
+	if lost < 800 || lost > 1200 {
+		test.Errorf("Error in loss of epigenetic silencing; got %d", lost)
 	}
 
 }

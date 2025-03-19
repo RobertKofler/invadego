@@ -284,6 +284,43 @@ func TestStochasticRandomAssortmentAndRecombination(test *testing.T) {
 
 }
 
+func TestMateBarrier(test *testing.T) {
+	SetupEnvironment(100, 100, []int64{}, []float64{}, []int64{10, 20}, 0.2, 40, "dros", 0.0, 0.1, 1000)
+	// now lets assume a mate barrier at site 5 (1-based) this translates to 4 (0-based)
+	//            pos 5
+	// 0, 1, 2, 3, 4 || 5, 6, 7, 8, 9
+	// valid mate barriers would be 1 and 9 in 1-based coordinates ()
+	var tests = []struct {
+		x1     int64
+		x2     int64
+		exp_bc int64
+		exp_ep float64
+	}{
+		{x1: 0, x2: 9, exp_bc: 0, exp_ep: 0.0},
+		{x1: 9, x2: 10, exp_bc: 1, exp_ep: 0.2},
+		{x1: 0, x2: 10, exp_bc: 1, exp_ep: 0.2},
+		{x1: 10, x2: 19, exp_bc: 0, exp_ep: 0.0},
+		{x1: 19, x2: 20, exp_bc: 1, exp_ep: 0.2},
+		{x1: 20, x2: 99, exp_bc: 0, exp_ep: 0.0},
+		{x1: 9, x2: 20, exp_bc: 2, exp_ep: 0.36},
+		{x1: 0, x2: 99, exp_bc: 2, exp_ep: 0.36},
+
+		// NOTHING
+	}
+	for _, t := range tests {
+		ps := env.popStruct
+		got_bc := ps.barrierscrossed(t.x1, t.x2)
+		got_ep := ps.ExclusionProbability(t.x1, t.x2)
+
+		if got_bc != t.exp_bc {
+			test.Errorf("Incorrect barriers crossed; got %d, want %d", got_bc, t.exp_bc)
+		}
+		if math.Abs(got_ep-t.exp_ep) > 0.0001 {
+			test.Errorf("Incorrect exclusion probability; got %f, want %f", got_ep, t.exp_ep)
+		}
+	}
+}
+
 func TestTranslateCoordinates(test *testing.T) {
 	SetupEnvironment(50, 50, []int64{100, 200, 300, 400}, // two chromosomes of size 1000
 		[]float64{4, 4, 4, 4}, []int64{}, 0.0, 20, "dros", 0.0, 0.1, 1000.0)
