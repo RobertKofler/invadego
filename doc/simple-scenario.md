@@ -6,7 +6,12 @@ spread of TE, no host defence
 /invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit none --basepop 8-12,1-3,10 --rep 1 --steps 5 --gen 100 --file-spatial simple.txt 
 ```
 
-**visualztion example**
+
+
+# visualization howto
+
+requires `--file-spatial` output and R
+
 ```
 library(tidyverse)
 df <- read_tsv("/Users/rokofler/analysis/2024-spatialsimulations/2025-overview/2025-03-documentation/simple.txt") %>% select(-1)
