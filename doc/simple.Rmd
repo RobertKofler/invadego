@@ -188,3 +188,170 @@ plot(pse)
 
 ```
 **Note** how the epigenetic silencing is spreading faster than the TE such that by generation 100 all TE insertions are silenced; furthermore 
+
+## Host defence - biparental epigenetic silencing and selfing 
+
+```{bash eval=FALSE}
+./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit ara --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --trigger-defense 40 --selfing-rate 0.95 --condinv --file-spatial simple-defence-ara-self.txt 
+```
+**parameters explained**
+
+* --selfing-rate 0.95: there is a 95% chance that the mother and the father will be identical 
+* --condinv: conditional on invasion; this is just a convenience method (rescuing me from finding seeds where it does work)
+
+```{r echo=FALSE}
+library(tidyverse)
+df <- read_tsv("/Users/robertkofler/analysis/2025-scenarious/simple-defence-ara-self.txt") %>% select(-1)
+
+# filter generations
+df <-  df %>% filter(gen %in% c(0,  50,  100))
+
+# bin
+df$TEbin <- cut(df$TEs,  c(seq(-1, 40, 10),Inf))
+
+# assign colors
+bin_colors <- c("darkgrey", "#3DA53B","#db2c3fff") 
+
+# generate plot
+pse <- ggplot(df, aes(x = X, y = Y)) +
+  geom_point(aes(alpha = TEbin, color = silenced), size = 2) +
+  scale_color_manual(values = bin_colors) +  # Use discrete bins
+  scale_alpha_ordinal(range=c(0.5,1.0))+
+  facet_grid(rows = vars(gen), switch = "y") +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+       axis.title = element_blank(),
+        strip.text.y = element_text(size = 14),
+        strip.text.x = element_text(size = 14),
+        legend.title = element_text(size = 14),  # Legend title size
+       legend.text = element_text(size = 12)) +
+  labs(color = "TE Status", alpha = "Copynumber")
+# save to file
+plot(pse)
+
+```
+## Negative selection against inactive TEs - biparental inheritance
+
+```{bash eval=FALSE}
+./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit ara --basepop "1-20,1-50,40'" --rep 1 --steps 5 --gen 400 --trigger-defense 40 --s 0.1 --h 0.5 --file-spatial simple-negsel-ara.txt
+```
+**parameters explained**
+
+* --s 0.1: selection against homozygous insertions, fitness w=1-s
+* --h 0.5: selection against heterozygous insertions, fitness is w=1-hs
+* --basepop "1-20,1-50,40'" all individuals in the entire population will have 40 **silenced** TE insertions (the dash indicates the silencing)
+```{r echo=FALSE}
+library(tidyverse)
+df <- read_tsv("/Users/robertkofler/analysis/2025-scenarious/simple-negsel-ara.txt") %>% select(-1)
+
+# filter generations
+df <-  df %>% filter(gen %in% c(0,  100,  200))
+
+# bin
+df$TEbin <- cut(df$TEs,  c(seq(-1, 40, 10),Inf))
+
+# assign colors
+bin_colors <- c("darkgrey","#db2c3fff") 
+
+# generate plot
+pse <- ggplot(df, aes(x = X, y = Y)) +
+  geom_point(aes(alpha = TEbin, color = silenced), size = 2) +
+  scale_color_manual(values = bin_colors) +  # Use discrete bins
+  scale_alpha_ordinal(range=c(0.5,1.0))+
+  facet_grid(rows = vars(gen), switch = "y") +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+       axis.title = element_blank(),
+        strip.text.y = element_text(size = 14),
+        strip.text.x = element_text(size = 14),
+        legend.title = element_text(size = 14),  # Legend title size
+       legend.text = element_text(size = 12)) +
+  labs(color = "TE Status", alpha = "Copynumber")
+# save to file
+plot(pse)
+
+```
+**Note** selection against TEs may lead to a patchy distribution **when TEs are silenced biparental**
+
+## Negative selection against inactive TEs - uniparental inheritance
+
+```{bash eval=FALSE}
+./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit dros --basepop "1-20,1-50,40'" --rep 1 --steps 5 --gen 400 --trigger-defense 40 --s 0.1 --h 0.5 --file-spatial simple-negsel-dros.txt 
+```
+
+
+```{r echo=FALSE}
+library(tidyverse)
+df <- read_tsv("/Users/robertkofler/analysis/2025-scenarious/simple-negsel-dros.txt") %>% select(-1)
+
+# filter generations
+df <-  df %>% filter(gen %in% c(0,  100,  200,400))
+
+# bin
+df$TEbin <- cut(df$TEs,  c(seq(-1, 40, 10),Inf))
+
+# assign colors
+bin_colors <- c("darkgrey", "#3DA53B","#db2c3fff") 
+
+# generate plot
+pse <- ggplot(df, aes(x = X, y = Y)) +
+  geom_point(aes(alpha = TEbin, color = silenced), size = 2) +
+  scale_color_manual(values = bin_colors) +  # Use discrete bins
+  scale_alpha_ordinal(range=c(0.5,1.0))+
+  facet_grid(rows = vars(gen), switch = "y") +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+       axis.title = element_blank(),
+        strip.text.y = element_text(size = 14),
+        strip.text.x = element_text(size = 14),
+        legend.title = element_text(size = 14),  # Legend title size
+       legend.text = element_text(size = 12)) +
+  labs(color = "TE Status", alpha = "Copynumber")
+# save to file
+plot(pse)
+
+```
+**Now this is a surprise to me! negative selection against TEs with uniparental silencing does not lead to patchyness** actually it reactivates the TE on a broad scale, even when the TE was silenced in the entire base population! thats truly fascinating! but makes sense, as soon as some individuals  have zero TEs (thanks to neg.sel.) the TE can be reactivated by paternal crosses
+
+## Population structure - uniparental inheritance
+
+```{bash eval=FALSE}
+./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit dros --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --trigger-defense 40 --mate-barrier 25 --barrier-strength 0.99 --file-spatial simple-matebar.txt 
+```
+**parameters explained**
+
+* --mate-barrier 25: position of mating barrier in the x-grid; it will be more difficult for individuals at opposite ends of the barrier to mate eg with x-coordinates 25 and 26
+* --barrier-strength 0.99: a 99% reduction in mating-probabilty for individuals on opposite ends of the barrier
+
+```{r echo=FALSE}
+library(tidyverse)
+df <- read_tsv("/Users/robertkofler/analysis/2025-scenarious/simple-matebar.txt") %>% select(-1)
+
+# filter generations
+df <-  df %>% filter(gen %in% c(0,  50,  100))
+
+# bin
+df$TEbin <- cut(df$TEs,  c(seq(-1, 40, 10),Inf))
+
+# assign colors
+bin_colors <- c("darkgrey", "#3DA53B","#db2c3fff") 
+
+# generate plot
+pse <- ggplot(df, aes(x = X, y = Y)) +
+  geom_point(aes(alpha = TEbin, color = silenced), size = 2) +
+  scale_color_manual(values = bin_colors) +  # Use discrete bins
+  scale_alpha_ordinal(range=c(0.5,1.0))+
+  facet_grid(rows = vars(gen), switch = "y") +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+       axis.title = element_blank(),
+        strip.text.y = element_text(size = 14),
+        strip.text.x = element_text(size = 14),
+        legend.title = element_text(size = 14),  # Legend title size
+       legend.text = element_text(size = 12)) +
+  labs(color = "TE Status", alpha = "Copynumber")
+# save to file
+plot(pse)
+
+```
+**Note** the coordinates of the mate barrier can be clearly discerned at generation 100; also not how all individuals in the left subpopulation have about 40 TE copies (ie the silencing threshold), whereas most individuals in the right subpopulation have very few insertions

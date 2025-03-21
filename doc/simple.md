@@ -93,3 +93,67 @@ this scenario even individuals with \<40 TEs may have silenced TEs
 ![](simple_files/figure-gfm/unnamed-chunk-8-1.png)<!-- --> **Note** how
 the epigenetic silencing is spreading faster than the TE such that by
 generation 100 all TE insertions are silenced; furthermore
+
+## Host defence - biparental epigenetic silencing and selfing
+
+``` bash
+./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit ara --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --trigger-defense 40 --selfing-rate 0.95 --condinv --file-spatial simple-defence-ara-self.txt 
+```
+
+**parameters explained**
+
+- –selfing-rate 0.95: there is a 95% chance that the mother and the
+  father will be identical
+- –condinv: conditional on invasion; this is just a convenience method
+  (rescuing me from finding seeds where it does work)
+
+![](simple_files/figure-gfm/unnamed-chunk-10-1.png)<!-- --> \## Negative
+selection against inactive TEs - biparental inheritance
+
+``` bash
+./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit ara --basepop "1-20,1-50,40'" --rep 1 --steps 5 --gen 400 --trigger-defense 40 --s 0.1 --h 0.5 --file-spatial simple-negsel-ara.txt
+```
+
+**parameters explained**
+
+- –s 0.1: selection against homozygous insertions, fitness w=1-s
+- –h 0.5: selection against heterozygous insertions, fitness is w=1-hs
+- –basepop “1-20,1-50,40’” all individuals in the entire population will
+  have 40 **silenced** TE insertions (the dash indicates the silencing)
+  ![](simple_files/figure-gfm/unnamed-chunk-12-1.png)<!-- --> **Note**
+  selection against TEs may lead to a patchy distribution **when TEs are
+  silenced biparental**
+
+## Negative selection against inactive TEs - uniparental inheritance
+
+``` bash
+./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit dros --basepop "1-20,1-50,40'" --rep 1 --steps 5 --gen 400 --trigger-defense 40 --s 0.1 --h 0.5 --file-spatial simple-negsel-dros.txt 
+```
+
+![](simple_files/figure-gfm/unnamed-chunk-14-1.png)<!-- --> **Now this
+is a surprise to me! negative selection against TEs with uniparental
+silencing does not lead to patchyness** actually it reactivates the TE
+on a broad scale, even when the TE was silenced in the entire base
+population! thats truly fascinating! but makes sense, as soon as some
+individuals have zero TEs (thanks to neg.sel.) the TE can be reactivated
+by paternal crosses
+
+## Population structure - uniparental inheritance
+
+``` bash
+./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit dros --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --trigger-defense 40 --mate-barrier 25 --barrier-strength 0.99 --file-spatial simple-matebar.txt 
+```
+
+**parameters explained**
+
+- –mate-barrier 25: position of mating barrier in the x-grid; it will be
+  more difficult for individuals at opposite ends of the barrier to mate
+  eg with x-coordinates 25 and 26
+- –barrier-strength 0.99: a 99% reduction in mating-probabilty for
+  individuals on opposite ends of the barrier
+
+![](simple_files/figure-gfm/unnamed-chunk-16-1.png)<!-- --> **Note** the
+coordinates of the mate barrier can be clearly discerned at generation
+100; also not how all individuals in the left subpopulation have about
+40 TE copies (ie the silencing threshold), whereas most individuals in
+the right subpopulation have very few insertions
