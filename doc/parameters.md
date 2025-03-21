@@ -1,13 +1,13 @@
 # overview of parameters
 ## mandatory (for minimal simulation)
 
-*  --basepop string; mandatory; coordinates of the individual(s) with the TE insertions in the first generation ; 1-based coordinates!; entries need to be in form Y,X,N:Y,X,N; where N' is feasible and means N silenced insertions; can also be in form  Ystart-Yend,Xstart-Xend,N
-*   --epi-inherit string; mannatory; epigenetic inheritance of the silencing; either dros, ara, none
+*  --basepop string; mandatory; coordinates of the individual(s) that trigger the TE invasion; 1-based coordinates; entries need to be in form y1-y2,x1-x2,count where y1-y2 the a range of the y-coordinates, x1-x2 the range of the x-coordinates; all individuals in this range will have exactly 'count' transposons insertions; the genomic coordinates of the insertions are at random positions in the user specified genome and will thus have an individual population frequency of 1/2N where N is the populatin size
+* --epi-inherit string; mannatory; epigenetic inheritance of the silencing of transposons; either dros, ara, none; none= no epigenetic inheritance; dros= uniparental inheritance of the silencing, i.e. mothers transmit the silencing; ara= biparental inheritance, both parents transmit the silencing
 * --gen int; mandatory; run the simulations for '--gen' generations (default -1)
 * --genome string; mandatory; the genomic landscape; e.g. 'MB:2,3,1,5' specifiies four chromosomes with sizes of 2,3,1,5 Mb
 * --grid-x int; mandatory; the spatial grid size on X (default -1)
 * --grid-y int; mandatory; the spatial grid size on Y (default -1)
-* --mate-radius at which spatial distance in grid should mates be found; either integer or 'pan' for panmictici (default "2")
+* --mate-radius string; radius in the grid at which potential mates can be found; e.g. given the y-x coordinates 3-3 and a mate radius 1, potential mates may have the coordinates from 2-2 to 4-4 (including 2-3, 3-3, 3-4, 4-3 etc); it is also feasible to provide 'pan' for panmictic which ignores the spatial information for finding
 * --rr string; the recombination rate per chromosome in cm/Mb; e.g. '3,4,4,5' 
 * --u float; the transposition rate of the transposon
 
