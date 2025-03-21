@@ -1,0 +1,55 @@
+---
+title: "simple simulation scenarios"
+output: github_document
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+## Simplest simulation - TE invasion without host defence
+
+```{bash eval=FALSE}
+# simulation code
+./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit none --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --file-spatial simple.txt 
+```
+**parameters explained**
+
+* seed the random seed
+* a genome of 2 chromsomes each with a length of 1MB
+* a recombination rate of 4cM/Mb per chromosome
+* the transposition rate is u=0.1
+
+
+```{r echo=FALSE}
+library(tidyverse)
+df <- read_tsv("/Users/robertkofler/analysis/2025-scenarious/simple.txt") %>% select(-1)
+
+# filter generations
+df <-  df %>% filter(gen %in% c(0,  50,  100))
+
+# bin
+df$TEbin <- cut(df$TEs, c(seq(-1, 900, 300),Inf))
+
+# assign colors
+bin_colors <- c("darkgrey", "#3DA53B") # "#db2c3fff",
+
+# generate plot
+pse <- ggplot(df, aes(x = X, y = Y)) +
+  geom_point(aes(alpha = TEbin, color = silenced), size = 2) +
+  scale_color_manual(values = bin_colors) +  # Use discrete bins
+  scale_alpha_ordinal(range=c(0.5,1.0))+
+  facet_grid(rows = vars(gen), switch = "y") +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+       axis.title = element_blank(),
+        strip.text.y = element_text(size = 14),
+        strip.text.x = element_text(size = 14),
+        legend.title = element_text(size = 14),  # Legend title size
+       legend.text = element_text(size = 12)) +
+  labs(color = "TE Status", alpha = "Copynumber")
+# save to file
+plot(pse)
+
+```
+
