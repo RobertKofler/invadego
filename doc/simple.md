@@ -68,7 +68,7 @@ reached by generation 100
 
 **parameters explained**
 
-- all parameters are like before except
+- parameters are like before except mate-radius set to 1 and
 - –trigger-defense 40: host defence will be triggered at 40 copies;
   i.e. individuals with 40 TE insertions will have a transposition rate
   u=0.0
