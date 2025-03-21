@@ -33,15 +33,15 @@
 
 ## optional for population structure
 * --mate-barrier string; a comma separated list of X-coordiantes where mate-barriers will be introduced; for example '50,100' will introduce mate barriers at X-coordinates 50 and 100; individuals on opposite ends of a barrier will have a reduced propability to mate with each other.
-* --barrier-strength float; the strength of the mate barriers between 0 - 1; for example 0.8 specifies a 80% reduction in mating proability
+* --barrier-strength float; the strength of the mate barriers between 0 - 1; for example 0.8 specifies a 80% reduction in mating proability for individuals on opposite ends of the barrier
 
 ## cosmetic parameters
 
-* --sampleid string; the ID of the sample; will be a help in R to group samples like with facete_grid()
-* --file-debug string optional output file for debugging various aspects
-* --replicate-offset int starting index of the replicates; may be used for pseudo-parallelization) (default 1)
-* -threads int  number of threads (default 1); currently multithreading is not supported (it probably never will be)
-* --silent suppress output
+* --sampleid string; specify an ID of the sample; could be convenient for loading the output into R e.g. to group samples or to use with facete_grid()
+* --replicate-offset int; numbering of the replicates will start with '--replicate-offset'; could be convenient to merge simulations performed on different computers; eg when using pseudo-parallelization) (default 1)
+* --threads int; not supported (number of threads; currently multithreading is not supported)
+* --file-debug string; optional output file that may be used for debugging
+* --silent suppress unnecesarry output
 
 
  
