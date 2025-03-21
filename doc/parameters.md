@@ -13,23 +13,22 @@
 
 ## optional but important
 
-* --seed int seed for the random number generator (default -1); default means current time in ticks
-* -trigger-defense int at which threshold value should the host defense been triggerd (default -1)
-* --max-insertions int the maximum number of insertions (default 10000)
-* --selfing-rate float the selfing rate as a fraction; 0= no selfing 1= everything mating
-* --rep int; the number of replicates to simulate (default 1)
-* --uc float the transposition rate silenced TEs (assuming the host defence is not perfect)
+* --seed int seed for the random number generator (default -1); the default -1 translates to the current time in ticks
+* --trigger-defense int; the copy number of TEs per individual at which the host defence will be triggerd (default -1); per default the host defence will not be at any TE copy number
+* --max-insertions int; the maximum number of insertions per individual (default 10000); simulations will be aborted if the average TE copy number per individual exceeds this threshold; this option can be used to prevent the exponential growth of TE copy numbers from crashing the computitional resources
+* --selfing-rate float; the selfing rate as fraction between 0 and 1; for example 0.32 specifies 32% selfing
+* --rep int; the number of replicates that should be simulated (default 1)
+* --uc float; the transposition rate for TEs silenced by the host defence (the basic idea is that the host defence may be slightly inefficient permitting some residual activity of the TE)
 * --steps int; report the output at each '--steps' generations (default 20)
-* --p-sil-loss float; probabiltiy that epigenetic silencing can be lost
-* --condinv flag; important convenience parameter; conditional on invasion, i.e. only show replicates where at least one TE copy was present until the final generation
-* --console-format string; formating of console output, default summary: summary|gridoverview|gridcount|transectx (default "summary")
-     
-* --file-mhp string optional output file: position and population frequency of each TE insertion, resembles a manhatten plot
-* --file-spatial string; **important optional output file**: detailed info about each individual specimens including coordinates
+* --p-sil-loss float; probabiltiy that epigenetic silencing can be lost between 0-1, for example 0.01 specifies a 1% chance to loose silencing of the TE
+* --condinv flag; important convenience parameter; conditional on invasion, i.e. only count replicates where at least one TE copy was present at the very last generation (--gen)
+* --console-format string; formating of console output, default summary: summary|gridoverview|gridcount|transectx (default "summary")  
+* --file-mhp string; optional output file: position and population frequency of each TE insertion; this output could be used to generate plots resembling Manhattenplots, where the genomic coordinates are on the x-axis and the population frequency of the insertions on the y-axis 
+* --file-spatial string; **important optional output file**: detailed info about each individual specimens including coordinates; can be used to visualize invasions; 
 
 ## optional for negative effect of TEs
-*  --s float; the deleterious effect of a single homozygous TE insertion
-*  --h float; the heterozygous effect of a TE insertion
+*  --s float; the deleterious effect of a single homozygous TE insertion (w=1-s for homozygot insertions)
+*  --h float; the heterozygous effect of a TE insertion (w=1-hs for heterozygous insertions)
 *  --min-w float the minimum frequency of an average individual in the population (default 0.1)
 
 ## optional for population structure
