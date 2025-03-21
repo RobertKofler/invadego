@@ -61,6 +61,7 @@ pse <- ggplot(df, aes(x = X, y = Y)) +
 plot(pse)
 
 ```
+
 **Note** the TE starts spreading at the small rectangular patch at generation 1; it is invading the population uninhibited by any host defence. furthermore very high TE copy numbers per individual are reached by generation 100
 
 ## Host defence - no epigenetic inherited silencing
@@ -193,6 +194,7 @@ pse <- ggplot(df, aes(x = X, y = Y)) +
 plot(pse)
 
 ```
+
 **Note** how the epigenetic silencing is spreading faster than the TE such that by generation 100 all TE insertions are silenced; furthermore 
 
 ## Host defence - biparental epigenetic silencing and selfing 

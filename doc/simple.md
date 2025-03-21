@@ -32,10 +32,12 @@ simple simulation scenarios
   simulations will be performed for 100 generations –file-spatial
   simple.txt: the output file for generating the figure
 
-![](simple_files/figure-gfm/unnamed-chunk-2-1.png)<!-- --> **Note** the
-TE starts spreading at the small rectangular patch at generation 1; it
-is invading the population uninhibited by any host defence. furthermore
-very high TE copy numbers per individual are reached by generation 100
+![](simple_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+
+**Note** the TE starts spreading at the small rectangular patch at
+generation 1; it is invading the population uninhibited by any host
+defence. furthermore very high TE copy numbers per individual are
+reached by generation 100
 
 ## Host defence - no epigenetic inherited silencing
 
@@ -92,9 +94,10 @@ silenced TEs (compare to previous scenario with –epi-inheritance none )
   is silenced in any parent, the TE will be silenced in all offspring
   (even if the TE is still active in the other parent)
 
-![](simple_files/figure-gfm/unnamed-chunk-8-1.png)<!-- --> **Note** how
-the epigenetic silencing is spreading faster than the TE such that by
-generation 100 all TE insertions are silenced; furthermore
+![](simple_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+**Note** how the epigenetic silencing is spreading faster than the TE
+such that by generation 100 all TE insertions are silenced; furthermore
 
 ## Host defence - biparental epigenetic silencing and selfing
 
