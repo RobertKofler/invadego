@@ -5,4 +5,4 @@ For building the next generation mate pairs are picked in the neighborhood of ea
 Individuals are hermaphrodites and the sex (male, female) is randomly assigned. 
 
 * [an overview of all parameters](parameters.md)
-* [a walkthrough with simple scenarious and visualizations](simple-scenario.md)
+* [a walkthrough with simple scenarious and visualizations](simple.md)
