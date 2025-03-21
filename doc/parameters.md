@@ -20,7 +20,7 @@
 * --rep int; the number of replicates that should be simulated (default 1)
 * --uc float; the transposition rate for TEs silenced by the host defence (the basic idea is that the host defence may be slightly inefficient permitting some residual activity of the TE)
 * --steps int; report the output at each '--steps' generations (default 20)
-* --p-sil-loss float; probabiltiy that epigenetic silencing can be lost between 0-1, for example 0.01 specifies a 1% chance to loose silencing of the TE
+* --p-sil-loss float; probabiltiy that epigenetic silencing can be lost between 0 - 1, for example 0.01 specifies a 1% chance to loose silencing of the TE
 * --condinv flag; important convenience parameter; conditional on invasion, i.e. only count replicates where at least one TE copy was present at the very last generation (--gen)
 * --console-format string; formating of console output, default summary: summary|gridoverview|gridcount|transectx (default "summary")  
 * --file-mhp string; optional output file: position and population frequency of each TE insertion; this output could be used to generate plots resembling Manhattenplots, where the genomic coordinates are on the x-axis and the population frequency of the insertions on the y-axis 
@@ -29,12 +29,11 @@
 ## optional for negative effect of TEs
 *  --s float; the deleterious effect of a single homozygous TE insertion (w=1-s for homozygot insertions)
 *  --h float; the heterozygous effect of a TE insertion (w=1-hs for heterozygous insertions)
-*  --min-w float the minimum frequency of an average individual in the population (default 0.1)
+*  --min-w float the minimum average fitness (default 0.1); will assume the population died out when the averge fitness is lower than this
 
 ## optional for population structure
-* --mate-barrier string; a comma separated list about x-coordiantes where mating barriers will be introduced eg. '50,100' will introduce mate barriers at x-coordinates 50 and 100
-* --barrier-strength float
-    	the strength of the mate barriers; between 0.0 and 1.0; 1.0= total exclusion of any mating across boundary and 0.0= barrier has no effect 0.5= 50% reduced mating across boundary
+* --mate-barrier string; a comma separated list of X-coordiantes where mate-barriers will be introduced; for example '50,100' will introduce mate barriers at X-coordinates 50 and 100; individuals on opposite ends of a barrier will have a reduced propability to mate with each other.
+* --barrier-strength float; the strength of the mate barriers between 0 - 1; for example 0.8 specifies a 80% reduction in mating proability
 
 ## cosmetic parameters
 
