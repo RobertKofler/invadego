@@ -1,7 +1,14 @@
-simple simulation scenarios
+simulations of TE invasions - toy examples
 ================
 
-# Simplest simulation - TE invasion without host defence
+# Introduction
+
+This document will guide you through simulations of TE invasions in
+spatial populations. The following scenarious start simple and complexit
+is gradually added. This guide is thus intended for reading from the
+start to the end.
+
+# simples scenarious - TE invasion without host defence
 
 ## no host defence - mate radius 1
 
@@ -261,7 +268,7 @@ the TE (fathers transmit the TE but not the silencing).
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit dros --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --trigger-defense 40 --mate-barrier 25 --barrier-strength 0.99 --file-spatial simple-matebar.txt 
 ```
 
-**parameters explained**
+**novel parameters explained**
 
 - –mate-barrier 25: position of mating barrier in the X-grid; Mating
   will be less likely for individuals at opposite ends of the
