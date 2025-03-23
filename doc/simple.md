@@ -3,7 +3,7 @@ simple simulation scenarios
 
 # Simplest simulation - TE invasion without host defence
 
-## simple - mate radius 1
+## no host defence - mate radius 1
 
 ``` bash
 # simulation code
@@ -12,51 +12,93 @@ simple simulation scenarios
 
 **parameters explained**
 
-- –seed 5: seed the random seed
-- –genome MB:1,1: a genome of 2 chromsomes each with a length of 1MB
+- –seed 5: the random seed
+- –genome MB:1,1: a genome of 2 chromosomes each with a length of 1MB; a
+  TE insertion may occupy any site in this genome of 2MB; novel
+  insertions will get random positions in the genome; if a site is
+  already occupied the novel insertion will be ignroed
 - –rr 4,4: a recombination rate of 4cM/Mb per chromosome
-- –u 0.1: the transposition rate is u=0.1
+- –u 0.1: the transposition rate is u=0.1; the number of novel
+  insertions per gamete is poisson distributed with lambda = cu/2, where
+  c is the total number of insertions in the genome of the parent. why
+  divided by two? because we have to assume that novel insertions may
+  occur in any of the two genomes of a diploid
 - –grid-x 50: the x-size of the 2D grid is 50
 - –grid-y 20: the y-size of the 2D grid is 20
-- –mate-radius 1: the mate radius is 1; ie when generating the next
-  generation, potential mates will be found in a radius of 1 of the
-  focal individual. eg focal individual has y-x coordinates 3-3, then
-  the potential mates have coordinates 2-2, 2-3, 2-4, 3-2, 3-3, 3-4,
-  4-2, 4-3, 4-4
+- –mate-radius 1: the mate radius is 1; i.e. when generating the next
+  generation, every individual in the spatial grid is replaced by a new
+  individual the potential mates yielding the two gametes for the novel
+  individual will be found in a radius of 1 of the focal individual.
+  e.g. if the focal individual has y-x coordinates 3-3, then the
+  potential mates may have coordinates 2-2, 2-3, 2-4, 3-2, 3-3, 3-4,
+  4-2, 4-3, 4-4; note that the focal species could, by chance, also be
+  one of the two mates
 - –epi-inherit none: so far we assume no epigenetic inheritance of the
-  TE silencing
+  TE silencing (more importantly so far we assume no host defense which
+  would require providing the parameter `--trigger-threshold`, see
+  below)
 - –basepop 9-11,1-2,10: all individuals in the y-range 9-11 and the
-  x-range 1-2 will have exactly 10
+  x-range 1-2 will have exactly 10 TE insertions; the insertions will be
+  randomly distributed in the genome (of 2Mb). Hence every TE insertion
+  will have a population frequency of 1/2N where N is the population
+  size (N=`--grid-x` \* `--grid-y`)
 - –rep 1: we simulate a single replicate
 - –steps 5: output will be generated all 5 generations; note that we
-  perform additional filtering in R, hence the final figure does not
-  show the results for all 20 time points with an output –gen 100:
-  simulations will be performed for 100 generations –file-spatial
-  simple.txt: the output file for generating the figure
+  perform additional filtering in R, hence the final figures in this
+  tutorial do not show the results for all 20 time points for which we
+  generated an output –gen 100: simulations will be performed for 100
+  generations –file-spatial simple.txt: the output file for generating
+  the figure seen below
 
 ![](simple_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
 **Note** the TE starts spreading at the small rectangular patch at
-generation 1; it is invading the population uninhibited by any host
-defence. furthermore very high TE copy numbers per individual are
-reached by generation 100
+generation 1 defined by `--basepop 9-11,1-2,10`; The TE is invading the
+population unconstrained by any host defense (therefore only green
+dots). Due to the absence of a host defense very high TE copy numbers
+per individual are reached by generation 100 (some have more than 900
+insertions per diploid individual).
 
-## simple - mate radius 2
+## no host defence - mate radius 2
 
 ``` bash
-# simulation code
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 2 --epi-inherit none --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --file-spatial simple-mr2.txt 
 ```
 
-**parameters explained**
+**novel parameters explained**
 
-- all parameters like before except
-- –mate-radius 2: hence potential mates can be found more distantly of
-  the focal species (as compared to mate-radius 1)
+- –mate-radius 2: compared to the previous example we extend the mate
+  radius to two, hence potential mates can now be found more distantly
+  of the focal species. E.g. if the focal species has y-x coordinates of
+  3-3, than potential mates may for example have the coordinates 1-1,
+  1-5, 5-5, 3-3 etc
 
 ![](simple_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
-**Note** with a larger mate radius the TE will spread faster
+**Note** with a larger mate radius the TE spreads faster
+
+## no host defence - mate radius ‘panmictic’
+
+``` bash
+./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius pan --epi-inherit none --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --file-spatial simple-pan.txt
+```
+
+**novel parameters explained**
+
+- –mate-radius pan: panmictic simulations will be performed where the
+  spatial coordinates are ignored. Hence everyone may mate with
+  everyone; This can be quite useful. First we can test the simulator
+  against theoretical population genetics models (that typically assume
+  panmixis). Second we can evaluate the impact of spatial information on
+  the invasion dynamics compared to panmixis.
+
+![](simple_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
+**Note** Every individual still has spatial coordinates during the
+panmictic simulations. However, the coordinates are ignored for finding
+mates. Hence, the coordinates have **no** impact in the panmictic
+simulations. As a result the TE spreads quite stochastically in the
+spatial grid.
 
 # Host defence
 
@@ -66,14 +108,14 @@ reached by generation 100
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit none --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --trigger-defense 40 --file-spatial simple-defence.txt
 ```
 
-**parameters explained**
+**novel parameters explained**
 
-- parameters are like before except mate-radius set to 1 and
-- –trigger-defense 40: host defence will be triggered at 40 copies;
-  i.e. individuals with 40 TE insertions will have a transposition rate
-  u=0.0
+- –trigger-defense 40: **simulations with host defense** the host
+  defense will be triggered in any individual having 40 or more TE
+  copies. In individuals with a host defense the TE will have a
+  transposition rate of `--uc` wich is uc=0.0 by default.
 
-![](simple_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](simple_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 **Note** the TE starts spreading at the small patch by generation 1. By
 generation 50 already several indivdiuals have triggered the host
@@ -98,7 +140,7 @@ individuals with 40 or more TE copies can have the silencing state
   status; paternal offspring will have active TEs (unless the mother has
   silenced TEs)
 
-![](simple_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](simple_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 **Note** in this scenario even individuals with \<40 TEs may have
 silenced TEs (compare to previous scenario with –epi-inheritance none )
@@ -115,7 +157,7 @@ silenced TEs (compare to previous scenario with –epi-inheritance none )
   is silenced in any parent, the TE will be silenced in all offspring
   (even if the TE is still active in the other parent)
 
-![](simple_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](simple_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 **Note** how the epigenetic silencing is spreading faster than the TE
 such that by generation 100 all TE insertions are silenced; furthermore
@@ -133,7 +175,7 @@ such that by generation 100 all TE insertions are silenced; furthermore
 - –condinv: conditional on invasion; this is just a convenience method
   (rescuing me from finding seeds where it does work)
 
-![](simple_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](simple_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 # Negative selection against inactive TEs
 
@@ -149,7 +191,7 @@ such that by generation 100 all TE insertions are silenced; furthermore
 - –h 0.5: selection against heterozygous insertions, fitness is w=1-hs
 - –basepop “1-20,1-50,40’” all individuals in the entire population will
   have 40 **silenced** TE insertions (the dash indicates the silencing)
-  ![](simple_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+  ![](simple_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 **Note** selection against TEs may lead to a patchy distribution **when
 TEs are silenced biparental**
@@ -160,7 +202,7 @@ TEs are silenced biparental**
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit dros --basepop "1-20,1-50,40'" --rep 1 --steps 5 --gen 400 --trigger-defense 40 --s 0.1 --h 0.5 --file-spatial simple-negsel-dros.txt 
 ```
 
-![](simple_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](simple_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 **Now this is a surprise to me! negative selection against TEs with
 uniparental silencing does not lead to patchyness** actually it
@@ -183,7 +225,7 @@ be reactivated by paternal crosses
 - –barrier-strength 0.99: a 99% reduction in mating-probabilty for
   individuals on opposite ends of the barrier
 
-![](simple_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](simple_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 **Note** the coordinates of the mate barrier can be clearly discerned at
 generation 100; also not how all individuals in the left subpopulation
