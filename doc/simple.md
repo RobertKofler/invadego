@@ -113,15 +113,18 @@ spatial grid.
 - –trigger-defense 40: **simulations with host defense** the host
   defense will be triggered in any individual having 40 or more TE
   copies. In individuals with a host defense the TE will have a
-  transposition rate of `--uc` wich is uc=0.0 by default.
+  transposition rate of `--uc` which is 0.0 by default (i.e. no
+  activity).
 
 ![](simple_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
-**Note** the TE starts spreading at the small patch by generation 1. By
-generation 50 already several indivdiuals have triggered the host
-defence (no epigenetic inheritance in this scenario); By generation 100,
-bot the TE and the host defence is spreading; **important** only
-individuals with 40 or more TE copies can have the silencing state
+**Note** The TE starts spreading at a small patch by generation 1. By
+generation 50 already several individuals have triggered the host
+defense. By generation 100, both the TE and the host defence is
+spreading. **important** We did not simulate epigenetic inheritance of
+the host defense in this scenario, therefore only individuals with 40 or
+more TE copies can have the silenced TEs! (de novo triggered host
+defense).
 
 ## host defence - uniparental epigenetic silencing inheritance
 
@@ -129,21 +132,24 @@ individuals with 40 or more TE copies can have the silencing state
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit dros --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --trigger-defense 40 --file-spatial simple-defence-dros.txt 
 ```
 
-**parameters explained**
+**novel parameters explained**
 
-- –epi-inherit dros: uniparental epigenetic inherited silencing;
-  silencing is transmitted maternally as in Drosophila. since
+- –epi-inherit dros: uniparental inherited silencing of the host
+  defense; silencing is transmitted maternally as in Drosophila. Since
   hermaphrodites are simulated one mate is randomly chosen as the
-  mother; if a TE is silenced in the mother any offspring with at least
-  one TE insertion will inherit the silencing-status. offspring that per
-  chance do not have a single insertion will not inherit the silencing
-  status; paternal offspring will have active TEs (unless the mother has
-  silenced TEs)
+  mother; If a TE is silenced in the mother any offspring with at least
+  one TE insertion will inherit the epigenetic silencing status. The
+  epigenetically inherited silencing status **can be lost only in
+  offspring not having a single TE insertion** (due to chance offspring
+  may not get a TE, especially when TE copy numbers are low); Fathers do
+  not transmit the silencing status. TEs silenced in the father, will
+  thus be active in the offspring (unless the mother has silenced TEs).
 
 ![](simple_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
-**Note** in this scenario even individuals with \<40 TEs may have
-silenced TEs (compare to previous scenario with –epi-inheritance none )
+**Note** As the major difference to the previous scenario
+(`--epi-inherit dros`), even individuals with less than 40 TEs may have
+silenced TEs.
 
 ## host defence - biparental epigenetic silencing inheritance
 
@@ -151,16 +157,20 @@ silenced TEs (compare to previous scenario with –epi-inheritance none )
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit ara --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --trigger-defense 40 --file-spatial simple-defence-ara.txt 
 ```
 
-**parameters explained**
+**novel parameters explained**
 
-- –epi-inherit ara: biparental epigenetic inherited silencing; if a TE
-  is silenced in any parent, the TE will be silenced in all offspring
-  (even if the TE is still active in the other parent)
+- –epi-inherit ara: biparental inherited silencing of the host defence;
+  if a TE is silenced in any parent, the TE will be silenced in the
+  offspring (even if the TE is still active in one of the parents). This
+  means that the silencing will spread with all gametes. The silencing
+  will thus spread like the a very effective genetic drive.
 
 ![](simple_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
-**Note** how the epigenetic silencing is spreading faster than the TE
-such that by generation 100 all TE insertions are silenced; furthermore
+**Note** The epigenetic silencing is spreading very fast (as expected
+for an efficient drive system). In fact the silencing is spreading
+faster than the TE. Hence by generation 100 the TE is silenced in all
+individuals. A patchy TE distribution is thus observed.
 
 ## host defence - biparental epigenetic silencing and selfing
 
@@ -168,14 +178,25 @@ such that by generation 100 all TE insertions are silenced; furthermore
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit ara --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --trigger-defense 40 --selfing-rate 0.95 --condinv --file-spatial simple-defence-ara-self.txt 
 ```
 
-**parameters explained**
+**novel parameters explained**
 
-- –selfing-rate 0.95: there is a 95% chance that the mother and the
-  father will be identical
-- –condinv: conditional on invasion; this is just a convenience method
-  (rescuing me from finding seeds where it does work)
+- –selfing-rate 0.95: Now we include selfing in the simulations, we use
+  a selfing rate of 95%. There is thus a 95% chance that the mother and
+  the father will be identical individuals. An andidivual is thus
+  generting two gametes (with recombination and transposition) that will
+  form the novel diploid organism. Selfing is thus not identical to
+  cloning.
+- –condinv: conditional on invasion; this is a convenience method; TE
+  invasions frequently fail in selfing populations; to simulate a
+  successful invasion it would thus be necessary to try many different
+  seeds. With this option simulations are performed until the required
+  number of simulations was successful (`--rep`).
 
 ![](simple_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+
+**Note** With selfing and biparental inheritance TEs are silenced very
+quickly and thus only have a limited capacity to spread in the spatial
+population.
 
 # Negative selection against inactive TEs
 
@@ -185,16 +206,29 @@ such that by generation 100 all TE insertions are silenced; furthermore
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit ara --basepop "1-20,1-50,40'" --rep 1 --steps 5 --gen 400 --trigger-defense 40 --s 0.1 --h 0.5 --file-spatial simple-negsel-ara.txt
 ```
 
-**parameters explained**
+**novel parameters explained**
 
-- –s 0.1: selection against homozygous insertions, fitness w=1-s
-- –h 0.5: selection against heterozygous insertions, fitness is w=1-hs
-- –basepop “1-20,1-50,40’” all individuals in the entire population will
-  have 40 **silenced** TE insertions (the dash indicates the silencing)
-  ![](simple_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+- –s 0.1: selection coefficient against homozygous insertions, fitness
+  of homozygous individuals is w=1-s
+
+- –h 0.5: heterozygous effect; , fitness of heterozygous individuals is
+  is w=1-hs; this allows to specifiy additive (h=0.5), recessive (h=0.0)
+  and dominant (h=1.0) TE insertions.
+
+- –basepop “1-20,1-50,40’”: all individuals in the entire population
+  (y-range 1-20 and x-range 1-50) will have 40 **silenced** TE
+  insertions (the dash indicates that the TE is silenced). **Note** that
+  TE insertions will largely be segregating at different genomic sites
+  (unless individuals have by chance the same insertion site in our 2Mb
+  genome).
+
+![](simple_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 **Note** selection against TEs may lead to a patchy distribution **when
-TEs are silenced biparental**
+TEs are silenced biparental**. Importantly in this scenario we assumed
+i) that the TE family was present in all ancestors of the extant
+population and ii) that the TE was silenced in the ancestors and iii)
+biparental inheritance of the silencing.
 
 ## negative selection - uniparental inheritance
 
@@ -202,14 +236,24 @@ TEs are silenced biparental**
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit dros --basepop "1-20,1-50,40'" --rep 1 --steps 5 --gen 400 --trigger-defense 40 --s 0.1 --h 0.5 --file-spatial simple-negsel-dros.txt 
 ```
 
+**novel parameters explained**
+
+There are no novel parameters in this scenario, solely a novel
+combination of parameters, i.e. selection against TEs combined with
+uniparental inheritance `--epi-inherit dros`. We again assumed that the
+TE is present and silenced in all ancestors of the extant population.
+
 ![](simple_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
-**Now this is a surprise to me! negative selection against TEs with
-uniparental silencing does not lead to patchyness** actually it
-reactivates the TE on a broad scale, even when the TE was silenced in
-the entire base population! thats truly fascinating! but makes sense, as
-soon as some individuals have zero TEs (thanks to neg.sel.) the TE can
-be reactivated by paternal crosses
+**Now this is a surprise to me! Negative selection against TEs combined
+with uniparental silencing does not lead to patchyness** Actually TEs
+are reactivated in almost all individuals in this scenario, although the
+TE was silenced in all individuals of the base population! Thats quite
+fascinating, but makes sense. In this scenario the silencing can be lost
+as soon as negative selection reduced the load of TEs to such an extend
+that some individuals end up with zero TEs. Now the TE can be
+reactivated in crosses with mothers not having the TE and fathers having
+the TE (fathers transmit the TE but not the silencing).
 
 # Population structure - uniparental inheritance
 
@@ -219,15 +263,19 @@ be reactivated by paternal crosses
 
 **parameters explained**
 
-- –mate-barrier 25: position of mating barrier in the x-grid; it will be
-  more difficult for individuals at opposite ends of the barrier to mate
-  eg with x-coordinates 25 and 26
+- –mate-barrier 25: position of mating barrier in the X-grid; Mating
+  will be less likely for individuals at opposite ends of the
+  mating-barrier. In this example individuals with x-coordinates 25 and
+  26 will rarely mate. Note that several mating barriers can be provided
+  e.g. `--mate-barrier 10,20,30,40` would introduce several mate
+  barriers at steps of 10 in the x-grid.
 - –barrier-strength 0.99: a 99% reduction in mating-probabilty for
-  individuals on opposite ends of the barrier
+  individuals on opposite ends of the mating-barrier.
 
 ![](simple_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
-**Note** the coordinates of the mate barrier can be clearly discerned at
-generation 100; also not how all individuals in the left subpopulation
-have about 40 TE copies (ie the silencing threshold), whereas most
-individuals in the right subpopulation have very few insertions
+**Note** the coordinates of the mate barrier (x-position 25) can be
+clearly discerned at generation 100; Also note that most individuals in
+the left deme have about 40 TE copies (i.e. the silencing threshold),
+whereas most individuals in the right deme have very few insertions or
+no insertion.
