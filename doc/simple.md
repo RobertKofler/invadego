@@ -12,6 +12,16 @@ start to the end.
 
 ## no host defence - mate radius 1
 
+We start with a simple scenario. A TE with transposition rate `u=0.1` is
+spreading in a spatial population of size 50x20 (hence N=1000). No host
+defence is simulated, so TE copy numbers will increase exponentially.
+The invasion is triggered in a small patch in the left corner (several
+individuals each have 10 insertions at different genomic positions).
+Discrete generations are used. Each individual is replaced at each
+generation. A mate radius of 1 is used, hence for a focal site in the
+grid, the parents for the individual in the next generation (at the
+site) will be found within a radius of 1 in the y-x grid.
+
 ``` bash
 # simulation code
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit none --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --file-spatial simple.txt 
@@ -68,6 +78,11 @@ insertions per diploid individual).
 
 ## no host defence - mate radius 2
 
+Same as before, sole difference a mate radius of 2 is used. So potential
+parents will be found in a larger distance. As a result the TE will
+spread faster. So the mate radius is like the migration rate in the
+grid.
+
 ``` bash
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 2 --epi-inherit none --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --file-spatial simple-mr2.txt 
 ```
@@ -85,6 +100,9 @@ insertions per diploid individual).
 **Note** with a larger mate radius the TE spreads faster
 
 ## no host defence - mate radius ‘panmictic’
+
+Same as before only difference the mate radius is infinite, hence we
+have simulations of a panmictic population.
 
 ``` bash
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius pan --epi-inherit none --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --file-spatial simple-pan.txt
@@ -107,9 +125,49 @@ mates. Hence, the coordinates have **no** impact in the panmictic
 simulations. As a result the TE spreads quite stochastically in the
 spatial grid.
 
+## no host defence - inactive TE
+
+We simulate an **inactive TE** with transpostion rate `u=0`. The TE is
+thus entirely inactive and just subject to genetic drift. We trigger
+this ‘invasion’ in a single individual having a single insertion.
+Importantly this scenario will lead to an early loss of the TE in most
+cases. Therfore we use the parameter `--condinv` which performs
+simulations of additional replicates until the TE is still present at
+the end (required generations)
+
+``` bash
+./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.0 --grid-x 50 --condinv --grid-y 20 --mate-radius 1 --epi-inherit none --basepop '9,3,1' --rep 1 --steps 5 --gen 100 --file-spatial simple-inactive.txt 
+```
+
+**novel parameters explained**
+
+- –u 0.0 transposition rate is zero; no host defence required, as the TE
+  is already inactive.
+- –basepop ‘9,3,1’: the invasion will be triggered in a single
+  individual having a single TE copy; y-coordinate 9 and x-coordinate 3
+- –condinv flag; conditional on invasion; this is a convenience method;
+  inactive TEs will typically be quickly lost from the population; **56
+  simulations were necessary** so that at least some TE copies remained
+  by generation 100.
+
+![](simple_files/figure-gfm/unnamed-chunk-8-1.png)<!-- --> **Note** this
+scenario also leads to patchynes. but importantly 56 simulations were
+necessary to obtain a successful invasion where the TE was not lost by
+generation 100. **If this is the reason for the patchyness the amount of
+HT to Arabidopsis must be staggeringly high**. also please ignore the
+label active (it means no host defence but thats not necessary for
+inactive TEs)
+
 # Host defence
 
 ## host defence - no epigenetic inherited silencing
+
+Simulations with a host defence. We assume that any individual having
+`--trigger-defense 40` TE insertions triggers the de novo silencing of
+the TE. The insertions will be at entirely different genomic sites. We
+assume no epigenetic inheritance of the silencing, so only indivdiuals
+with 40 or more copies will have silenced TEs (silenced means
+transposition rate `u=0.0`)
 
 ``` bash
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit none --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --trigger-defense 40 --file-spatial simple-defence.txt
@@ -123,7 +181,7 @@ spatial grid.
   transposition rate of `--uc` which is 0.0 by default (i.e. no
   activity).
 
-![](simple_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](simple_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 **Note** The TE starts spreading at a small patch by generation 1. By
 generation 50 already several individuals have triggered the host
@@ -134,6 +192,11 @@ more TE copies can have the silenced TEs! (de novo triggered host
 defense).
 
 ## host defence - uniparental epigenetic silencing inheritance
+
+Same as before but we assume that the silencing can be inherited. We
+assume silencing is maternally transmitted as in Drosophila. The
+silencing state can also be lost in individuals not having a single TE
+insertions.
 
 ``` bash
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit dros --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --trigger-defense 40 --file-spatial simple-defence-dros.txt 
@@ -152,13 +215,17 @@ defense).
   not transmit the silencing status. TEs silenced in the father, will
   thus be active in the offspring (unless the mother has silenced TEs).
 
-![](simple_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](simple_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 **Note** As the major difference to the previous scenario
 (`--epi-inherit dros`), even individuals with less than 40 TEs may have
 silenced TEs.
 
 ## host defence - biparental epigenetic silencing inheritance
+
+In this scenario we assume that epigenetic silencing of a TE is
+transmitted by both parents as in Arabidopsis. The silencing state can
+also be lost in individuals not having a single TE insertions.
 
 ``` bash
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit ara --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --trigger-defense 40 --file-spatial simple-defence-ara.txt 
@@ -172,7 +239,7 @@ silenced TEs.
   means that the silencing will spread with all gametes. The silencing
   will thus spread like the a very effective genetic drive.
 
-![](simple_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](simple_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 **Note** The epigenetic silencing is spreading very fast (as expected
 for an efficient drive system). In fact the silencing is spreading
@@ -180,6 +247,9 @@ faster than the TE. Hence by generation 100 the TE is silenced in all
 individuals. A patchy TE distribution is thus observed.
 
 ## host defence - biparental epigenetic silencing and selfing
+
+Same as before but we now assume a selfing rate of 95% (ie mother and
+father are the same individual, but both producing recombined gametes).
 
 ``` bash
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit ara --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --trigger-defense 40 --selfing-rate 0.95 --condinv --file-spatial simple-defence-ara-self.txt 
@@ -199,13 +269,23 @@ individuals. A patchy TE distribution is thus observed.
   seeds. With this option simulations are performed until the required
   number of simulations was successful (`--rep`).
 
-![](simple_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](simple_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 **Note** With selfing and biparental inheritance TEs are silenced very
 quickly and thus only have a limited capacity to spread in the spatial
 population.
 
 # Negative selection against inactive TEs
+
+A different scenario with negative selection against the TE. Here we
+assume that the TE already managed to invade the population as we start
+the simulations with a base population where each indivdiual has exactly
+40 silenced TE copies (`--basepop "1-20,1-50,40'`). Note that all
+insertions will largely be at different genomic sites, so there are no
+fixed insertions (unless by chance, very unlikely). Since no insertion
+is fixed negative selection may potentially remove insertions. We
+further assume a negative effect per TE insertion of `--s 0.1` and
+additive effects in heterozygous individuals (`--h 0.5`).
 
 ## negative selection - biparental inheritance
 
@@ -229,15 +309,24 @@ population.
   (unless individuals have by chance the same insertion site in our 2Mb
   genome).
 
-![](simple_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](simple_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 **Note** selection against TEs may lead to a patchy distribution **when
 TEs are silenced biparental**. Importantly in this scenario we assumed
 i) that the TE family was present in all ancestors of the extant
 population and ii) that the TE was silenced in the ancestors and iii)
-biparental inheritance of the silencing.
+biparental inheritance of the silencing. One conceptual problem with
+this scenario is, that we need to explain how the TE did manage to
+spread to all individuals in the base-population, given the pronounced
+negative effect. Possible answers are demographic changes or
+environmental changes between the ancestral population (having many
+insertions) and the simulated population, eg a lower ancestral
+population size during the spread or a smaller negative effect during
+the spread.
 
 ## negative selection - uniparental inheritance
+
+Same scenario but uniparental inheritance of the TE (as in Drosophila).
 
 ``` bash
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit dros --basepop "1-20,1-50,40'" --rep 1 --steps 5 --gen 400 --trigger-defense 40 --s 0.1 --h 0.5 --file-spatial simple-negsel-dros.txt 
@@ -250,7 +339,7 @@ combination of parameters, i.e. selection against TEs combined with
 uniparental inheritance `--epi-inherit dros`. We again assumed that the
 TE is present and silenced in all ancestors of the extant population.
 
-![](simple_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](simple_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 **Now this is a surprise to me! Negative selection against TEs combined
 with uniparental silencing does not lead to patchyness** Actually TEs
@@ -260,9 +349,15 @@ fascinating, but makes sense. In this scenario the silencing can be lost
 as soon as negative selection reduced the load of TEs to such an extend
 that some individuals end up with zero TEs. Now the TE can be
 reactivated in crosses with mothers not having the TE and fathers having
-the TE (fathers transmit the TE but not the silencing).
+the TE (fathers transmit the TE but not the silencing). But importantly
+if we increase the negative effect of TEs further (`u>0.1`) patchyness
+will also be observed in this scenario.
 
 # Population structure - uniparental inheritance
+
+Now we introduce population structure. We specify a mate barrier at
+x-coordinates 25. Inviduals with x-coordinates 25 and 26 will have a 99%
+reduced chance to mate.
 
 ``` bash
 ./invade --seed 5 --genome MB:1,1 --rr 4,4 --u 0.1 --grid-x 50 --grid-y 20 --mate-radius 1 --epi-inherit dros --basepop 9-11,1-2,10 --rep 1 --steps 5 --gen 100 --trigger-defense 40 --mate-barrier 25 --barrier-strength 0.99 --file-spatial simple-matebar.txt 
@@ -279,7 +374,7 @@ the TE (fathers transmit the TE but not the silencing).
 - –barrier-strength 0.99: a 99% reduction in mating-probabilty for
   individuals on opposite ends of the mating-barrier.
 
-![](simple_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](simple_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
 
 **Note** the coordinates of the mate barrier (x-position 25) can be
 clearly discerned at generation 100; Also note that most individuals in
