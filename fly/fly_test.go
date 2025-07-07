@@ -67,9 +67,7 @@ func TestFitnessPositiveBenefit(t *testing.T) {
 	if want < 0 {
 		want = 0
 	}
-	if want > 1 {
-		want = 1
-	}
+
 	if math.Abs(got-want) > 0.0001 {
 		t.Errorf("Positive benefit fitness incorrect; got %f want %f", got, want)
 	}

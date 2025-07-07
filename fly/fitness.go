@@ -27,9 +27,7 @@ func (f *FitnessFunction) ComputeFitness(counttotal int64, countcluster int64) f
 	if fit < 0 {
 		fit = 0.0
 	}
-	if fit > 1.0 {
-		fit = 1.0
-	}
+
 	return fit
 }
 
