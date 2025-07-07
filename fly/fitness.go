@@ -7,6 +7,7 @@ import (
 type FitnessFunction struct {
 	x           float64
 	t           float64
+	b           float64 // benefit of each cluster insertion
 	noxincluins bool
 }
 
@@ -19,17 +20,21 @@ func (f *FitnessFunction) ComputeFitness(counttotal int64, countcluster int64) f
 		frc -= countcluster // if clusterinsertions are not deleterios subtract them
 	}
 
-	// equation is 1.0- n*x^t
+	// equation: w = 1 - x*n^t + b*countcluster
 	negeffect := f.x * math.Pow(float64(frc), f.t)
-	fit := 1.0 - negeffect
+	pos := f.b * float64(countcluster)
+	fit := 1.0 - negeffect + pos
 	if fit < 0 {
 		fit = 0.0
+	}
+	if fit > 1.0 {
+		fit = 1.0
 	}
 	return fit
 }
 
-func SetupFitness(x float64, t float64, noxincluins bool, minFitness float64) {
-	ff = FitnessFunction{x: x, t: t, noxincluins: noxincluins}
+func SetupFitness(x float64, t float64, b float64, noxincluins bool, minFitness float64) {
+	ff = FitnessFunction{x: x, t: t, b: b, noxincluins: noxincluins}
 	minimumFitness = minFitness
 }
 
