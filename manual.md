@@ -22,6 +22,7 @@ InvadeGo - Insertionbias branch
 * --rr the recombination rate for each chromosome in cM/Mb  e.g. '3,4,4,5' the first chromosome has 3cM/Mb, the second 4cM/Mb and so on
 * --x negative effect of a TE insertion: fitness w = 1-xn where n is the number of TE insertions
 * --t synergistic effect of a TE insertion assuming: fitness w=1-xn^t 
+* --b beneficial effect of a TE insertion in a piRNA cluster: fitness w = 1 - x*n^t + b*c where c is the number of cluster insertions
 * --no-x-cluins: switch; when activated insertions in piRNA cluster have no negative effect (ie. x=0 for cluster insertions)
 * --selective-cluins: experimental feature; not yet sure it will be useful; insertions with a given bias (say 50) will solely be silenced by cluster insertions of the same bias (50); in other word, when activated a cluster insertion will not deactivate all TEs but only the TEs with the same bias; biological justification: different in the bias will be due to mutations in the TE, due to this mutations the TE may escape the piRNAs (pirnas solely tolerate a sequence divergence around 10-20%)
 * --clonal: simulate clones; hence the simulated individuals will not mate and recombine anymore; they will make exact copies of themselves, but transpositions and mutations (--mu-bias) may still happen

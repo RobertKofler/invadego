@@ -59,6 +59,20 @@ func TestRecombine(t *testing.T) {
 fitness function w=1-xn^t
 cluster insertions (+reference insertions) may be considered
 */
+// Test fitness with positive benefit per cluster insertion
+func TestFitnessPositiveBenefit(t *testing.T) {
+	ff = FitnessFunction{x: 0.05, t: 1.0, b: 0.02, noxincluins: false}
+	got := ff.ComputeFitness(10, 2) // total 10, 2 cluster
+	want := 1.0 - 0.05*math.Pow(10, 1.0) + 0.02*2
+	if want < 0 {
+		want = 0
+	}
+
+	if math.Abs(got-want) > 0.0001 {
+		t.Errorf("Positive benefit fitness incorrect; got %f want %f", got, want)
+	}
+}
+
 func TestFitnessOmxnt(t *testing.T) {
 	var tests = []struct {
 		x    float64

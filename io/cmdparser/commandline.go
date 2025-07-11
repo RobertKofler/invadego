@@ -17,6 +17,7 @@ type CommandLineParameters struct {
 	UC              float64 // transposition rate in the presence of piRNAs
 	X               float64 // deleterious effect of a TE insertion
 	T               float64 // exponential deleterious effect of a TE insertion
+	Bcluins        float64 // benefit per piRNA-cluster insertion
 	MuBias          float64 // probability that a given TE insertion is mutating and changing its bias
 	Steps           int64   // report output each Steps generations
 	Generations     int64
@@ -53,6 +54,7 @@ func ParseCommandLine() *CommandLineParameters {
 	rr := flag.String("rr", "", "the recombination rate per chromosome in cm/Mb; e.g. '3,4,4,5' ")
 	x := flag.Float64("x", 0.0, "the deleterious effect of a single TE insertions")
 	t := flag.Float64("t", 1.0, "the synergistic effect of TE insertions")
+	bcluins := flag.Float64("b-cluins", 0.0, "fitness benefit per piRNA-cluster insertion")
 	noxcluins := flag.Bool("no-x-cluins", false, "cluster insertions incur no negative effects")
 	selectivcluins := flag.Bool("selective-cluins", false, "cluster insertions with a given bias will only suppress insertions with the same bias") // manual
 	//ignoreFailed := flag.Bool("ignored-failed", false, "ignore invasions where the TE did not get established")
@@ -116,6 +118,7 @@ func ParseCommandLine() *CommandLineParameters {
 		UC:              *transrateResidual,
 		X:               *x,
 		T:               *t,
+		Bcluins:         *bcluins,
 		MuBias:          *biasmutrate,
 		Steps:           *steps,
 		Noxcluins:       *noxcluins,
