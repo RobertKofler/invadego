@@ -241,6 +241,7 @@ func NewFly(femgam []int64, malegam []int64, paternalsilenced bool) *Fly {
 	fstat := getFlyStat(femgam, malegam)
 	// multithreading lock and unlock
 	//flylock.Lock()
+	//
 	currentCounter := FLYCOUNTER
 	FLYCOUNTER++
 
