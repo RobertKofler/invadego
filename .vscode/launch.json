@@ -31,6 +31,31 @@
 			"--sampleid","test,test2",
 			"--gen","200"]
 	},
+
+	{
+		"name": "spatial-closedy",
+		"type": "go",
+		"request": "launch",
+		"mode": "debug",
+		"program": "main.go",
+		"args": [
+			"--u","0.1",
+			"--genome","MB:2,2,2,2",
+			"--rr","4,4,4,4",
+			"--grid-x","50",
+			"--grid-y","20",
+			"--closed-x",
+			"--closed-y",
+			"--console-format","gridcount",
+			"--epi-inherit","dros",
+			"--basepop","1,1,10", // "10,1,10:10,2,10:10,3,10:10,4,10",
+			"--rep","1",
+			"--replicate-offset","1",
+			"--steps","2",
+			"--trigger-defense","40",
+			"--mate-radius","1",
+			"--gen","50"]
+	},
 	{
 		"name": "max-insertions",
 		"type": "go",
