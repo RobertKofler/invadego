@@ -2,6 +2,7 @@ package env
 
 import (
 	"fmt"
+	"math/rand"
 )
 
 /*
@@ -9,22 +10,29 @@ Test if the offspring of a cross between fem and male is silenced;
 depends on the epigenetic silencing mode
 */
 func OffspringIsSilenced(fem bool, male bool) bool {
+	simode := false
 	if env.epiMode == "none" {
 		//fmt.Println("none")
-		return false
+		simode = false
 
 	} else if env.epiMode == "dros" {
 		//fmt.Println("droso")
-		return fem
+		simode = fem
 
 	} else if env.epiMode == "ara" {
 		// either is fine, that is logical or
 		//	fmt.Println("ara")
-		return fem || male
+		simode = fem || male
 
 	} else {
 		panic("invalid epimode")
 	}
+
+	// loss of paternal silencing?
+	if simode && rand.Float64() < GetSilencingLossProbability() {
+		simode = false
+	}
+	return simode
 }
 
 type RegionCollection []GenomicInterval

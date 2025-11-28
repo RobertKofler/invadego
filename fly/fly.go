@@ -245,10 +245,6 @@ func NewFly(femgam []int64, malegam []int64, paternalsilenced bool) *Fly {
 	currentCounter := FLYCOUNTER
 	FLYCOUNTER++
 
-	// loss of paternal silencing?
-	if paternalsilenced && rand.Float64() < env.GetSilencingLossProbability() {
-		paternalsilenced = false
-	}
 	matpi := getSilencingStatus(fstat.CountTotal, paternalsilenced, currentCounter) // update the silencing status, eg if threshold is reached or if all TE insertions are lost
 	newFly := Fly{Hap1: malegam, Hap2: femgam, FlyNumber: currentCounter, Silenced: matpi, FlyStat: &fstat}
 	newFly.Fitness = GetFitness(&newFly)

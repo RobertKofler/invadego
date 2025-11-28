@@ -526,8 +526,8 @@ func TestStochasticLossOfSilencing(test *testing.T) {
 	FLYCOUNTER = 1
 	lost := 0
 	for i := 0; i < 10000; i++ {
-		nf := NewFly([]int64{1}, []int64{1}, true)
-		if nf.Silenced == false {
+		nf := env.OffspringIsSilenced(true, true)
+		if nf == false {
 			lost++
 		}
 
