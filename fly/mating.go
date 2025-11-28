@@ -29,12 +29,19 @@ type matePair struct {
 	male   *Fly
 }
 
+type co struct {
+	x int64
+	y int64
+}
+
+/*
 type neighborhood struct {
 	xstart int64
 	xend   int64
 	ystart int64
 	yend   int64
 }
+*/
 
 /*
 helper construct for generating the mate pairs
@@ -132,13 +139,46 @@ func (m MaterNeighborhood) GetMatePairs(flies [][]*Fly) [][]matePair {
 	return merryCouples
 }
 
+func getX(x int64, xsize int64, closedx bool) int64 {
+	if closedx {
+		val := (x + xsize) % xsize
+		return val
+
+	} else {
+		if x < 0 {
+			return -1
+		}
+		if x >= xsize {
+			return -1
+		}
+		return x
+	}
+}
+
+func getY(y int64, ysize int64, closedy bool) int64 {
+	if closedy {
+		val := (y + ysize) % ysize
+		return val
+
+	} else {
+		if y < 0 {
+			return -1
+		}
+		if y >= ysize {
+			return -1
+		}
+		return y
+	}
+}
+
 /*
 for given coordinates, delinitate the neighborhood in the grid; considering the boundaries
 */
-func getNeighborhoodCoordinates(ycord int64, xcord int64, radius int64) neighborhood {
+func getNeighborhoodCoordinates(ycord int64, xcord int64, radius int64) []*co {
 
 	// are coordinates within bounds?
 	ysize, xsize := env.GetYSize(), env.GetXSize()
+	closedx, closedy := env.GetClosedX(), env.GetClosedY()
 	if ycord < 0 || ycord >= ysize {
 		panic(fmt.Sprintf("invalid y-coordinate %d", ycord))
 	}
@@ -148,24 +188,22 @@ func getNeighborhoodCoordinates(ycord int64, xcord int64, radius int64) neighbor
 	// find the coordinates of the neighborhood
 	ystart, yend := ycord-radius, ycord+radius
 	xstart, xend := xcord-radius, xcord+radius
-	if ystart < 0 {
-		ystart = 0
+	coords := make([]*co, 0)
+
+	for y := ystart; y <= yend; y++ {
+		for x := xstart; x <= xend; x++ {
+			xt := getX(x, xsize, closedx)
+			yt := getY(y, ysize, closedy)
+			if xt != -1 && yt != -1 {
+				nc := co{
+					x: xt,
+					y: yt}
+				coords = append(coords, &nc)
+			}
+
+		}
 	}
-	if yend >= ysize {
-		yend = ysize - 1
-	}
-	if xstart < 0 {
-		xstart = 0
-	}
-	if xend >= xsize {
-		xend = xsize - 1
-	}
-	return neighborhood{
-		xstart: xstart,
-		xend:   xend,
-		ystart: ystart,
-		yend:   yend,
-	}
+	return coords
 
 }
 
@@ -175,23 +213,20 @@ find the neighbors for a given coordinate
 func getNeighbors(flies [][]*Fly, ycord int64, xcord int64, radius int64) []*Fly {
 
 	ncoord := getNeighborhoodCoordinates(ycord, xcord, radius)
-	ncount := (ncoord.yend - ncoord.ystart + 1) * (ncoord.xend - ncoord.xstart + 1)
-	neighbors := make([]*Fly, 0, ncount)
 
-	for y := ncoord.ystart; y <= ncoord.yend; y++ {
-		for x := ncoord.xstart; x <= ncoord.xend; x++ {
-
-			// consider migration barriers; between coordinates of focal-fly (xcord) and potential mate in neighborhood (x)
-			pex := env.GetExclusionProbabilty(xcord, x)
-			if rand.Float64() < pex {
-				// exclusion nothing happens
-			} else {
-				// inclusion
-				neighbors = append(neighbors, flies[y][x])
-			}
-
+	neighbors := make([]*Fly, 0, len(ncoord))
+	for _, co := range ncoord {
+		// consider migration barriers; between coordinates of focal-fly (xcord) and potential mate in neighborhood (x)
+		pex := env.GetExclusionProbabilty(xcord, co.x)
+		if rand.Float64() < pex {
+			// exclusion nothing happens
+		} else {
+			// inclusion
+			neighbors = append(neighbors, flies[co.y][co.x])
 		}
+
 	}
+
 	return neighbors
 }
 

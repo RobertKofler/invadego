@@ -62,7 +62,7 @@ func main() {
 	popstruct := cmdparser.ParsePopulationStructureX(clp.MateBarriers, clp.GridX)
 
 	util.InvadeLogger.Printf("Setting up environment; genome, and the recombination rate")
-	env.SetupEnvironment(clp.GridX, clp.GridY, genome, recrate, popstruct, clp.BarrierStrength, clp.TriggerSilence, clp.EpiSilencing, clp.PSiLoss, clp.MinFitness, float64(clp.MaxInsertions))
+	env.SetupEnvironment(clp.GridX, clp.GridY, clp.ClosedX, clp.ClosedY, genome, recrate, popstruct, clp.BarrierStrength, clp.TriggerSilence, clp.EpiSilencing, clp.PSiLoss, clp.MinFitness, float64(clp.MaxInsertions))
 	util.InvadeLogger.Print("Setting up jumper")
 	env.SetJumper(clp.U, clp.UC)
 	util.InvadeLogger.Print("Setting up fitness function")

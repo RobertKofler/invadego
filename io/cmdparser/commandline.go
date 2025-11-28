@@ -18,6 +18,8 @@ type CommandLineParameters struct {
 	ConsoleFormat   string
 	ArgString       string
 	Silent          bool
+	ClosedY         bool
+	ClosedX         bool
 	CondInvasion    bool
 	Genome          string
 	RecRate         string
@@ -63,6 +65,8 @@ func ParseCommandLine() *CommandLineParameters {
 	rr := flag.String("rr", "", "the recombination rate per chromosome in cm/Mb; e.g. '3,4,4,5' ")
 	s := flag.Float64("s", 0.0, "the deleterious effect of a single homozygous TE insertion")
 	h := flag.Float64("h", 0.0, "the heterozygous effect of a TE insertion")
+	closedx := flag.Bool("closed-x", false, "closed circle at x-coordinate")
+	closedy := flag.Bool("closed-y", false, "closed circle at y-coordinate")
 	//t := flag.Float64("t", 1.0, "the synergistic effect of TE insertions")
 	transrateResidual := flag.Float64("uc", 0.0, "the transposition rate in the presence of piRNAs")
 	steps := flag.Int64("steps", 20, "report the output at each '--steps' generations")
@@ -157,6 +161,8 @@ func ParseCommandLine() *CommandLineParameters {
 		UC:              *transrateResidual,
 		S:               *s,
 		H:               *h,
+		ClosedX:         *closedx,
+		ClosedY:         *closedy,
 		Steps:           *steps,
 		ReplicateOffset: *reploffset,
 		Seed:            *seed,

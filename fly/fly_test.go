@@ -27,7 +27,7 @@ func hGetstandardFly() *Fly {
 }
 
 func hGetStandardPopulation(size int64) [][]*Fly {
-	env.SetupEnvironment(size, size, []int64{}, []float64{}, []int64{}, 0.0, 40, "dros", 0.0, 0.1, 1000)
+	env.SetupEnvironment(size, size, false, false, []int64{}, []float64{}, []int64{}, 0.0, 40, "dros", 0.0, 0.1, 1000)
 	tr := make([][]*Fly, size)
 	for i := int64(0); i < size; i++ {
 		tr[i] = make([]*Fly, 0)
@@ -279,46 +279,260 @@ func TestGetFlyForRandomNumberLargePop(test *testing.T) {
 
 }
 
-func TestGetNeighborhood(test *testing.T) {
-	env.SetupEnvironment(100, 100, []int64{}, []float64{}, []int64{}, 0.0, 40, "dros", 0.0, 0.1, 1000)
+func TestGetNeighborhoodOpen(test *testing.T) {
+	env.SetupEnvironment(100, 100, false, false, []int64{}, []float64{}, []int64{}, 0.0, 40, "dros", 0.0, 0.1, 1000)
 	var tests = []struct {
-		x        int64
-		y        int64
-		radius   int64
-		w_xstart int64
-		w_xend   int64
-		w_ystart int64
-		w_yend   int64
+		x      int64
+		y      int64
+		radius int64
+		w_minx int64
+		w_maxx int64
+		w_miny int64
+		w_maxy int64
+		w_size int64
 	}{
-		{x: 10, y: 10, radius: 2, w_xstart: 8, w_ystart: 8, w_xend: 12, w_yend: 12},
-		{x: 10, y: 10, radius: 1, w_xstart: 9, w_ystart: 9, w_xend: 11, w_yend: 11}, // sanity
-		{x: 10, y: 10, radius: 5, w_xstart: 5, w_ystart: 5, w_xend: 15, w_yend: 15},
-		{x: 0, y: 0, radius: 2, w_xstart: 0, w_ystart: 0, w_xend: 2, w_yend: 2},
-		{x: 0, y: 99, radius: 2, w_xstart: 0, w_ystart: 97, w_xend: 2, w_yend: 99},
-		{x: 99, y: 0, radius: 2, w_xstart: 97, w_ystart: 0, w_xend: 99, w_yend: 2},
-		{x: 99, y: 99, radius: 2, w_xstart: 97, w_ystart: 97, w_xend: 99, w_yend: 99},
+		// []int64{1, 2, 3, 5, 6, 7, 9, 10, 11}
+		{x: 0, y: 0, radius: 2, w_minx: 0, w_miny: 0, w_maxx: 2, w_maxy: 2, w_size: 9},
+		{x: 10, y: 10, radius: 2, w_minx: 8, w_maxx: 12, w_miny: 8, w_maxy: 12, w_size: 25},
+		{x: 1, y: 1, radius: 1, w_minx: 0, w_miny: 0, w_maxx: 2, w_maxy: 2, w_size: 9},
+		{x: 10, y: 10, radius: 1, w_minx: 9, w_miny: 9, w_maxx: 11, w_maxy: 11, w_size: 9},
+		{x: 10, y: 10, radius: 5, w_minx: 5, w_miny: 5, w_maxx: 15, w_maxy: 15, w_size: 121},
+		{x: 2, y: 0, radius: 1, w_minx: 1, w_miny: 0, w_maxx: 3, w_maxy: 1, w_size: 6},
+		{x: 0, y: 2, radius: 1, w_minx: 0, w_miny: 1, w_maxx: 1, w_maxy: 3, w_size: 6},
+		{x: 0, y: 99, radius: 2, w_minx: 0, w_miny: 97, w_maxx: 2, w_maxy: 99, w_size: 9},
+		{x: 99, y: 0, radius: 2, w_minx: 97, w_miny: 0, w_maxx: 99, w_maxy: 2, w_size: 9},
+		{x: 97, y: 0, radius: 1, w_minx: 96, w_miny: 0, w_maxx: 98, w_maxy: 1, w_size: 6},
+		{x: 0, y: 97, radius: 1, w_minx: 0, w_miny: 96, w_maxx: 1, w_maxy: 98, w_size: 6},
+		{x: 99, y: 99, radius: 2, w_minx: 97, w_miny: 97, w_maxx: 99, w_maxy: 99, w_size: 9},
 		// NOTHING
 	}
 	for _, t := range tests {
 		got := getNeighborhoodCoordinates(t.y, t.x, t.radius)
+		gminx, gmaxx, gminy, gmaxy := t.x, int64(0), t.y, int64(0)
+		for _, c := range got {
+			if c.x < gminx {
+				gminx = c.x
+			}
+			if c.x > gmaxx {
+				gmaxx = c.x
+			}
+			if c.y < gminy {
+				gminy = c.y
+			}
+			if c.y > gmaxy {
+				gmaxy = c.y
+			}
+		}
 
-		if got.xend != t.w_xend {
-			test.Errorf("Incorrect x end(); got %d, want %d", got.xend, t.w_xend)
+		if gminx != t.w_minx {
+			test.Errorf("Incorrect x min; got %d, want %d", gminx, t.w_minx)
 		}
-		if got.xstart != t.w_xstart {
-			test.Errorf("Incorrect x start; got %d, want %d", got.xstart, t.w_xstart)
+		if gmaxx != t.w_maxx {
+			test.Errorf("Incorrect x max; got %d, want %d", gmaxx, t.w_maxx)
 		}
-		if got.yend != t.w_yend {
-			test.Errorf("Incorrect y end; got %d, want %d", got.yend, t.w_yend)
+		if gminy != t.w_miny {
+			test.Errorf("Incorrect y min; got %d, want %d", gminy, t.w_miny)
 		}
-		if got.ystart != t.w_ystart {
-			test.Errorf("Incorrect y start; got %d, want %d", got.ystart, t.w_yend)
+		if gmaxy != t.w_maxy {
+			test.Errorf("Incorrect y max; got %d, want %d", gmaxy, t.w_maxy)
+		}
+		if len(got) != int(t.w_size) {
+			test.Errorf("Incorrect size; got %d, want %d", len(got), t.w_size)
+		}
+	}
+}
+
+func TestGetNeighborhoodClosedX(test *testing.T) {
+	env.SetupEnvironment(100, 100, true, false, []int64{}, []float64{}, []int64{}, 0.0, 40, "dros", 0.0, 0.1, 1000)
+	var tests = []struct {
+		x      int64
+		y      int64
+		radius int64
+		w_minx int64
+		w_maxx int64
+		w_miny int64
+		w_maxy int64
+		w_size int64
+	}{
+		// []int64{1, 2, 3, 5, 6, 7, 9, 10, 11}
+		{x: 0, y: 0, radius: 2, w_minx: 0, w_miny: 0, w_maxx: 99, w_maxy: 2, w_size: 15},
+		{x: 10, y: 10, radius: 2, w_minx: 8, w_maxx: 12, w_miny: 8, w_maxy: 12, w_size: 25},
+		{x: 1, y: 1, radius: 1, w_minx: 0, w_miny: 0, w_maxx: 2, w_maxy: 2, w_size: 9},
+		{x: 10, y: 10, radius: 1, w_minx: 9, w_miny: 9, w_maxx: 11, w_maxy: 11, w_size: 9},
+		{x: 10, y: 10, radius: 5, w_minx: 5, w_miny: 5, w_maxx: 15, w_maxy: 15, w_size: 121},
+		{x: 2, y: 0, radius: 1, w_minx: 1, w_miny: 0, w_maxx: 3, w_maxy: 1, w_size: 6},
+		{x: 0, y: 2, radius: 1, w_minx: 0, w_miny: 1, w_maxx: 99, w_maxy: 3, w_size: 9},
+		{x: 0, y: 99, radius: 2, w_minx: 0, w_miny: 97, w_maxx: 99, w_maxy: 99, w_size: 15},
+		{x: 99, y: 0, radius: 2, w_minx: 0, w_miny: 0, w_maxx: 99, w_maxy: 2, w_size: 15},
+		{x: 97, y: 0, radius: 1, w_minx: 96, w_miny: 0, w_maxx: 98, w_maxy: 1, w_size: 6},
+		{x: 0, y: 97, radius: 1, w_minx: 0, w_miny: 96, w_maxx: 99, w_maxy: 98, w_size: 9},
+		{x: 99, y: 99, radius: 2, w_minx: 0, w_miny: 97, w_maxx: 99, w_maxy: 99, w_size: 15},
+		// NOTHING
+	}
+	for _, t := range tests {
+		got := getNeighborhoodCoordinates(t.y, t.x, t.radius)
+		gminx, gmaxx, gminy, gmaxy := t.x, int64(0), t.y, int64(0)
+		for _, c := range got {
+			if c.x < gminx {
+				gminx = c.x
+			}
+			if c.x > gmaxx {
+				gmaxx = c.x
+			}
+			if c.y < gminy {
+				gminy = c.y
+			}
+			if c.y > gmaxy {
+				gmaxy = c.y
+			}
+		}
+
+		if gminx != t.w_minx {
+			test.Errorf("Incorrect x min; got %d, want %d", gminx, t.w_minx)
+		}
+		if gmaxx != t.w_maxx {
+			test.Errorf("Incorrect x max; got %d, want %d", gmaxx, t.w_maxx)
+		}
+		if gminy != t.w_miny {
+			test.Errorf("Incorrect y min; got %d, want %d", gminy, t.w_miny)
+		}
+		if gmaxy != t.w_maxy {
+			test.Errorf("Incorrect y max; got %d, want %d", gmaxy, t.w_maxy)
+		}
+		if len(got) != int(t.w_size) {
+			test.Errorf("Incorrect size; got %d, want %d", len(got), t.w_size)
+		}
+	}
+}
+
+func TestGetNeighborhoodClosedY(test *testing.T) {
+	env.SetupEnvironment(100, 100, false, true, []int64{}, []float64{}, []int64{}, 0.0, 40, "dros", 0.0, 0.1, 1000)
+	var tests = []struct {
+		x      int64
+		y      int64
+		radius int64
+		w_minx int64
+		w_maxx int64
+		w_miny int64
+		w_maxy int64
+		w_size int64
+	}{
+		// []int64{1, 2, 3, 5, 6, 7, 9, 10, 11}
+		{x: 0, y: 0, radius: 2, w_minx: 0, w_miny: 0, w_maxx: 2, w_maxy: 99, w_size: 15},
+		{x: 10, y: 10, radius: 2, w_minx: 8, w_maxx: 12, w_miny: 8, w_maxy: 12, w_size: 25},
+		{x: 1, y: 1, radius: 1, w_minx: 0, w_miny: 0, w_maxx: 2, w_maxy: 2, w_size: 9},
+		{x: 10, y: 10, radius: 1, w_minx: 9, w_miny: 9, w_maxx: 11, w_maxy: 11, w_size: 9},
+		{x: 10, y: 10, radius: 5, w_minx: 5, w_miny: 5, w_maxx: 15, w_maxy: 15, w_size: 121},
+		{x: 2, y: 0, radius: 1, w_minx: 1, w_miny: 0, w_maxx: 3, w_maxy: 99, w_size: 9},
+		{x: 0, y: 2, radius: 1, w_minx: 0, w_miny: 1, w_maxx: 1, w_maxy: 3, w_size: 6},
+		{x: 0, y: 99, radius: 2, w_minx: 0, w_miny: 0, w_maxx: 2, w_maxy: 99, w_size: 15},
+		{x: 99, y: 0, radius: 2, w_minx: 97, w_miny: 0, w_maxx: 99, w_maxy: 99, w_size: 15},
+		{x: 97, y: 0, radius: 1, w_minx: 96, w_miny: 0, w_maxx: 98, w_maxy: 99, w_size: 9},
+		{x: 0, y: 97, radius: 1, w_minx: 0, w_miny: 96, w_maxx: 1, w_maxy: 98, w_size: 6},
+		{x: 99, y: 99, radius: 2, w_minx: 97, w_miny: 0, w_maxx: 99, w_maxy: 99, w_size: 15},
+		// NOTHING
+	}
+	for _, t := range tests {
+		got := getNeighborhoodCoordinates(t.y, t.x, t.radius)
+		gminx, gmaxx, gminy, gmaxy := t.x, int64(0), t.y, int64(0)
+		for _, c := range got {
+			if c.x < gminx {
+				gminx = c.x
+			}
+			if c.x > gmaxx {
+				gmaxx = c.x
+			}
+			if c.y < gminy {
+				gminy = c.y
+			}
+			if c.y > gmaxy {
+				gmaxy = c.y
+			}
+		}
+
+		if gminx != t.w_minx {
+			test.Errorf("Incorrect x min; got %d, want %d", gminx, t.w_minx)
+		}
+		if gmaxx != t.w_maxx {
+			test.Errorf("Incorrect x max; got %d, want %d", gmaxx, t.w_maxx)
+		}
+		if gminy != t.w_miny {
+			test.Errorf("Incorrect y min; got %d, want %d", gminy, t.w_miny)
+		}
+		if gmaxy != t.w_maxy {
+			test.Errorf("Incorrect y max; got %d, want %d", gmaxy, t.w_maxy)
+		}
+		if len(got) != int(t.w_size) {
+			test.Errorf("Incorrect size; got %d, want %d", len(got), t.w_size)
+		}
+	}
+}
+
+func TestGetNeighborhoodClosedXY(test *testing.T) {
+	env.SetupEnvironment(100, 100, true, true, []int64{}, []float64{}, []int64{}, 0.0, 40, "dros", 0.0, 0.1, 1000)
+	var tests = []struct {
+		x      int64
+		y      int64
+		radius int64
+		w_minx int64
+		w_maxx int64
+		w_miny int64
+		w_maxy int64
+		w_size int64
+	}{
+		// []int64{1, 2, 3, 5, 6, 7, 9, 10, 11}
+		{x: 0, y: 0, radius: 2, w_minx: 0, w_miny: 0, w_maxx: 99, w_maxy: 99, w_size: 25},
+		{x: 10, y: 10, radius: 2, w_minx: 8, w_maxx: 12, w_miny: 8, w_maxy: 12, w_size: 25},
+		{x: 1, y: 1, radius: 1, w_minx: 0, w_miny: 0, w_maxx: 2, w_maxy: 2, w_size: 9},
+		{x: 10, y: 10, radius: 1, w_minx: 9, w_miny: 9, w_maxx: 11, w_maxy: 11, w_size: 9},
+		{x: 10, y: 10, radius: 5, w_minx: 5, w_miny: 5, w_maxx: 15, w_maxy: 15, w_size: 121},
+		{x: 2, y: 0, radius: 1, w_minx: 1, w_miny: 0, w_maxx: 3, w_maxy: 99, w_size: 9},
+		{x: 0, y: 2, radius: 1, w_minx: 0, w_miny: 1, w_maxx: 99, w_maxy: 3, w_size: 9},
+		{x: 0, y: 99, radius: 2, w_minx: 0, w_miny: 0, w_maxx: 99, w_maxy: 99, w_size: 25},
+		{x: 99, y: 0, radius: 2, w_minx: 0, w_miny: 0, w_maxx: 99, w_maxy: 99, w_size: 25},
+		{x: 97, y: 0, radius: 1, w_minx: 96, w_miny: 0, w_maxx: 98, w_maxy: 99, w_size: 9},
+		{x: 0, y: 97, radius: 1, w_minx: 0, w_miny: 96, w_maxx: 99, w_maxy: 98, w_size: 9},
+		{x: 99, y: 99, radius: 2, w_minx: 0, w_miny: 0, w_maxx: 99, w_maxy: 99, w_size: 25},
+		// NOTHING
+	}
+	for _, t := range tests {
+		got := getNeighborhoodCoordinates(t.y, t.x, t.radius)
+		gminx, gmaxx, gminy, gmaxy := t.x, int64(0), t.y, int64(0)
+		for _, c := range got {
+			if c.x < gminx {
+				gminx = c.x
+			}
+			if c.x > gmaxx {
+				gmaxx = c.x
+			}
+			if c.y < gminy {
+				gminy = c.y
+			}
+			if c.y > gmaxy {
+				gmaxy = c.y
+			}
+		}
+
+		if gminx != t.w_minx {
+			test.Errorf("Incorrect x min; got %d, want %d", gminx, t.w_minx)
+		}
+		if gmaxx != t.w_maxx {
+			test.Errorf("Incorrect x max; got %d, want %d", gmaxx, t.w_maxx)
+		}
+		if gminy != t.w_miny {
+			test.Errorf("Incorrect y min; got %d, want %d", gminy, t.w_miny)
+		}
+		if gmaxy != t.w_maxy {
+			test.Errorf("Incorrect y max; got %d, want %d", gmaxy, t.w_maxy)
+		}
+		if len(got) != int(t.w_size) {
+			test.Errorf("Incorrect size; got %d, want %d", len(got), t.w_size)
 		}
 	}
 }
 
 func TestGetSilencingStatus(test *testing.T) {
-	env.SetupEnvironment(10, 10, []int64{}, []float64{}, []int64{}, 0.0, 40, "dros", 0.0, 0.1, 1000)
+	env.SetupEnvironment(10, 10, false, false, []int64{}, []float64{}, []int64{}, 0.0, 40, "dros", 0.0, 0.1, 1000)
 	var tests = []struct {
 		fs       FlyStatistic
 		silenced bool
@@ -521,7 +735,7 @@ func TestStochasticMaterPanmicticSelfing(test *testing.T) {
 }
 
 func TestStochasticLossOfSilencing(test *testing.T) {
-	env.SetupEnvironment(100, 100, []int64{}, []float64{}, []int64{10, 20}, 0.2, 40, "dros", 0.1, 0.0, 1000)
+	env.SetupEnvironment(100, 100, false, false, []int64{}, []float64{}, []int64{10, 20}, 0.2, 40, "dros", 0.1, 0.0, 1000)
 	SetupFitness(0.0, 0.0)
 	FLYCOUNTER = 1
 	lost := 0

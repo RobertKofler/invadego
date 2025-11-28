@@ -33,7 +33,7 @@ func TestThreshold(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		SetupEnvironment(100, 100, []int64{}, []float64{}, []int64{}, 0.0, test.threshold, "dros", 0.0, 0.1, 1000)
+		SetupEnvironment(100, 100, false, false, []int64{}, []float64{}, []int64{}, 0.0, test.threshold, "dros", 0.0, 0.1, 1000)
 		got := IsTriggered(test.tecount)
 		if got != test.want {
 			t.Errorf("IsTriggeredt(); got %v wanted %v", got, test.want)
@@ -53,7 +53,7 @@ func TestSetGrid(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		SetupEnvironment(test.gridx, test.gridy, []int64{}, []float64{}, []int64{}, 0.0, 40, "dros", 0.0, 0.1, 1000)
+		SetupEnvironment(test.gridx, test.gridy, false, false, []int64{}, []float64{}, []int64{}, 0.0, 40, "dros", 0.0, 0.1, 1000)
 		gotx, goty := GetXSize(), GetYSize()
 		if gotx != test.gridx {
 			t.Errorf("GetXSize(); got %d wanted %d", gotx, test.gridx)
@@ -87,7 +87,7 @@ func TestOffspringSilenced(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		SetupEnvironment(100, 100, []int64{}, []float64{}, []int64{}, 40, 0.0, test.epimode, 0.0, 0.1, 1000)
+		SetupEnvironment(100, 100, false, false, []int64{}, []float64{}, []int64{}, 40, 0.0, test.epimode, 0.0, 0.1, 1000)
 		got := OffspringIsSilenced(test.fem, test.male)
 		if got != test.want {
 			t.Errorf("OffspringIsSilenced(%v,%v); got %v wanted %v", test.fem, test.male, got, test.want)
@@ -285,7 +285,7 @@ func TestStochasticRandomAssortmentAndRecombination(test *testing.T) {
 }
 
 func TestMateBarrier(test *testing.T) {
-	SetupEnvironment(100, 100, []int64{}, []float64{}, []int64{10, 20}, 0.2, 40, "dros", 0.0, 0.1, 1000)
+	SetupEnvironment(100, 100, false, false, []int64{}, []float64{}, []int64{10, 20}, 0.2, 40, "dros", 0.0, 0.1, 1000)
 	// now lets assume a mate barrier at site 5 (1-based) this translates to 4 (0-based)
 	//            pos 5
 	// 0, 1, 2, 3, 4 || 5, 6, 7, 8, 9
@@ -322,7 +322,7 @@ func TestMateBarrier(test *testing.T) {
 }
 
 func TestTranslateCoordinates(test *testing.T) {
-	SetupEnvironment(50, 50, []int64{100, 200, 300, 400}, // two chromosomes of size 1000
+	SetupEnvironment(50, 50, false, false, []int64{100, 200, 300, 400}, // two chromosomes of size 1000
 		[]float64{4, 4, 4, 4}, []int64{}, 0.0, 20, "dros", 0.0, 0.1, 1000.0)
 	var tests = []struct {
 		pos     int64

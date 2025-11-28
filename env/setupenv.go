@@ -4,7 +4,7 @@ package env
 Initialize the entire environment for the simulations, i.e. the chromosomes, the piRNA clusters, the recombination rate
 (fitness? mating?)
 */
-func SetupEnvironment(gridx int64, gridy int64, chrSizes []int64, recRate []float64,
+func SetupEnvironment(gridx int64, gridy int64, closedx bool, closedy bool, chrSizes []int64, recRate []float64,
 	popstruct []int64, barrierStrength float64, hostsilencetrigger int64, episilence string,
 	epsiloss float64, minFitness float64, maxInsertions float64) {
 	//	env.SetupEnvironment(clp.GridX, clp.GridY, genome, recrate,
@@ -31,5 +31,7 @@ func SetupEnvironment(gridx int64, gridy int64, chrSizes []int64, recRate []floa
 		recombinationWindows: recwins,
 		gridX:                gridx,
 		gridY:                gridy,
+		closedX:              closedx,
+		closedY:              closedy,
 	}
 }

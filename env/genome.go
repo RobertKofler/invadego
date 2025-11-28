@@ -28,6 +28,8 @@ type Environment struct {
 	maximumInsertions    float64
 	gridX                int64 // size of X-grid
 	gridY                int64 // size of Y-grid
+	closedX              bool
+	closedY              bool
 }
 
 func GetMinimumFitness() float64 {
@@ -118,6 +120,14 @@ func GetYSize() int64 {
 
 func GetXSize() int64 {
 	return env.gridX
+}
+
+func GetClosedY() bool {
+	return env.closedY
+}
+
+func GetClosedX() bool {
+	return env.closedX
 }
 
 var env Environment

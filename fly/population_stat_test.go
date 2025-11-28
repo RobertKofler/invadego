@@ -19,7 +19,7 @@ func testhelper_generatetotalcount(clustercount []int64) *Population {
 
 func testhelper_setdefaultenv() {
 	env.SetupEnvironment(100,
-		100,
+		100, false, false,
 		[]int64{100, 100}, // two chromosomes of size 100
 		[]float64{0, 0},
 		[]int64{}, 0.0,
