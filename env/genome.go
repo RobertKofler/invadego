@@ -17,6 +17,12 @@ type popStruct struct {
 	barStrength float64
 }
 
+// coordiante Pair
+type XY struct {
+	X int64
+	Y int64
+}
+
 type Environment struct {
 	genome               *GenomicLandscape
 	popStruct            *popStruct
@@ -46,8 +52,21 @@ func GetSilencingLossProbability() float64 {
 /*
 probabilty that a potential mate will be excluded from mating due to populatin structure
 */
-func GetExclusionProbabilty(xfirst int64, xsecond int64) float64 {
+func getExclusionProbabilty(xfirst int64, xsecond int64) float64 {
 	return env.popStruct.ExclusionProbability(xfirst, xsecond)
+}
+
+func ExcludeMigrationBarrier(tofilter []*XY, xcord int64) []*XY {
+	filtered := make([]*XY, 0, len(tofilter))
+	for _, cand := range tofilter {
+		if rand.Float64() < getExclusionProbabilty(cand.X, xcord) {
+			// exclusion nothing happens
+		} else {
+			// inclusion
+			filtered = append(filtered, cand)
+		}
+	}
+	return filtered
 }
 
 func GetMaximumInsertions() float64 {
@@ -128,6 +147,74 @@ func GetClosedY() bool {
 
 func GetClosedX() bool {
 	return env.closedX
+}
+
+func getX(x int64, xsize int64, closedx bool) int64 {
+	if closedx {
+		val := (x + xsize) % xsize
+		return val
+
+	} else {
+		if x < 0 {
+			return -1
+		}
+		if x >= xsize {
+			return -1
+		}
+		return x
+	}
+}
+
+func getY(y int64, ysize int64, closedy bool) int64 {
+	if closedy {
+		val := (y + ysize) % ysize
+		return val
+
+	} else {
+		if y < 0 {
+			return -1
+		}
+		if y >= ysize {
+			return -1
+		}
+		return y
+	}
+}
+
+/*
+for given coordinates, delinitate the neighborhood in the grid; considering the boundaries
+*/
+func GetNeighborhoodCoordinates(ycord int64, xcord int64, radius int64) []*XY {
+
+	// are coordinates within bounds?
+	ysize, xsize := env.gridY, env.gridX
+	closedx, closedy := env.closedX, env.closedY
+	if ycord < 0 || ycord >= ysize {
+		panic(fmt.Sprintf("invalid y-coordinate %d", ycord))
+	}
+	if xcord < 0 || xcord >= xsize {
+		panic(fmt.Sprintf("invalid x-coordinate %d", xcord))
+	}
+	// find the coordinates of the neighborhood
+	ystart, yend := ycord-radius, ycord+radius
+	xstart, xend := xcord-radius, xcord+radius
+	coords := make([]*XY, 0)
+
+	for y := ystart; y <= yend; y++ {
+		for x := xstart; x <= xend; x++ {
+			xt := getX(x, xsize, closedx)
+			yt := getY(y, ysize, closedy)
+			if xt != -1 && yt != -1 {
+				nc := XY{
+					X: xt,
+					Y: yt}
+				coords = append(coords, &nc)
+			}
+
+		}
+	}
+	return coords
+
 }
 
 var env Environment

@@ -29,11 +29,6 @@ type matePair struct {
 	male   *Fly
 }
 
-type co struct {
-	x int64
-	y int64
-}
-
 /*
 type neighborhood struct {
 	xstart int64
@@ -139,91 +134,18 @@ func (m MaterNeighborhood) GetMatePairs(flies [][]*Fly) [][]matePair {
 	return merryCouples
 }
 
-func getX(x int64, xsize int64, closedx bool) int64 {
-	if closedx {
-		val := (x + xsize) % xsize
-		return val
-
-	} else {
-		if x < 0 {
-			return -1
-		}
-		if x >= xsize {
-			return -1
-		}
-		return x
-	}
-}
-
-func getY(y int64, ysize int64, closedy bool) int64 {
-	if closedy {
-		val := (y + ysize) % ysize
-		return val
-
-	} else {
-		if y < 0 {
-			return -1
-		}
-		if y >= ysize {
-			return -1
-		}
-		return y
-	}
-}
-
-/*
-for given coordinates, delinitate the neighborhood in the grid; considering the boundaries
-*/
-func getNeighborhoodCoordinates(ycord int64, xcord int64, radius int64) []*co {
-
-	// are coordinates within bounds?
-	ysize, xsize := env.GetYSize(), env.GetXSize()
-	closedx, closedy := env.GetClosedX(), env.GetClosedY()
-	if ycord < 0 || ycord >= ysize {
-		panic(fmt.Sprintf("invalid y-coordinate %d", ycord))
-	}
-	if xcord < 0 || xcord >= xsize {
-		panic(fmt.Sprintf("invalid x-coordinate %d", xcord))
-	}
-	// find the coordinates of the neighborhood
-	ystart, yend := ycord-radius, ycord+radius
-	xstart, xend := xcord-radius, xcord+radius
-	coords := make([]*co, 0)
-
-	for y := ystart; y <= yend; y++ {
-		for x := xstart; x <= xend; x++ {
-			xt := getX(x, xsize, closedx)
-			yt := getY(y, ysize, closedy)
-			if xt != -1 && yt != -1 {
-				nc := co{
-					x: xt,
-					y: yt}
-				coords = append(coords, &nc)
-			}
-
-		}
-	}
-	return coords
-
-}
-
 /*
 find the neighbors for a given coordinate
 */
 func getNeighbors(flies [][]*Fly, ycord int64, xcord int64, radius int64) []*Fly {
 
-	ncoord := getNeighborhoodCoordinates(ycord, xcord, radius)
+	ncoord := env.GetNeighborhoodCoordinates(ycord, xcord, radius)
+	nfiltered := env.ExcludeMigrationBarrier(ncoord, xcord)
 
-	neighbors := make([]*Fly, 0, len(ncoord))
-	for _, co := range ncoord {
-		// consider migration barriers; between coordinates of focal-fly (xcord) and potential mate in neighborhood (x)
-		pex := env.GetExclusionProbabilty(xcord, co.x)
-		if rand.Float64() < pex {
-			// exclusion nothing happens
-		} else {
-			// inclusion
-			neighbors = append(neighbors, flies[co.y][co.x])
-		}
+	neighbors := make([]*Fly, 0, len(nfiltered))
+	for _, co := range nfiltered {
+
+		neighbors = append(neighbors, flies[co.Y][co.X])
 
 	}
 

@@ -307,20 +307,20 @@ func TestGetNeighborhoodOpen(test *testing.T) {
 		// NOTHING
 	}
 	for _, t := range tests {
-		got := getNeighborhoodCoordinates(t.y, t.x, t.radius)
+		got := env.GetNeighborhoodCoordinates(t.y, t.x, t.radius)
 		gminx, gmaxx, gminy, gmaxy := t.x, int64(0), t.y, int64(0)
 		for _, c := range got {
-			if c.x < gminx {
-				gminx = c.x
+			if c.X < gminx {
+				gminx = c.X
 			}
-			if c.x > gmaxx {
-				gmaxx = c.x
+			if c.X > gmaxx {
+				gmaxx = c.X
 			}
-			if c.y < gminy {
-				gminy = c.y
+			if c.Y < gminy {
+				gminy = c.Y
 			}
-			if c.y > gmaxy {
-				gmaxy = c.y
+			if c.Y > gmaxy {
+				gmaxy = c.Y
 			}
 		}
 
@@ -370,20 +370,20 @@ func TestGetNeighborhoodClosedX(test *testing.T) {
 		// NOTHING
 	}
 	for _, t := range tests {
-		got := getNeighborhoodCoordinates(t.y, t.x, t.radius)
+		got := env.GetNeighborhoodCoordinates(t.y, t.x, t.radius)
 		gminx, gmaxx, gminy, gmaxy := t.x, int64(0), t.y, int64(0)
 		for _, c := range got {
-			if c.x < gminx {
-				gminx = c.x
+			if c.X < gminx {
+				gminx = c.X
 			}
-			if c.x > gmaxx {
-				gmaxx = c.x
+			if c.X > gmaxx {
+				gmaxx = c.X
 			}
-			if c.y < gminy {
-				gminy = c.y
+			if c.Y < gminy {
+				gminy = c.Y
 			}
-			if c.y > gmaxy {
-				gmaxy = c.y
+			if c.Y > gmaxy {
+				gmaxy = c.Y
 			}
 		}
 
@@ -433,20 +433,20 @@ func TestGetNeighborhoodClosedY(test *testing.T) {
 		// NOTHING
 	}
 	for _, t := range tests {
-		got := getNeighborhoodCoordinates(t.y, t.x, t.radius)
+		got := env.GetNeighborhoodCoordinates(t.y, t.x, t.radius)
 		gminx, gmaxx, gminy, gmaxy := t.x, int64(0), t.y, int64(0)
 		for _, c := range got {
-			if c.x < gminx {
-				gminx = c.x
+			if c.X < gminx {
+				gminx = c.X
 			}
-			if c.x > gmaxx {
-				gmaxx = c.x
+			if c.X > gmaxx {
+				gmaxx = c.X
 			}
-			if c.y < gminy {
-				gminy = c.y
+			if c.Y < gminy {
+				gminy = c.Y
 			}
-			if c.y > gmaxy {
-				gmaxy = c.y
+			if c.Y > gmaxy {
+				gmaxy = c.Y
 			}
 		}
 
@@ -496,20 +496,20 @@ func TestGetNeighborhoodClosedXY(test *testing.T) {
 		// NOTHING
 	}
 	for _, t := range tests {
-		got := getNeighborhoodCoordinates(t.y, t.x, t.radius)
+		got := env.GetNeighborhoodCoordinates(t.y, t.x, t.radius)
 		gminx, gmaxx, gminy, gmaxy := t.x, int64(0), t.y, int64(0)
 		for _, c := range got {
-			if c.x < gminx {
-				gminx = c.x
+			if c.X < gminx {
+				gminx = c.X
 			}
-			if c.x > gmaxx {
-				gmaxx = c.x
+			if c.X > gmaxx {
+				gmaxx = c.X
 			}
-			if c.y < gminy {
-				gminy = c.y
+			if c.Y < gminy {
+				gminy = c.Y
 			}
-			if c.y > gmaxy {
-				gmaxy = c.y
+			if c.Y > gmaxy {
+				gmaxy = c.Y
 			}
 		}
 
