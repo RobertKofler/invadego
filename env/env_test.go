@@ -284,6 +284,39 @@ func TestStochasticRandomAssortmentAndRecombination(test *testing.T) {
 
 }
 
+func TestStochasticMateBarrier(test *testing.T) {
+	util.SetSeed(7)
+	SetupEnvironment(100, 100, false, false, []int64{}, []float64{}, []int64{10, 20}, 0.9, 40, "dros", 0.0, 0.1, 1000)
+	tf := []*XY{&XY{X: 9, Y: 10}, &XY{X: 8, Y: 10}, &XY{X: 10, Y: 10}, &XY{X: 11, Y: 10}, &XY{X: 20, Y: 10}, &XY{X: 21, Y: 10}}
+	//ExcludeMigrationBarrier(tofilter []*XY, xcord int64) []*XY {
+	sc := make(map[int64]int64)
+	for i := 0; i < 1000; i++ {
+		fi := ExcludeMigrationBarrier(tf, 8)
+		for _, r := range fi {
+			sc[r.X]++
+		}
+	}
+	if sc[8] != 1000 {
+		test.Errorf("Invalid site count 8; should be 1000; got %d", sc[8])
+	}
+	if sc[9] != 1000 {
+		test.Errorf("Invalid site count 9; should be 1000; got %d", sc[9])
+	}
+	if sc[10] < 90 || sc[10] > 110 {
+		test.Errorf("Invalid site count 10; should be between 90 andd 110; got %d", sc[10])
+	}
+	if sc[11] < 90 || sc[11] > 110 {
+		test.Errorf("Invalid site count 11; should be between 90 andd 110; got %d", sc[11])
+	}
+	if sc[20] < 7 || sc[20] > 13 {
+		test.Errorf("Invalid site count 20; should be between 90 andd 110; got %d", sc[20])
+	}
+	if sc[21] < 7 || sc[21] > 13 {
+		test.Errorf("Invalid site count 21; should be between 90 andd 110; got %d", sc[21])
+	}
+
+}
+
 func TestMateBarrier(test *testing.T) {
 	SetupEnvironment(100, 100, false, false, []int64{}, []float64{}, []int64{10, 20}, 0.2, 40, "dros", 0.0, 0.1, 1000)
 	// now lets assume a mate barrier at site 5 (1-based) this translates to 4 (0-based)

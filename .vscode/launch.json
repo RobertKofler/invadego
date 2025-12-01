@@ -43,7 +43,7 @@
 			"--genome","MB:2,2,2,2",
 			"--rr","4,4,4,4",
 			"--grid-x","50",
-			"--grid-y","20",
+			"--grid-y","50",
 			"--closed-x",
 			"--closed-y",
 			"--console-format","gridcount",

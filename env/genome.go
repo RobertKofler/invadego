@@ -57,6 +57,12 @@ func getExclusionProbabilty(xfirst int64, xsecond int64) float64 {
 }
 
 func ExcludeMigrationBarrier(tofilter []*XY, xcord int64) []*XY {
+
+	// no barriers - no filter
+	if len(env.popStruct.xBarriers) == 0 {
+		return tofilter
+	}
+
 	filtered := make([]*XY, 0, len(tofilter))
 	for _, cand := range tofilter {
 		if rand.Float64() < getExclusionProbabilty(cand.X, xcord) {
