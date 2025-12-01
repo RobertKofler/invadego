@@ -135,11 +135,15 @@ func (m MaterNeighborhood) GetMatePairs(flies [][]*Fly) [][]matePair {
 }
 
 /*
-find the neighbors for a given coordinate
+find potential neighbors for mating for a given coordinate;
+alrady filters mate barriers
 */
 func getNeighbors(flies [][]*Fly, ycord int64, xcord int64, radius int64) []*Fly {
 
+	// super elegant
+	// first get the coordinates of the neighbors; considering also closedX, closedY
 	ncoord := env.GetNeighborhoodCoordinates(ycord, xcord, radius)
+	// filter probabilistically the neighbors for potential mate barriers
 	nfiltered := env.ExcludeMigrationBarrier(ncoord, xcord)
 
 	neighbors := make([]*Fly, 0, len(nfiltered))
