@@ -46,6 +46,9 @@ func (fo FormaterSummary) FormatInfo() string {
 	buf.WriteString("fixed\t")     // number of fixed TE insertions      // |
 	buf.WriteString("fsilenced\t") // fraction of silenced
 	buf.WriteString("sites\t")     // fraction of silenced
+	buf.WriteString("|\t")
+	buf.WriteString("actWX\t") // median x-position of active wave
+	buf.WriteString("silWX\t") // median x-position of silencing wave
 
 	buf.WriteString("|\t")
 	buf.WriteString("sampleids")
@@ -71,6 +74,9 @@ func (fo FormaterSummary) FormatPopulation(p *fly.Population, reincos int64, gen
 	buf.WriteString(fmt.Sprintf("%d\t", len(p.GetFixedInsertions())))         // fixed insertions                                                  // |
 	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetSilencedFrequency()))          // fw piRNAs (either cluster or para)#
 	buf.WriteString(fmt.Sprintf("%d\t", len(p.GetInsertionSites())))          // sites
+	buf.WriteString("|\t")
+	buf.WriteString(fmt.Sprintf("%d\t", p.GetMedianXPosActiveWave()+1))    // x-position of active wave; 1-based output and input
+	buf.WriteString(fmt.Sprintf("%d\t", p.GetMedianXPosSilencingWave()+1)) // x-position of silencing wave; 1-based output and input
 
 	if len(sampleparsed) > 0 {
 		buf.WriteString("|\t")

@@ -20,7 +20,7 @@
 			"--grid-x","50",
 			"--grid-y","20",
 			"--epi-inherit","dros",
-			"--console-format","transectx",
+			"--console-format","summary",
 			"--basepop","1-20,1,10:1-20,2,10", // "10,1,10:10,2,10:10,3,10:10,4,10",
 			"--rep","1",
 			"--replicate-offset","1",
@@ -29,7 +29,7 @@
 			"--mate-radius","1",
 			"--selfing-rate","0.0",
 			"--sampleid","test,test2",
-			"--gen","200"]
+			"--gen","300"]
 	},
 
 	{

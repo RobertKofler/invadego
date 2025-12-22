@@ -79,6 +79,71 @@ func (p *Population) GetFixedInsertions() []int64 {
 	return keys
 }
 
+func (p *Population) medianPosition(numbers []int64) int64 {
+	if len(numbers) == 0 {
+		return 0
+	}
+
+	// Sort in-place (modifies the original slice)
+	sort.Slice(numbers, func(i, j int) bool {
+		return numbers[i] < numbers[j]
+	})
+
+	n := len(numbers)
+	if n%2 == 1 {
+		// Odd length: middle element
+		return numbers[n/2]
+	}
+
+	// Even length: average of the two middle elements
+	mid1 := numbers[n/2-1]
+	mid2 := numbers[n/2]
+
+	// Integer average (truncates toward zero)
+	// Common convention for integer median when exact half isn't needed
+	return mid1 + (mid2-mid1)/2
+}
+
+/*
+Get the median x-position of the active invasion wave
+*/
+func (p *Population) GetMedianXPosActiveWave() int64 {
+	//the max-x-position of any insertions having a TE
+	maxxpos := make([]int64, len(p.Flies))
+
+	for y, temp := range p.Flies {
+		tmaxx := -1
+		for x := range temp {
+			cf := p.Flies[y][x].FlyStat.CountTotal
+			if cf > 0 && x > tmaxx {
+				tmaxx = x
+			}
+			maxxpos[y] = int64(tmaxx)
+		}
+	}
+	return p.medianPosition(maxxpos)
+}
+
+/*
+Get the median x-position of the silencing wave
+*/
+func (p *Population) GetMedianXPosSilencingWave() int64 {
+	//the max-x-position of any insertions having a TE
+	maxxpos := make([]int64, len(p.Flies))
+
+	for y, temp := range p.Flies {
+		tmaxx := -1
+		for x := range temp {
+			cf := p.Flies[y][x].Silenced
+			if cf && x > tmaxx {
+				tmaxx = x
+			}
+			maxxpos[y] = int64(tmaxx)
+		}
+	}
+	return p.medianPosition(maxxpos)
+}
+
 /*
 Get a 2D Matrix with the counts of TE insertions
 */

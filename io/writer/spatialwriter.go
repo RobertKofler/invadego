@@ -31,7 +31,7 @@ func WriteSpatialEntry(p *fly.Population, replicate int64, generation int64) {
 		} else {
 			status = "absent"
 		}
-		printline := fmt.Sprintf("%d\t%d\t%d\t%d\t%d\t%v", replicate, generation, fs.Ycoord, fs.Xcoord, fs.CountTE, status)
+		printline := fmt.Sprintf("%d\t%d\t%d\t%d\t%d\t%v", replicate, generation, fs.Ycoord+1, fs.Xcoord+1, fs.CountTE, status)
 		spatialwriter.WriteString(printline + "\n")
 	}
 
