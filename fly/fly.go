@@ -31,6 +31,7 @@ type Position struct {
 type FlySummary struct {
 	CountTE  int64
 	Silenced bool
+	Denovo   bool
 	Ycoord   int64
 	Xcoord   int64
 }
@@ -40,6 +41,7 @@ type Fly struct {
 	Hap1      []int64
 	Hap2      []int64
 	Silenced  bool
+	Denovo    bool
 	Fitness   float64
 	FlyStat   *FlyStatistic
 }
@@ -120,30 +122,35 @@ func getFlyStat(femgam []int64, malegam []int64) FlyStatistic {
 }
 
 /*
-Check if the TE is silenced
-Silenced if a) count of TE is larger than threshold b) if the parent transmitted its epigenetic silencing status and the
-individum has at least one insertion
+Check if de novo silencing is triggered
 */
-func getSilencingStatus(totalCount int64, silenced bool, fc int64) bool {
+func getDeNovoTriggered(totalCount int64, silenced bool) bool {
 
 	// trigger 'de novo' silencing
-	if !silenced {
-		// check for new trigger events
-		if env.IsTriggered(totalCount) {
-			return true // silenced
-		} else {
-			return false
-		}
+	if !silenced && env.IsTriggered(totalCount) {
+
+		return true // silenced
+
 	} else {
-		// ok there is epigenetic silencing inherited wuhu
-		// if there is a TE insertion it can be preserved,
-		// otherwise the epigenetic silencing is lost
-		if totalCount > 0 {
-			return true // silenced (id of old fly that triggered it)
-		} else {
-			return false // no te insertion -> epigenetic silencing is lost
-		}
+		return false
 	}
+}
+
+/*
+Check if the TE is silenced
+*/
+func getSilencingStatus(totalCount int64, silenced bool, denovo bool) bool {
+	// 3 options; de novo, maintainance, lost
+	if denovo {
+		// de novo triggering
+		return true
+	} else if silenced && totalCount > 0 {
+		// maintained
+		return true
+	} else {
+		return false
+	}
+
 }
 
 /*
@@ -245,8 +252,9 @@ func NewFly(femgam []int64, malegam []int64, paternalsilenced bool) *Fly {
 	currentCounter := FLYCOUNTER
 	FLYCOUNTER++
 
-	matpi := getSilencingStatus(fstat.CountTotal, paternalsilenced, currentCounter) // update the silencing status, eg if threshold is reached or if all TE insertions are lost
-	newFly := Fly{Hap1: malegam, Hap2: femgam, FlyNumber: currentCounter, Silenced: matpi, FlyStat: &fstat}
+	denovo := getDeNovoTriggered(fstat.CountTotal, paternalsilenced)
+	silenced := getSilencingStatus(fstat.CountTotal, paternalsilenced, denovo) // update the silencing status, eg if threshold is reached or if all TE insertions are lost
+	newFly := Fly{Hap1: malegam, Hap2: femgam, FlyNumber: currentCounter, Silenced: silenced, Denovo: denovo, FlyStat: &fstat}
 	newFly.Fitness = GetFitness(&newFly)
 
 	return &newFly

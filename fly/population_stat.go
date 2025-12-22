@@ -174,6 +174,7 @@ func (p *Population) GetFlySummaries() []FlySummary {
 			cf := p.Flies[y][x]
 			fs := FlySummary{CountTE: cf.FlyStat.CountTotal,
 				Silenced: cf.Silenced,
+				Denovo:   cf.Denovo,
 				Ycoord:   int64(y),
 				Xcoord:   int64(x)}
 			fsums = append(fsums, fs)

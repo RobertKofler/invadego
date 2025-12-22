@@ -537,19 +537,27 @@ func TestGetSilencingStatus(test *testing.T) {
 		fs       FlyStatistic
 		silenced bool
 		want     bool
+		wantdn   bool
 	}{
-		{fs: FlyStatistic{}, silenced: false, want: false},               // sanity
-		{fs: FlyStatistic{CountTotal: 39}, silenced: false, want: false}, // NOTHING
-		{fs: FlyStatistic{CountTotal: 41}, silenced: false, want: true},  //GAIN
-		{fs: FlyStatistic{CountTotal: 1}, silenced: true, want: true},    // RETAIN
-		{fs: FlyStatistic{CountTotal: 0}, silenced: true, want: false},   // LOSS
+		{fs: FlyStatistic{}, silenced: false, want: false, wantdn: false},               // sanity
+		{fs: FlyStatistic{CountTotal: 39}, silenced: false, want: false, wantdn: false}, // NOTHING
+		{fs: FlyStatistic{CountTotal: 41}, silenced: false, want: true, wantdn: true},   //GAIN
+		{fs: FlyStatistic{CountTotal: 41}, silenced: true, want: true, wantdn: false},   //RETAIN excessive
+		{fs: FlyStatistic{CountTotal: 1}, silenced: true, want: true, wantdn: false},    // RETAIN
+		{fs: FlyStatistic{CountTotal: 0}, silenced: true, want: false, wantdn: false},   // LOSS
 	}
 
 	for _, t := range tests {
-		got := getSilencingStatus(t.fs.CountTotal, t.silenced, 1)
+		gotDenovo := getDeNovoTriggered(t.fs.CountTotal, t.silenced)
+		gotSilenced := getSilencingStatus(t.fs.CountTotal, t.silenced, gotDenovo)
 
-		if got != t.want {
-			test.Errorf("Incorrect getSilencingStatus(); got %v, want %v", got, t.want)
+		if gotDenovo != t.wantdn {
+			test.Errorf("Incorrect getSilencingStatus(); got %v, want %v", gotSilenced, t.want)
+
+		}
+
+		if gotSilenced != t.want {
+			test.Errorf("Incorrect getSilencingStatus(); got %v, want %v", gotSilenced, t.want)
 
 		}
 
