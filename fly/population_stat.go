@@ -46,11 +46,28 @@ func (p *Population) GetSilenced() int64 {
 }
 
 /*
+Count of the denovo silencing triggered individuals
+*/
+func (p *Population) GetDenovo() int64 {
+	c := int64(0)
+	for _, f := range p.linearFlies {
+		if f.Denovo {
+			c++
+		}
+	}
+	return c
+}
+
+/*
 Frequency of the silenced individuals
 
 */
 func (p *Population) GetSilencedFrequency() float64 {
 	return p.Count2Freq(p.GetSilenced())
+}
+
+func (p *Population) GetDenovoFrequency() float64 {
+	return p.Count2Freq(p.GetDenovo())
 }
 
 /*
@@ -193,6 +210,21 @@ func (p *Population) GetSilencedGrid() [][]bool {
 	for y, temp := range p.Flies {
 		for x := range temp {
 			popcount[y] = append(popcount[y], p.Flies[y][x].Silenced)
+		}
+	}
+	return popcount
+}
+
+func (p *Population) GetDenovoGrid() [][]bool {
+	//ysize, xsize := env.GetYSize(), env.GetXSize()
+	popcount := make([][]bool, len(p.Flies))
+	for i, _ := range popcount {
+		popcount[i] = make([]bool, 0)
+	}
+
+	for y, temp := range p.Flies {
+		for x := range temp {
+			popcount[y] = append(popcount[y], p.Flies[y][x].Denovo)
 		}
 	}
 	return popcount

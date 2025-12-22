@@ -47,8 +47,9 @@ func (fo FormaterSummary) FormatInfo() string {
 	buf.WriteString("fsilenced\t") // fraction of silenced
 	buf.WriteString("sites\t")     // fraction of silenced
 	buf.WriteString("|\t")
-	buf.WriteString("actWX\t") // median x-position of active wave
-	buf.WriteString("silWX\t") // median x-position of silencing wave
+	buf.WriteString("denovo\t") // denovo count
+	buf.WriteString("actWX\t")  // median x-position of active wave
+	buf.WriteString("silWX\t")  // median x-position of silencing wave
 
 	buf.WriteString("|\t")
 	buf.WriteString("sampleids")
@@ -72,9 +73,10 @@ func (fo FormaterSummary) FormatPopulation(p *fly.Population, reincos int64, gen
 	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetAverageInsertions()))          // avtes
 	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetAveragePopulationFrequency())) //  popfreq all
 	buf.WriteString(fmt.Sprintf("%d\t", len(p.GetFixedInsertions())))         // fixed insertions                                                  // |
-	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetSilencedFrequency()))          // fw piRNAs (either cluster or para)#
+	buf.WriteString(fmt.Sprintf("%.2f\t", p.GetSilencedFrequency()))          // fw piRNAs
 	buf.WriteString(fmt.Sprintf("%d\t", len(p.GetInsertionSites())))          // sites
 	buf.WriteString("|\t")
+	buf.WriteString(fmt.Sprintf("%d\t", p.GetDenovo()))                    // de novo silencing count
 	buf.WriteString(fmt.Sprintf("%d\t", p.GetMedianXPosActiveWave()+1))    // x-position of active wave; 1-based output and input
 	buf.WriteString(fmt.Sprintf("%d\t", p.GetMedianXPosSilencingWave()+1)) // x-position of silencing wave; 1-based output and input
 
@@ -139,10 +141,13 @@ func (fo FormaterGridCount) FormatPopulation(p *fly.Population, reincos int64, g
 	}
 	buf.WriteString("\n")
 	sg := p.GetSilencedGrid()
+	dg := p.GetDenovoGrid()
 	for yc, t := range p.GetCountGrid() {
 		for xc, x := range t {
 			buf.WriteString(fmt.Sprint(x))
-			if sg[yc][xc] {
+			if dg[yc][xc] {
+				buf.WriteString("*")
+			} else if sg[yc][xc] {
 				buf.WriteString("'")
 			}
 			buf.WriteString(" ")
