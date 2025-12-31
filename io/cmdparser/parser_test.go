@@ -2,6 +2,7 @@ package cmdparser
 
 // command line, run all tests "go test ./..." yes three points
 import (
+	"invade/env"
 	"testing"
 )
 
@@ -39,6 +40,49 @@ func TestParseRecombinationMultiple(t *testing.T) {
 	if res[4] != 5 {
 		t.Error("wrong recombination")
 	}
+}
+
+func TestParseCoordinateRanges(t *testing.T) {
+	var tests = []struct {
+		tpx       string
+		tpy       string
+		wantcount int64
+		winc      []env.XY
+	}{
+		{tpx: "1", tpy: "1", wantcount: 1, winc: []env.XY{{X: 1, Y: 1}}},
+		{tpx: "1", tpy: "1-1", wantcount: 1, winc: []env.XY{{X: 1, Y: 1}}},
+		{tpx: "1-1", tpy: "1", wantcount: 1, winc: []env.XY{{X: 1, Y: 1}}},
+		{tpx: "10", tpy: "23", wantcount: 1, winc: []env.XY{{X: 10, Y: 23}}},
+		{tpx: "1-10", tpy: "1", wantcount: 10, winc: []env.XY{{X: 1, Y: 1}, {X: 2, Y: 1}, {X: 3, Y: 1}, {X: 4, Y: 1}, {X: 5, Y: 1}, {X: 6, Y: 1}, {X: 7, Y: 1}, {X: 8, Y: 1}, {X: 9, Y: 1}, {X: 10, Y: 1}}},
+		{tpx: "10-1", tpy: "1", wantcount: 10, winc: []env.XY{{X: 1, Y: 1}, {X: 2, Y: 1}, {X: 3, Y: 1}, {X: 4, Y: 1}, {X: 5, Y: 1}, {X: 6, Y: 1}, {X: 7, Y: 1}, {X: 8, Y: 1}, {X: 9, Y: 1}, {X: 10, Y: 1}}},
+		{tpx: "1", tpy: "1-10", wantcount: 10, winc: []env.XY{{X: 1, Y: 1}, {X: 1, Y: 2}, {X: 1, Y: 3}, {X: 1, Y: 4}, {X: 1, Y: 5}, {X: 1, Y: 6}, {X: 1, Y: 7}, {X: 1, Y: 8}, {X: 1, Y: 9}, {X: 1, Y: 10}}},
+		{tpx: "1", tpy: "10-1", wantcount: 10, winc: []env.XY{{X: 1, Y: 1}, {X: 1, Y: 2}, {X: 1, Y: 3}, {X: 1, Y: 4}, {X: 1, Y: 5}, {X: 1, Y: 6}, {X: 1, Y: 7}, {X: 1, Y: 8}, {X: 1, Y: 9}, {X: 1, Y: 10}}},
+		{tpx: "5-50", tpy: "1", wantcount: 46, winc: []env.XY{{X: 5, Y: 1}, {X: 50, Y: 1}}},
+		{tpx: "1", tpy: "5-50", wantcount: 46, winc: []env.XY{{X: 1, Y: 5}, {X: 1, Y: 50}}},
+		{tpx: "1-10", tpy: "1-10", wantcount: 100, winc: []env.XY{{X: 1, Y: 1}, {X: 1, Y: 10}, {X: 10, Y: 1}, {X: 10, Y: 10}}},
+		{tpx: "6-10", tpy: "6-10", wantcount: 25, winc: []env.XY{{X: 6, Y: 6}, {X: 6, Y: 10}, {X: 10, Y: 6}, {X: 10, Y: 10}}},
+	}
+	for _, test := range tests {
+		got := getCoordinates(test.tpy, test.tpx)
+
+		if len(got) != int(test.wantcount) {
+			t.Errorf("Incorrect length %v; want %v", len(got), test.wantcount)
+		}
+		for _, xy := range test.winc {
+			inside := false
+			for _, item := range got {
+				if item == xy {
+					inside = true
+				}
+			}
+			if !inside {
+				t.Errorf("Incorrect parsing does not contain XY %v; got %v", xy, got)
+			}
+
+		}
+
+	}
+
 }
 
 func TestParseGenome(t *testing.T) {

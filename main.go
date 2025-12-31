@@ -31,7 +31,7 @@ func main_profile() {
 func main() {
 
 	// VERSION NUMBER
-	version := "0.1.8.5"
+	version := "0.1.8.6"
 
 	clp := cmdparser.ParseCommandLine()
 	if clp.Silent {

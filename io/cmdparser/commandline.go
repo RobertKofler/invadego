@@ -124,6 +124,7 @@ func ParseCommandLine() *CommandLineParameters {
 	if *h < 0.0 || *h > 1.0 {
 		panic("Provide a suitable heterozygous effect of TEs --h; must be between 0.0 and 1.0")
 	}
+
 	//if *t < 1.0 {
 	//	panic("Provide a suitable epistatic effect of TEs --t; must be larger or equal to 1.0")
 	//}

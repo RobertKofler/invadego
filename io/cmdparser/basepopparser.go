@@ -6,6 +6,7 @@ import (
 	"invade/fly"
 	"invade/util"
 	"math/rand"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -16,15 +17,28 @@ type countTuple struct {
 }
 
 type rangeTuple struct {
-	ystart int64
-	yend   int64
-	xstart int64
-	xend   int64
-	count  int64
-	silent bool
+	coordinates []env.XY
+	count       int64
+	silent      bool
 }
 
 func ParseBasePop(basepop string) *fly.Population {
+	// test if file exists
+	_, err := os.Stat(basepop)
+	if err == nil {
+		// if basepop is a file parse it
+		return parseBasePopFile(basepop)
+	} else {
+		// otherwise just parse the regular basepop-definition
+		return parseBasePopString(basepop)
+	}
+}
+
+func parseBasePopFile(basepop string) *fly.Population {
+	return parseBasePopString(basepop)
+}
+
+func parseBasePopString(basepop string) *fly.Population {
 
 	countgrid := getPopCountGrrid(basepop)
 
@@ -55,7 +69,68 @@ func ParseBasePop(basepop string) *fly.Population {
 	return fly.NewPopulation(pop, fly.INVASION)
 }
 
+func getCoordinates(yparse string, xparse string) []env.XY {
+	var ystart, yend, xstart, xend int64
+	// yrange
+	if strings.Contains(yparse, "-") {
+		ytmp := strings.Split(yparse, "-")
+		yst, era := strconv.ParseInt(ytmp[0], 10, 64)
+		yet, erb := strconv.ParseInt(ytmp[1], 10, 64)
+		if era != nil || erb != nil {
+			panic(fmt.Sprintf("Invalid base population position %s", yparse))
+		}
+		if yet < yst {
+			yst, yet = yet, yst
+		}
+		ystart = yst
+		yend = yet
+	} else {
+		ybt, erc := strconv.ParseInt(yparse, 10, 64)
+		if erc != nil {
+			panic(fmt.Sprintf("Invalid base population entry %s", yparse))
+		}
+		ystart = ybt
+		yend = ybt
+	}
+
+	// xrange
+	if strings.Contains(xparse, "-") {
+		xtmp := strings.Split(xparse, "-")
+		xst, era := strconv.ParseInt(xtmp[0], 10, 64)
+		xet, erb := strconv.ParseInt(xtmp[1], 10, 64)
+		if era != nil || erb != nil {
+			panic(fmt.Sprintf("Invalid base population entry %s", xparse))
+		}
+		if xet < xst {
+			xst, xet = xet, xst
+		}
+		xstart = xst
+		xend = xet
+	} else {
+		xbt, erc := strconv.ParseInt(xparse, 10, 64)
+		if erc != nil {
+			panic(fmt.Sprintf("Invalid base population entry %s", xparse))
+		}
+		xstart = xbt
+		xend = xbt
+	}
+
+	toret := make([]env.XY, 0)
+	for y := ystart; y <= yend; y++ {
+		for x := xstart; x <= xend; x++ {
+
+			co := env.XY{
+				X: x,
+				Y: y}
+			toret = append(toret, co)
+		}
+	}
+	return toret
+
+}
+
 func getRangeTuples(basepop string) []rangeTuple {
+	// Y,X,N:Y,X,N
 	toparse := make([]string, 0)
 	if strings.Contains(basepop, ":") {
 		toparse = strings.Split(basepop, ":")
@@ -73,51 +148,7 @@ func getRangeTuples(basepop string) []rangeTuple {
 		}
 		yparse, xparse, nparse := tmp[0], tmp[1], tmp[2]
 
-		var ystart, yend, xstart, xend int64
-
-		// yrange
-		if strings.Contains(yparse, "-") {
-			ytmp := strings.Split(yparse, "-")
-			yst, era := strconv.ParseInt(ytmp[0], 10, 64)
-			yet, erb := strconv.ParseInt(ytmp[1], 10, 64)
-			if era != nil || erb != nil {
-				panic(fmt.Sprintf("Invalid base population entry %s in %s", yparse, tp))
-			}
-			if yet < yst {
-				yst, yet = yet, yst
-			}
-			ystart = yst
-			yend = yet
-		} else {
-			ybt, erc := strconv.ParseInt(yparse, 10, 64)
-			if erc != nil {
-				panic(fmt.Sprintf("Invalid base population entry %s in %s", yparse, tp))
-			}
-			ystart = ybt
-			yend = ybt
-		}
-
-		// xrange
-		if strings.Contains(xparse, "-") {
-			xtmp := strings.Split(xparse, "-")
-			xst, era := strconv.ParseInt(xtmp[0], 10, 64)
-			xet, erb := strconv.ParseInt(xtmp[1], 10, 64)
-			if era != nil || erb != nil {
-				panic(fmt.Sprintf("Invalid base population entry %s in %s", xparse, tp))
-			}
-			if xet < xst {
-				xst, xet = xet, xst
-			}
-			xstart = xst
-			xend = xet
-		} else {
-			xbt, erc := strconv.ParseInt(xparse, 10, 64)
-			if erc != nil {
-				panic(fmt.Sprintf("Invalid base population entry %s in %s", xparse, tp))
-			}
-			xstart = xbt
-			xend = xbt
-		}
+		coordinates := getCoordinates(yparse, xparse)
 
 		// count and silencing status
 		if strings.HasSuffix(nparse, "'") {
@@ -130,12 +161,9 @@ func getRangeTuples(basepop string) []rangeTuple {
 		}
 
 		rt := rangeTuple{
-			ystart: ystart,
-			yend:   yend,
-			xstart: xstart,
-			xend:   xend,
-			count:  countint,
-			silent: silentb,
+			coordinates: coordinates,
+			count:       countint,
+			silent:      silentb,
 		}
 		toret = append(toret, rt)
 
@@ -145,6 +173,7 @@ func getRangeTuples(basepop string) []rangeTuple {
 
 func getPopCountGrrid(basepop string) [][]countTuple {
 
+	// Y,X,N:Y,X,N
 	ysize, xsize := env.GetYSize(), env.GetXSize()
 	rtuples := getRangeTuples(basepop)
 
@@ -154,25 +183,24 @@ func getPopCountGrrid(basepop string) [][]countTuple {
 	}
 
 	for _, rt := range rtuples {
-		if rt.ystart < 1 {
-			panic(fmt.Sprintf("y start must not be smaller than 1; got %d", rt.ystart))
-
-		}
-		if rt.xstart < 1 {
-			panic(fmt.Sprintf("x start must not be smaller than 1; got %d", rt.xstart))
-		}
-		if rt.yend > ysize {
-			panic(fmt.Sprintf("y end must not be larger than ysize; got %d; size %d", rt.yend, ysize))
-		}
-		if rt.xend > xsize {
-			panic(fmt.Sprintf("y end must not be larger than xsize; got %d; size %d", rt.xend, xsize))
-
-		}
-		for y := rt.ystart; y <= rt.yend; y++ {
-			for x := rt.xstart; x <= rt.xend; x++ {
-				popcount[y-1][x-1] = countTuple{count: rt.count, silent: rt.silent}
+		for _, cord := range rt.coordinates {
+			// validate and check if valid coordinates
+			if cord.Y < 1 {
+				panic(fmt.Sprintf("y coordinate must not be smaller than 1; got %d", cord.Y))
 			}
+			if cord.X < 1 {
+				panic(fmt.Sprintf("x must not be smaller than 1; got %d", cord.X))
+			}
+			if cord.Y > ysize {
+				panic(fmt.Sprintf("y  must not be larger than ysize; got %d; size %d", cord.Y, ysize))
+			}
+			if cord.X > xsize {
+				panic(fmt.Sprintf("y must not be larger than xsize; got %d; size %d", cord.X, xsize))
+
+			}
+			popcount[cord.Y-1][cord.X-1] = countTuple{count: rt.count, silent: rt.silent}
 		}
 	}
+
 	return popcount
 }
