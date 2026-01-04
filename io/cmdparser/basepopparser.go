@@ -34,10 +34,6 @@ func ParseBasePop(basepop string) *fly.Population {
 	}
 }
 
-func parseBasePopFile(basepop string) *fly.Population {
-	return parseBasePopString(basepop)
-}
-
 func parseBasePopString(basepop string) *fly.Population {
 
 	countgrid := getPopCountGrrid(basepop)

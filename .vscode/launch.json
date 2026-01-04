@@ -32,6 +32,31 @@
 			"--sampleid","test,test2",
 			"--gen","300"]
 	},
+	{
+		"name": "spatial-file",
+		"type": "go",
+		"request": "launch",
+		"mode": "debug",
+		"program": "main.go",
+		"args": [
+			"--u","0.0",
+			"--genome","MB:2,2,2,2",
+			"--rr","1,1,1,1",
+			"--grid-x","100",
+			"--grid-y","20",
+			"--epi-inherit","dros",
+			"--console-format","gridcount",
+			"--basepop","/Users/robertkofler/gh/invadego/debug/bpspatial.txt",
+			"--file-debug","/Users/robertkofler/gh/invadego/debug/ld-decay.txt",
+			"--rep","1",
+			"--replicate-offset","1",
+			"--steps","10",
+			"--trigger-defense","40",
+			"--mate-radius","pan",
+			"--selfing-rate","0.0",
+			"--sampleid","test,test2",
+			"--gen","300"]
+	},
 
 	{
 		"name": "spatial-closedy",
